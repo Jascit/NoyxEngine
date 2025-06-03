@@ -1,13 +1,5 @@
 ﻿# CMakeList.txt : logic CMake project for Noyx, include source and define compilators, OS, creates constants for the engine
 # project specific defines here
-
-cmake_minimum_required(VERSION 3.15)
-project(NoyxEngine LANGUAGES CXX)
- 
-set(CMAKE_CXX_STANDARD 20)#should base on other things, TODO: change CMAKE_CXX_STANDARD
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 #will collect all libraries, based on options
 set(DynamicLibraries)
 #     ^
