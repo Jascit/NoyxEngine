@@ -1,1 +1,1 @@
-# Noyx
+# Noyx (cross-platform engine)

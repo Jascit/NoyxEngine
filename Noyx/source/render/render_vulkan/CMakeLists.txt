@@ -1,0 +1,10 @@
+target_include_directories(
+    "${WIN_SDK_INCLUDE}/um"
+    "${WIN_SDK_INCLUDE}/shared"
+    "${WIN_SDK_INCLUDE}/ucrt"
+    "${WIN_SDK_INCLUDE}/winrt"
+)
+target_link_directories(
+    "${WIN_SDK_LIB}/um/x64"
+    "${WIN_SDK_LIB}/ucrt/x64"
+)
