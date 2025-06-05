@@ -1,13 +1,16 @@
 #CMakeLists for platform module
 
-add_library(PlatformModule STATIC ${PLATFORM_SRC})
-
-target_include_directories(PlatformModule PUBLIC
-    ${PLATFORM_INCLUDES} 
+file(GLOB_RECURSE PLATFORM_SRC CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
-
-# Adding CoreModule to DynamicModules
-list(APPEND DynamicModules PlatformModule)
-
-# Передача DynamicModules у батьківський контекст
-set(DynamicModules ${DynamicModules} PARENT_SCOPE)
+if(GRAPHICS_SRC)
+    add_library(PlatformModule STATIC ${PLATFORM_SRC})
+    
+    target_include_directories(PlatformModule PUBLIC
+        ${PLATFORM_INCLUDES}  
+    )
+    
+    list(APPEND DynamicLibraries PlatformModule)
+    
+    set(DynamicLibraries ${DynamicLibraries} PARENT_SCOPE)
+endif()

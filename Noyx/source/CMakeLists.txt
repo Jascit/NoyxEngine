@@ -1,4 +1,4 @@
-#CMakeList.txt : CMake for libraries building, define modules to include(based on options from top-level and logic CMakeLists)
+#CMakeList.txt : CMake for libraries building, defines modules to include(based on options from top-level and logic CMakeLists)
 
 set(SUBDIRECTORIES
     core
@@ -18,3 +18,8 @@ foreach(SUBDIR ${SUBDIRECTORIES})
     endif()
 endforeach()
 
+#will collect all libraries, based on options
+set(DynamicLibraries ${DynamicLibraries} PARENT_SCOPE)
+#     ^
+#     |                                                                immer ON        Immer ON
+#idea: RendererModule(ON/OFF), PhysicModule(ON/OFF), AIModule(ON/OFF), CoreModule(ON), PlatformModule(ON), AudioModule(ON/OFF), InputModule(ON/OFF)    

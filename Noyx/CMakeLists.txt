@@ -1,10 +1,13 @@
 ﻿# CMakeList.txt : logic CMake project for Noyx, include source and define compilators, OS, creates constants for the engine
+
 # project specific defines here
-#will collect all libraries, based on options
-set(DynamicLibraries)
-#     ^
-#     |                                                                immer ON
-#idea: RendererModule(ON/OFF), PhysicModule(ON/OFF), AIModule(ON/OFF), CoreModule(ON), AudioModule(ON/OFF), InputModule(ON/OFF)
+
+cmake_minimum_required(VERSION 3.25)
+project(Noyx LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 #detecting platform and architecture
 if (WIN32) # working on
@@ -20,11 +23,9 @@ if (WIN32) # working on
         message(STATUS "  Architecture: x64")
         add_compile_definitions(NOYX_PLATFORM_WINDOWS NOYX_ARCH_X64)
     else()
-        message(STATUS "  Architecture: x86")
-        add_compile_definitions(NOYX_PLATFORM_WINDOWS NOYX_ARCH_X86)
+        message(FATAL_ERROR " Architecture x86 was found!")
     endif()
-    
-    add_executable (Noyx WIN32 "Noyx.cpp")                              #TODO: change "Noyx.cpp"
+
     # compiler
     if(MSVC)
         set(WIN_SDK_DIR "$ENV{WindowsSdkDir}")
@@ -43,13 +44,10 @@ elseif (UNIX AND NOT APPLE) # in plans
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         message(STATUS "  Architecture: x64")
         add_compile_definitions(NOYX_PLATFORM_LINUX NOYX_ARCH_X64)
-        set(LINUX TRUE CACHE INTERNAL "Is LINUX(64bit|32bit)")
+        set(LINUX_64 TRUE CACHE INTERNAL "Is LINUX(64bit)")
     else()
-        message(STATUS "  Architecture: x86")
-        add_compile_definitions(NOYX_PLATFORM_LINUX NOYX_ARCH_X86)
-        set(LINUX TRUE CACHE INTERNAL "Is LINUX(64bit|32bit)")
+        message(FATAL_ERROR " Architecture x86 was found!")
     endif()
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Noyx)
     # Можна знайти Vulkan SDK через find_package(Vulkan REQUIRED)
     find_package(Vulkan REQUIRED)
     target_include_directories(NoyxCore PRIVATE ${Vulkan_INCLUDE_DIRS})
@@ -60,13 +58,10 @@ elseif (APPLE) # in plans
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         message(STATUS "  Architecture: x64 (Intel) or ARM64 (Apple Silicon)")
         add_compile_definitions(NOYX_PLATFORM_APPLE NOYX_ARCH_X64)
-        set(APPLE_PLATFORM TRUE CACHE INTERNAL "Is APPLE")
+        set(APPLE_PLATFORM_64 TRUE CACHE INTERNAL "Is APPLE(64bit)")
     else()
-        message(STATUS "  Architecture: x86 (32‑bit)")
-        add_compile_definitions(NOYX_PLATFORM_APPLE NOYX_ARCH_X86)
-        set(APPLE_PLATFORM TRUE CACHE INTERNAL "Is APPLE")
+        message(FATAL_ERROR " Architecture x86 was found!")
     endif()
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Noyx)
     # macOS: підключити фреймворки, наприклад, MoltenVK чи інші
     find_library(COCOA_FRAMEWORK Cocoa)
     target_link_libraries(NoyxCore PRIVATE ${COCOA_FRAMEWORK})
@@ -74,14 +69,12 @@ elseif (APPLE) # in plans
 else()
     message(FATAL_ERROR "Undefined platform!")
 endif()
-
-if(${DynamicLibraries})
-    #all setings will be used in this subdirectory:
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source) 
-    add_library(NoyxLibrary INTERFACE)
-    target_link_libraries(NoyxLibrary INTERFACE
-        ${DynamicLibrary}
-    )
+#all setings will be used in this subdirectory:
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source) 
+#NoyxLibrary created in CMake(Source)
+if(NOT ${DynamicLibraries} STREQUAL "")
+    add_executable (Noyx WIN32 ${CMAKE_CURRENT_SOURCE_DIR}/source/Noyx.cpp)                              #TODO: change "Noyx.cpp"
+    target_link_libraries(Noyx ${DynamicLibraries})
 else()
     message(FATAL_ERROR "DynamicLibraries were empty, see logs of building for more infomation")
 endif()
