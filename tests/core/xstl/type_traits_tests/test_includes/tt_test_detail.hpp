@@ -18,16 +18,31 @@ namespace xstl_test_detail
     // Помічник: по T викликає двічі VALIDATE_TYPES
     template<
         template<typename> class Primary,   // name<T>::type
-        template<typename> class Alias,     // name_t<T>
+        template<typename> class Alias = Primary,     // name_t<T>
         typename T
     >
-    void apply_one_type()
+    constexpr void apply_one_type(const char* file, int line)
     {
-        VALIDATE_TYPES(typename Primary<T>::type, T);
+        VALIDATE_TYPES_TYPE_2(typename Primary<T>::type, T, file, line);
 
-        if constexpr (!xstl::is_same<Alias<T>, void>)
+        if constexpr (!xstl::is_same<Alias<T>, Primary<T>>)
         {
-            VALIDATE_TYPES(Alias<T>, T);
+            VALIDATE_TYPES_TYPE_2(Alias<T>, T, file, line);
+        }
+    }
+    template<
+      template<typename> class Primary,               // name<T>::type
+      template<typename> class Alias = Primary,       // name_t<T>
+      typename T,
+      typename Te                                     // expected
+    >
+    constexpr void apply_one_type_with_expected(const char* file, int line)
+    {
+        VALIDATE_TYPES_TYPE_2(typename Primary<T>::type, Te, file, line);
+
+        if constexpr (!xstl::is_same<Alias<T>, Primary<T>>)
+        {
+            VALIDATE_TYPES_TYPE_2(Alias<T>, Te, file, line);
         }
     }
 
@@ -36,17 +51,37 @@ namespace xstl_test_detail
         template<typename> class Primary,
         template<typename> class Alias = Primary
     >
-    void run_transform_tests(const char* test_name)
+    constexpr void run_transform_tests(const char* test_name, const char* file, int line)
     {
-        std::cout << "[ RUN ] " << test_name << "\n";
+        std::cout << "[ RUN     ] " << test_name << "\n";
         //std::apply x2
         std::apply(
-            []<typename... Ts>(std::tuple<Ts...>){
-              (apply_one_type<Primary, Alias, Ts>(), ...);
-            }, all_test_types{}
+          []<typename... Ta>(std::tuple<Ta...>) {
+            [] <typename... Ts>(std::tuple<Ts...>) {
+              (xstl_test_detail::apply_one_type<Primary, Alias, Ts>(file, line), ...);
+            }, xstl_test_detail::all_suffixes<Ta>{});
+          }, xstl_test_detail::all_test_types{}
         );
 
-        std::cout << "[ OK ] " << test_name << "\n";
+        std::cout << "[      OK ] " << test_name << "\n";
+    }
+    template<
+      template<typename> class Primary,
+      template<typename> class Alias = Primary,
+      typename Te                                          //expected
+    >
+    constexpr void run_transform_tests_with_expected(const char* test_name, const char* file, int line) {
+      std::cout << "[ RUN     ] " << test_name << "\n";
+      //std::apply x2
+      std::apply(
+          []<typename... Tt>(std::tuple<Tt...>) {
+            [] <typename... Ts>(std::tuple<Ts...>) {
+              (xstl_test_detail::apply_one_type_with_expected<Primary, Alias, Ts, Te>(file, line), ...);
+            }, xstl_test_detail::all_suffixes<Te>{});
+          }, xstl_test_detail::all_test_types{}
+        );
+
+        std::cout << "[      OK ] " << test_name << "\n";
     }
 } // namespace xstl_test_detail
 

@@ -1,6 +1,6 @@
 #CMakeList.txt : CMake for libraries building, defines modules to include(based on options from top-level and logic CMakeLists)
 
-set(SUBDIRECTORIES
+set(NOYX_SUBDIRECTORIES
     core
     platform
     render
@@ -9,7 +9,7 @@ set(SUBDIRECTORIES
 set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/Noyx/Include/core")
 set(PLATFORM_INCLUDES "${CMAKE_SOURCE_DIR}/Noyx/Include/platform")
 
-foreach(SUBDIR ${SUBDIRECTORIES})
+foreach(SUBDIR ${NOYX_SUBDIRECTORIES})
     set(SUBDIR_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIR}")
     if(EXISTS "${SUBDIR_PATH}" AND IS_DIRECTORY "${SUBDIR_PATH}")
         add_subdirectory("${SUBDIR_PATH}")

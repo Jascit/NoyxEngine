@@ -23,7 +23,7 @@ namespace xstl_test
 #else
 
   template <typename A, typename B>
-  void check_different_types(const char* file, int line)
+  constexpr void check_different_types(const char* file, int line)
   {
     if (xstl::is_same<A, B>::value)
     {
@@ -37,6 +37,7 @@ namespace xstl_test
   }
 
 #define VALIDATE_TYPES(A, B)  xstl_test::check_different_types<A, B>(__FILE__, __LINE__)
+#define VALIDATE_TYPES_TYPE_2(A, B, file, line)  xstl_test::check_different_types<A, B>(file, line)
 
 #endif  // TEST_WITH_ASSERT
 

@@ -21,3 +21,6 @@ struct TestRegistrar {
 
 #define REGISTER_TEST(fn) \
     static TestRegistrar _registrar_##fn(fn)
+#define TEST_BEGIN()
+
+#define TEST_END() 

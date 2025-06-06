@@ -1,16 +1,16 @@
-﻿file(GLOB_RECURSE XSTL_TT_TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+﻿message(STATUS "\n-- ------XSTL-TT TEST CMAKE------")
+message(STATUS "XSTL-TT: founding with GLOB_RECURSE *.cpp files in current directory")
+file(GLOB_RECURSE XSTL_TT_TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
+message(STATUS "XSTL-TT: creating library XSTL_TT_TEST_LIBRARY...")
 if(XSTL_TT_TEST_SOURCES)
-    add_executable(xstl_tt_tests ${XSTL_TT_TEST_SOURCES})
-
-    target_include_directories(xstl_tt_tests PRIVATE
+    add_library(XSTL_TT_TEST_LIBRARY STATIC ${XSTL_TT_TEST_SOURCES})
+    target_include_directories(XSTL_TT_TEST_LIBRARY PRIVATE
         ${CMAKE_SOURCE_DIR}/Noyx/include
         ${CMAKE_CURRENT_SOURCE_DIR}/test_includes
     )
-
-    # Falls du eigene Libraries hast (z. B. noyx_core, xstl):
-    # target_link_libraries(xstl_tt_tests PRIVATE xstl_library)
-
-    enable_testing()
-
+    set(XSTL_ALL_LIBRARIES_DYNAMIC ${XSTL_ALL_LIBRARIES_DYNAMIC} XSTL_TT_TEST_LIBRARY PARENT_SCOPE)
+	message(STATUS "XSTL-TT: [SUCCESS] return library in PARENT_SCOPE(COREMODULE_TEST-XSTL)\n")
+else()
+	message(WARNING "!!!XSTL-TT: [FAILED] XSTL_ALL_LIBRARIES_DYNAMIC was empty, there's no work to do\n")
 endif()
