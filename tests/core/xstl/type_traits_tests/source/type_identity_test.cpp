@@ -1,6 +1,6 @@
 #include <tests_details.hpp>
 #include <type_identity.hpp>
-#include <is_same.hpp>
+#include <is/is_same.hpp>
 #include <tt_test_detail.hpp>
 #include <type_traits>
 #include <iostream>
@@ -35,9 +35,13 @@ void test_all_types_with_sufix(Tuple&& tuple) {
 NOYX_TEST(TypeIdentity, UnitTest) {
 
   std::cout << "\n----------TT_TESTS_TYPE_IDENTITY----------\n";
+#if FLAG_TEST_WITH_MESSAGE
   std::cout << "\n----------ALL TYPES----------\n";
+#endif
   xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestTypeInvoker>();
+#if FLAG_TEST_WITH_MESSAGE
   std::cout << "\n----------ALL SUFIXES----------\n";
+#endif
   test_all_types_with_sufix(xstl_test_detail::all_test_types{});
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <is_same.hpp>
+#include <is/is_same.hpp>
 
 namespace xstl_test
 {

@@ -1,12 +1,12 @@
 #pragma once
 #include <tests_details.hpp>
-#include <integral_constant.hpp>  // deine xstl::integral_constant
-#include <is_same.hpp>            // xstl::is_same_v
+#include <integral_constant.hpp>  //  xstl::integral_constant
+#include <is/is_same.hpp>         // xstl::is_same_v
 #include <type_traits>
 #include <typeinfo>
 #include <iostream>
 
-#define FLAG_TEST_WITH_MESSAGE 1
+#define FLAG_TEST_WITH_MESSAGE 0
 
 template<typename T, T Val>
 constexpr void tt_test_integral_constant() {

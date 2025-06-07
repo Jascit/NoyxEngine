@@ -1,4 +1,4 @@
-#include <is_same.hpp>
+#include <is/is_same.hpp>
 #include <tests_details.hpp>
 #include <tt_test_detail.hpp>
 #include <type_traits>
@@ -79,11 +79,17 @@ void test_all_different_combinations() {
 
 NOYX_TEST(IsSame, UnitTest) {
   std::cout << "\n----------TT_TESTS_IS_SAME----------\n";
+#if FLAG_TEST_WITH_MESSAGE
   std::cout << "\n----------ALL TYPES----------\n";
+#endif
   xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestIsSameInvoker>();
+#if FLAG_TEST_WITH_MESSAGE
   std::cout << "\n----------ALL SUFIXES----------\n";
+#endif
   is_same_test_all_sufixes<0, xstl_test_detail::all_test_types>();
+#if FLAG_TEST_WITH_MESSAGE
   std::cout << "\n----------TT_TESTS_IS_SAME_DIFFERENT----------\n";
+#endif
   test_all_different_combinations<xstl_test_detail::all_test_types>();
 
 }

@@ -1,5 +1,5 @@
 #include <remove_const.hpp>       // xstl::remove_const, remove_const_t
-#include <is_same.hpp>            // xstl::is_same_v
+#include <is/is_same.hpp>            // xstl::is_same_v
 #include <tests_details.hpp>      // NOYX_ASSERT_TRUE_MESSAGE
 #include <tt_test_detail.hpp>     // all_suffixes, for_each_type
 #include <type_traits>
@@ -46,6 +46,8 @@ void remove_const_test_all_suffixes() {
 
 NOYX_TEST(RemoveConst, UnitTest) {
   std::cout << "\n----------TT_TESTS_REMOVE_CONST----------\n";
+#if FLAG_TEST_WITH_MESSAGE
   std::cout << "\n----------ALL SUFFIXES----------\n";
+#endif
   remove_const_test_all_suffixes<0, xstl_test_detail::all_test_types>();
 }

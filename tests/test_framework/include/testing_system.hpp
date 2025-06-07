@@ -1,45 +1,62 @@
 #pragma once
 #include <testings_data.hpp>
+#include <iostream>
+#include <vector>
+#include <string>
 
 class TestingSystem {
 public:
-    constexpr void fail(TestInfo& info, const char* message) {
-        m_failedFunctionsNames.push_back(std::forward<const char*>(info.testName));
-        m_failedFunctionsMessages.push_back(message);
-        m_failed++;
-    }
+  void fail(TestInfo& info, const char* message) {
+    m_failedFunctionsNames.push_back(info.testName);
+    m_failedFunctionsMessages.push_back(message);
+    ++m_failed;
+  }
 
-    constexpr void success() {
-        m_successed++;
-    }
+  void success() {
+    ++m_passed;
+  }
 
-    ~TestingSystem() {
-        report();
-    }
-    constexpr inline size_t GetFailedCount() {
-      return m_failed;
-    }
-    constexpr inline size_t GetSuccessedCount() {
-      return m_successed;
-    }
+  ~TestingSystem() {
+    report();
+  }
+
+  size_t GetFailedCount() const {
+    return m_failed;
+  }
+
+  size_t GetPassedCount() const {
+    return m_passed;
+  }
+
+  static TestingSystem* instance() {
+    static TestingSystem systemInstance;
+    return &systemInstance;
+  }
+
+  TestingSystem(const TestingSystem&) = delete;
+  TestingSystem& operator=(const TestingSystem&) = delete;
+
 private:
-    void report() {
-        std::cout << "\nSummary: " << m_successed << " passed, " << m_failed << " failed.\n";
+  TestingSystem() : m_passed(0), m_failed(0) {}
+
+  void report() {
+    std::cout << "\n========== Test Summary ==========\n";
+    std::cout << "Passed: " << m_passed << "\n";
+    std::cout << "Failed: " << m_failed << "\n";
+
+    if (!m_failedFunctionsNames.empty()) {
+      std::cout << "\nFailed Tests:\n";
+      for (size_t i = 0; i < m_failedFunctionsNames.size(); ++i) {
+        std::cout << "  - " << m_failedFunctionsNames[i] << ": " << m_failedFunctionsMessages[i] << "\n";
+      }
     }
 
-private:
-    size_t m_successed;
-    size_t m_failed;
+    std::cout << "==================================\n";
+  }
 
-    std::vector<const char*> m_failedFunctionsNames;
-    std::vector<const char*> m_failedFunctionsMessages;
-public:
-    TestingSystem(const TestingSystem&) = delete;
-    TestingSystem operator=(const TestingSystem&) = delete;
-    static inline TestingSystem* instance() {
-        static TestingSystem systemInstance;
-        return &systemInstance;
-    }
 private:
-  TestingSystem() = default;
+  size_t m_passed;
+  size_t m_failed;
+  std::vector<std::string> m_failedFunctionsNames;
+  std::vector<std::string> m_failedFunctionsMessages;
 };

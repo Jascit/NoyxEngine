@@ -2,13 +2,12 @@
 
 #include <iostream>
 #include <tuple>
-#include <is_same.hpp>
+#include <is/is_same.hpp>
 #include <tt_test_sufixes.hpp>
 #include <tt_test.hpp>  // VALIDATE_TYPES(A,B)
 
 namespace xstl_test_detail
 {
-    // ќголошуЇмо св≥й список тип≥в в одному м≥сц≥:
     using all_test_types = std::tuple<
         bool, char, wchar_t, signed char, unsigned char,
         short, unsigned short, int, unsigned int,
