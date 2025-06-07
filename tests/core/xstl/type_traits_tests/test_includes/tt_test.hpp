@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <xstl/type_traits/is_same.hpp>
+#include <is_same.hpp>
 
 namespace xstl_test
 {
@@ -30,7 +30,7 @@ namespace xstl_test
       std::cerr
         << file << ":" << line
         << ": Type mismatch: expected different types, got "
-        << #A << " and " << #B
+        << typeid(A).name() << " and " << typeid(B).name()
         << std::endl;
       ++failure_count;
     }

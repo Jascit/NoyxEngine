@@ -44,7 +44,7 @@ endforeach()
 
 add_executable (NoyxTests "${CMAKE_CURRENT_SOURCE_DIR}/tests_details/test_main.cpp") 
 
-target_link_libraries(NoyxTests PUBLIC
+target_link_libraries(NoyxTests PRIVATE
     ${TESTS_ALL_LIBRARIES_DYNAMIC}
 )
 
