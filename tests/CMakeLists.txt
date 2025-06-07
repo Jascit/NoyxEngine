@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 enable_testing()
 
-set(TEST_DETAILS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tests_details/include")
+set(TEST_DETAILS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test_framework/include")
 set(TESTS_ALL_LIBRARIES_DYNAMIC "")
 set(TEST_SUBDIRECTORIES "")
 
@@ -42,7 +42,7 @@ foreach(SUBDIR ${TEST_SUBDIRECTORIES})
 endforeach()
 
 
-add_executable (NoyxTests "${CMAKE_CURRENT_SOURCE_DIR}/tests_details/test_main.cpp") 
+add_executable (NoyxTests "${CMAKE_CURRENT_SOURCE_DIR}/test_framework/test_main.cpp") 
 
 target_link_libraries(NoyxTests PRIVATE
     ${TESTS_ALL_LIBRARIES_DYNAMIC}

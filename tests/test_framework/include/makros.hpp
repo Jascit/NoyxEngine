@@ -1,30 +1,4 @@
 #pragma once
-#include <vector>
-#include <functional>
-#include <stdexcept>
-#include <sstream>
-#include <cstring>
-
-using TestFunc = std::function<void()>;
-
-struct TestInfo {
-  const char* suiteName;
-  const char* testName;
-  TestFunc testFunc;
-  const char* file;
-  int line;
-};
-
-inline std::vector<TestInfo>& getTestRegistry() {
-  static std::vector<TestInfo> registry;
-  return registry;
-}
-
-struct TestRegistrar {
-  TestRegistrar(const char* suite, const char* name, TestFunc func, const char* file, int line) {
-    getTestRegistry().push_back({ suite, name, func, file, line });
-  }
-};
 
 #define NOYX_CONCAT_INTERNAL(a, b) a##b
 #define NOYX_CONCAT(a, b) NOYX_CONCAT_INTERNAL(a, b)
@@ -67,7 +41,7 @@ struct TestRegistrar {
         if (!(expr)) {                                                                       \
             std::ostringstream oss;                                                          \
             oss << "Expected true but was false: " << #expr                                  \
-            << "\nMessage: " << message                                                  \
+            << "\nMessage: " << message                                                      \
                 << " (" << __FILE__ << ":" << __LINE__ << ")";                               \
             throw std::runtime_error(oss.str());                                             \
         }                                                                                    \
