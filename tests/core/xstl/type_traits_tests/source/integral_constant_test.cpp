@@ -1,41 +1,70 @@
 #pragma once
-#include <tests_details.hpp>
+#include <tt_test_detail.hpp>
 #include <integral_constant.hpp>  //  xstl::integral_constant
-#include <is/is_same.hpp>         // xstl::is_same_v
+#include <is_same.hpp>         // xstl::is_same_v
 #include <type_traits>
 #include <typeinfo>
 #include <iostream>
 
-#define FLAG_TEST_WITH_MESSAGE 0
-
 template<typename T, T Val>
 constexpr void tt_test_integral_constant() {
-#if FLAG_TEST_WITH_MESSAGE
-  std::cout << "Testing integral_constant<" << typeid(T).name() << ", " << +Val << ">\n";
-#endif
 
   using IC = xstl::integral_constant<T, Val>;
+#if TEST_WITH_STATIC_ASSERT
 
   NOYX_ASSERT_TRUE_MESSAGE(
     IC::value == Val,
-    std::string("IC::value mismatch for integral_constant<") << typeid(T).name() << ", " << std::to_string(Val) << ">"
+    "IC::value mismatch"
   );
 
   NOYX_ASSERT_TRUE_MESSAGE(
     NOYX_EVAL((xstl::is_same_v<typename IC::value_type, T>)),
-    "value_type mismatch for integral_constant<" << typeid(T).name() << ", " << std::to_string(Val) << ">"
+    "value_type mismatch"
   );
 
   NOYX_ASSERT_TRUE_MESSAGE(
     NOYX_EVAL((xstl::is_same_v<typename IC::type, IC>)),
-    std::string("type alias mismatch for integral_constant<") << typeid(T).name() << ", " << std::to_string(Val) << ">"
+    "type alias mismatch"
+  );
+
+  {
+    constexpr T tmp = IC{}();
+    NOYX_ASSERT_TRUE_MESSAGE(
+      tmp == Val,
+      "operator()() mismatch"
+    );
+  }
+
+  {
+    constexpr T tmp = IC{};
+    NOYX_ASSERT_TRUE_MESSAGE(
+      tmp == Val,
+      "conversion operator mismatch"
+    );
+  }
+
+#else
+
+  NOYX_ASSERT_TRUE_MESSAGE(
+    IC::value == Val,
+    std::string("IC::value mismatch for integral_constant<") + typeid(T).name() + ", " + std::to_string(Val) + ">"
+  );
+
+  NOYX_ASSERT_TRUE_MESSAGE(
+    NOYX_EVAL((xstl::is_same_v<typename IC::value_type, T>)),
+    std::string("value_type mismatch for integral_constant<") + typeid(T).name() + ", " + std::to_string(Val) + ">"
+  );
+
+  NOYX_ASSERT_TRUE_MESSAGE(
+    NOYX_EVAL((xstl::is_same_v<typename IC::type, IC>)),
+    std::string("type alias mismatch for integral_constant<") + typeid(T).name() + ", " + std::to_string(Val) + ">"
   );
 
   {
     T tmp = IC{}();
     NOYX_ASSERT_TRUE_MESSAGE(
       tmp == Val,
-      std::string("operator()() mismatch for integral_constant<") << typeid(T).name() << ", " << std::to_string(Val) << ">"
+      std::string("operator()() mismatch for integral_constant<") + typeid(T).name() + ", " + std::to_string(Val) + ">"
     );
   }
 
@@ -43,9 +72,11 @@ constexpr void tt_test_integral_constant() {
     T tmp = IC{};
     NOYX_ASSERT_TRUE_MESSAGE(
       tmp == Val,
-      std::string("conversion operator mismatch for integral_constant<") << typeid(T).name() << ", " << std::to_string(Val) << ">"
+      std::string("conversion operator mismatch for integral_constant<") + typeid(T).name() + ", " + std::to_string(Val) + ">"
     );
   }
+
+#endif
 }
 
 template<typename T, T Val>
@@ -56,9 +87,6 @@ struct IntegralConstantInvoker {
 };
 
 NOYX_TEST(IntegralConstant, UnitTest) {
-  std::cout << "\n----------TT_TESTS_INTEGRAL_CONSTANT----------\n";
-
-  // einfache Typ/Wert-Kombinationen
   tt_test_integral_constant<int, 0>();
   tt_test_integral_constant<int, 42>();
   tt_test_integral_constant<bool, true>();
@@ -66,4 +94,3 @@ NOYX_TEST(IntegralConstant, UnitTest) {
   tt_test_integral_constant<char, 'x'>();
 }
 
-#undef FLAG_TEST_WITH_MESSAGE

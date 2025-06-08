@@ -1,22 +1,23 @@
-#include <is/is_same.hpp>
-#include <tests_details.hpp>
+#include <is_same.hpp>
 #include <tt_test_detail.hpp>
 #include <type_traits>
-#define FLAG_TEST_WITH_MESSAGE 0
 
 template<typename T>
 constexpr void tt_test_is_same_two_T() {
-#if FLAG_TEST_WITH_MESSAGE
-  std::cout << "Testing is_same with " << typeid(T).name() << "\n";
+#if TEST_WITH_STATIC_ASSERT
+  static_assert(xstl::is_same<T, T>::value, "xstl::is_same<T, T>::value was expected to be true");
+  static_assert(xstl::is_same_v<T, T>, "xstl::is_same_v<T, T> was expected to be true");
+#else
+  NOYX_ASSERT_TRUE_MESSAGE(
+    NOYX_EVAL((xstl::is_same<T, T>::value)),
+    "xstl::is_same<T, T>::value was expected to be true for type: " << typeid(T).name()
+  );
+
+  NOYX_ASSERT_TRUE_MESSAGE(
+    NOYX_EVAL((xstl::is_same_v<T, T>)),
+    "xstl::is_same_v<T, T> was expected to be true for type: " << typeid(T).name()
+  );
 #endif
-
-  bool result = xstl::is_same<T, T>::value;
-  bool result_v = xstl::is_same_v<T, T>;
-  NOYX_ASSERT_TRUE_MESSAGE(result,
-    "xstl::is_same<T, T>::value was expected to be true, but got false" << typeid(T).name());
-
-  NOYX_ASSERT_TRUE_MESSAGE(result_v,
-    "xstl::is_same_v<T, T> was expected to be true, but got false" << typeid(T).name());
 }
 
 template<typename T>
@@ -39,10 +40,19 @@ void is_same_test_all_sufixes() {
 
 template<typename T, typename U>
 constexpr void tt_test_is_same_different() {
-#if FLAG_TEST_WITH_MESSAGE
-  std::cout << "Testing is_same with different types: "
-    << typeid(T).name() << " vs " << typeid(U).name() << "\n";
-#endif
+#if TEST_WITH_STATIC_ASSERT
+
+  NOYX_ASSERT_FALSE_MESSAGE(
+    NOYX_EVAL((xstl::is_same<T, U>::value)),
+    "xstl::is_same<T, U>::value was expected to be false"
+  );
+
+  NOYX_ASSERT_FALSE_MESSAGE(
+    NOYX_EVAL((xstl::is_same_v<T, U>)),
+    "xstl::is_same_v<T, U> was expected to be false"
+  );
+
+#else
 
   bool result = xstl::is_same<T, U>::value;
   bool result_v = xstl::is_same_v<T, U>;
@@ -54,6 +64,8 @@ constexpr void tt_test_is_same_different() {
   NOYX_ASSERT_FALSE_MESSAGE(result_v,
     std::string("xstl::is_same_v<T, U> was expected to be false, but got true. Types: ") +
     typeid(T).name() + " vs " + typeid(U).name());
+
+#endif
 }
 
 template<typename T, typename Tuple, std::size_t I = 0, std::size_t Y = 0>
@@ -78,20 +90,8 @@ void test_all_different_combinations() {
 }
 
 NOYX_TEST(IsSame, UnitTest) {
-  std::cout << "\n----------TT_TESTS_IS_SAME----------\n";
-#if FLAG_TEST_WITH_MESSAGE
-  std::cout << "\n----------ALL TYPES----------\n";
-#endif
   xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestIsSameInvoker>();
-#if FLAG_TEST_WITH_MESSAGE
-  std::cout << "\n----------ALL SUFIXES----------\n";
-#endif
   is_same_test_all_sufixes<0, xstl_test_detail::all_test_types>();
-#if FLAG_TEST_WITH_MESSAGE
-  std::cout << "\n----------TT_TESTS_IS_SAME_DIFFERENT----------\n";
-#endif
   test_all_different_combinations<xstl_test_detail::all_test_types>();
 
 }
-
-#undef FLAG_TEST_WITH_MESSAGE

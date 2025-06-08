@@ -1,29 +1,21 @@
 #include <remove_const.hpp>       // xstl::remove_const, remove_const_t
-#include <is/is_same.hpp>            // xstl::is_same_v
-#include <tests_details.hpp>      // NOYX_ASSERT_TRUE_MESSAGE
+#include <is_same.hpp>            // xstl::is_same_v
 #include <tt_test_detail.hpp>     // all_suffixes, for_each_type
 #include <type_traits>
 #include <iostream>
-
-#define FLAG_TEST_WITH_MESSAGE 0
 
 template<typename T>
 constexpr void test_remove_const() {
   using Removed = typename xstl::remove_const<T>::type;
   using RemovedAlias = xstl::remove_const_t<T>;
 
-#if FLAG_TEST_WITH_MESSAGE
-  std::cout << "Testing remove_const with " << typeid(T).name() << "\n";
+#if TEST_WITH_STATIC_ASSERT
+  NOYX_ASSERT_TRUE_MESSAGE(NOYX_EVAL((xstl::is_same_v<Removed, std::remove_const_t<T>>)), "xstl::remove_const<T>::type failed ");
+  NOYX_ASSERT_TRUE_MESSAGE(NOYX_EVAL((xstl::is_same_v<RemovedAlias, std::remove_const_t<T>>)), "xstl::remove_const_t<T> failed");
+#else
+  NOYX_ASSERT_TRUE_MESSAGE(NOYX_EVAL((xstl::is_same_v<Removed, std::remove_const_t<T>>)), std::string("xstl::remove_const<T>::type failed for type: " ) << typeid(T).name());
+  NOYX_ASSERT_TRUE_MESSAGE(NOYX_EVAL((xstl::is_same_v<RemovedAlias, std::remove_const_t<T>>)), std::string("xstl::remove_const_t<T> failed for type: " ) << typeid(T).name());
 #endif
-
-  bool result1 = xstl::is_same_v<Removed, std::remove_const_t<T>>;
-  bool result2 = xstl::is_same_v<RemovedAlias, std::remove_const_t<T>>;
-
-  NOYX_ASSERT_TRUE_MESSAGE(result1,
-    std::string("xstl::remove_const<T>::type failed for type: ") + typeid(T).name());
-
-  NOYX_ASSERT_TRUE_MESSAGE(result2,
-    std::string("xstl::remove_const_t<T> failed for type: ") + typeid(T).name());
 }
 
 
@@ -45,9 +37,5 @@ void remove_const_test_all_suffixes() {
 }
 
 NOYX_TEST(RemoveConst, UnitTest) {
-  std::cout << "\n----------TT_TESTS_REMOVE_CONST----------\n";
-#if FLAG_TEST_WITH_MESSAGE
-  std::cout << "\n----------ALL SUFFIXES----------\n";
-#endif
   remove_const_test_all_suffixes<0, xstl_test_detail::all_test_types>();
 }

@@ -10,3 +10,8 @@
 #include <type_traits/remove_pointer.hpp> // test
 #include <type_traits/remove_extent.hpp> // test
 #include <type_traits/remove_all_extents.hpp> // test
+#include <type_traits/void_t> // test
+#include <type_traits/declval.hpp> // test
+#include <type_traits/add_rvalue_reference.hpp> // test
+#include <type_traits/add_lvalue_reference.hpp> // test
+
