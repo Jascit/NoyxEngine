@@ -6,7 +6,7 @@ message(STATUS "XSTL-TT: creating library XSTL_TT_TEST_LIBRARY...")
 if(XSTL_TT_TEST_SOURCES)
     add_library(XSTL_TT_TEST_LIBRARY OBJECT ${XSTL_TT_TEST_SOURCES})
     target_include_directories(XSTL_TT_TEST_LIBRARY PUBLIC
-        ${CMAKE_SOURCE_DIR}/Noyx/include/core/xstl/type_traits
+        ${CMAKE_SOURCE_DIR}/Noyx/include/core/xstl
         ${CMAKE_CURRENT_SOURCE_DIR}/test_includes
         ${TEST_DETAILS_PATH}
     )

@@ -1,6 +1,6 @@
 #include <type_traits>
 #include <tt_test_detail.hpp>
-#include <remove_reference.hpp>
+#include <type_traits/remove_reference.hpp>
 
 template<typename T, typename Expected>
 constexpr void test_remove_reference_single() {

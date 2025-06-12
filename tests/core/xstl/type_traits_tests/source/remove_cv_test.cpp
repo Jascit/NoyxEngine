@@ -1,6 +1,6 @@
-#include <is_same.hpp>
+#include <type_traits/is_same.hpp>
 #include <tt_test_detail.hpp>
-#include <remove_cv.hpp>  
+#include <type_traits/remove_cv.hpp>  
 #include <type_traits>               
 #include <tuple>
 #include <iostream>

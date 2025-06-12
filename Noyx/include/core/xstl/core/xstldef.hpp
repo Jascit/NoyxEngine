@@ -1,10 +1,10 @@
 #pragma once
 
 namespace xstl {
-#if defined(NOYX_PLATFORM_WINDOWS)//64-bit windows
+#if NOYX_PLATFORM_WINDOWS
   using size_t = unsigned long long;
   using ptrdiff_t = decltype(static_cast<int*>(nullptr) - static_cast<int*>(nullptr));
-  using nullptr_t = decltype(nullptr);
+  using nullptr_t = decltype(__nullptr);
   
   using int8_t = char;
   using int16_t = short int;
@@ -21,4 +21,4 @@ namespace xstl {
   using uintmax_t = unsigned long long;
 
 #endif
-}
+} // xstl

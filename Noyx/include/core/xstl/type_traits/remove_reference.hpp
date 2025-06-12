@@ -1,4 +1,5 @@
 #pragma once
+
 namespace xstl {
   template<typename T>
   struct remove_reference {

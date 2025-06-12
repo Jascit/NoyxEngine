@@ -3,7 +3,7 @@
 #include <iostream>
 #include <tuple>
 #include <tests_details.hpp>
-#include <is_same.hpp>
+#include <type_traits/is_same.hpp>
 #include <tt_test_sufixes.hpp>
 #include <tt_test.hpp>  // VALIDATE_TYPES(A,B)
 

@@ -1,6 +1,6 @@
 #include <tt_test_detail.hpp>
-#include <remove_volatile.hpp>
-#include <is_same.hpp>
+#include <type_traits/remove_volatile.hpp>
+#include <type_traits/is_same.hpp>
 #include <iostream>
 
 template<typename T>

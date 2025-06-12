@@ -1,7 +1,7 @@
-#include <is_same.hpp>
+#include <type_traits/is_same.hpp>
 #include <tt_test_detail.hpp>
-#include <add_lvalue_reference.hpp> 
-#include <add_rvalue_reference.hpp>
+#include <type_traits/add_lvalue_reference.hpp> 
+#include <type_traits/add_rvalue_reference.hpp>
 #include <tuple>
 #include <iostream>
 
@@ -53,15 +53,6 @@ struct TestRValueInvoker {
     tt_add_rvalue_ref_test_type<T>();
   }
 };
-
-template<std::size_t I = 0, template<typename> typename Invoker, typename Tuple>
-void test_all_types_with_suffix(Tuple&& tuple) {
-  if constexpr (I < std::tuple_size_v<std::remove_reference_t<Tuple>>) {
-    using T = std::tuple_element_t<I, std::remove_reference_t<Tuple>>;
-    xstl_test_detail::for_each_type<xstl_test_detail::all_suffixes<T>, Invoker>();
-    test_all_types_with_suffix<I + 1, Invoker>(std::forward<Tuple>(tuple));
-  }
-}
 
 NOYX_TEST(AddLValueReference, UnitTest) {
   xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestLValueInvoker>();

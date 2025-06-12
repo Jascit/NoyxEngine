@@ -1,5 +1,5 @@
-#include <type_identity.hpp>
-#include <is_same.hpp>
+#include <type_traits/type_identity.hpp>
+#include <type_traits/is_same.hpp>
 #include <type_traits>
 #include <iostream>
 #include <tt_test_detail.hpp>
@@ -11,7 +11,7 @@ constexpr void tt_type_identity_test_type() {
 }
 
 template<typename T>
-struct TestTypeInvokerTypeIdentity {
+struct TestInvokerTypeIdentity {
   constexpr void operator()() const {
     tt_type_identity_test_type<T>();
   }
@@ -19,7 +19,7 @@ struct TestTypeInvokerTypeIdentity {
 
 
 NOYX_TEST(TypeIdentity, UnitTest) {
-  xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestTypeInvokerTypeIdentity>();
-  xstl_test_detail::test_all_types_with_suffix<0, TestTypeInvokerTypeIdentity>(xstl_test_detail::all_test_types{});
+  xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestInvokerTypeIdentity>();
+  xstl_test_detail::test_all_types_with_suffix<0, TestInvokerTypeIdentity>(xstl_test_detail::all_test_types{});
 }
 

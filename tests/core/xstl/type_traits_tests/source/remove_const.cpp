@@ -1,5 +1,5 @@
-#include <remove_const.hpp>       // xstl::remove_const, remove_const_t
-#include <is_same.hpp>            // xstl::is_same_v
+#include <type_traits/remove_const.hpp>       // xstl::remove_const, remove_const_t
+#include <type_traits/is_same.hpp>            // xstl::is_same_v
 #include <tt_test_detail.hpp>     // all_suffixes, for_each_type
 #include <type_traits>
 #include <iostream>

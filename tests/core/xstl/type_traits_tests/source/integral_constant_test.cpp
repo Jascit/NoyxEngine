@@ -1,7 +1,7 @@
 #pragma once
 #include <tt_test_detail.hpp>
-#include <integral_constant.hpp>  //  xstl::integral_constant
-#include <is_same.hpp>         // xstl::is_same_v
+#include <type_traits/integral_constant.hpp>  //  xstl::integral_constant
+#include <type_traits/is_same.hpp>         // xstl::is_same_v
 #include <type_traits>
 #include <typeinfo>
 #include <iostream>
