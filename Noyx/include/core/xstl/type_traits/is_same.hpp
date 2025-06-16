@@ -1,6 +1,6 @@
 #pragma once
 #include <type_traits/integral_constant.hpp>
-
+//MSVC
 namespace xstl {
   
   template<typename T, typename U>
