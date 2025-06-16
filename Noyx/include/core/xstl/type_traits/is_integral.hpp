@@ -7,7 +7,7 @@ namespace xstl {
     struct _is_integral_helper : false_type {};
 
     template<>
-    struct _is_integral_helper<bool > : true_type {};
+    struct _is_integral_helper<bool> : true_type {};
 
     template<>
     struct _is_integral_helper<char> : true_type {};

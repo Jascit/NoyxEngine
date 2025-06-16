@@ -19,7 +19,6 @@
 #include <type_traits/void_t.hpp>
 #include <type_traits/rank.hpp> 
 
-
 #include <type_traits/remove_all_extents.hpp> // test
 #include <type_traits/remove_pointer.hpp> // test
 #include <type_traits/add_volatile.hpp> // test
@@ -52,3 +51,13 @@
 #include<type_traits/is_member_object_pointer.hpp> // test
 #include<type_traits/is_member_pointer.hpp> // test
 
+#include <type_traits/is_fundamental.hpp> // test
+#include <type_traits/is_compound.hpp> // test
+#include <type_traits/is_object.hpp> // test
+#include <type_traits/is_scalar.hpp> // test
+#include <type_traits/is_const.hpp> // test
+
+#include <type_traits/is_constructible.hpp> // test
+#include <type_traits/is_assignable.hpp> // test
+#include <type_traits/is_convertible.hpp> // test
+#include <type_traits/is_base_of.hpp> // test

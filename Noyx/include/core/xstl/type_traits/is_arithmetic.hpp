@@ -5,8 +5,8 @@
 
 namespace xstl {
   template<typename T>
-  struct is_arihmetic : bool_constant<is_integral_v<T> || is_floating_point_v<T>> {};
+  struct is_arithmetic : bool_constant<is_integral_v<T> || is_floating_point_v<T>> {};
 
   template<typename T>
-  using is_arihmetic_v = is_arihmetic<T>::value;
+  constexpr bool is_arithmetic_v = is_arithmetic<T>::value;
 } // xstl
