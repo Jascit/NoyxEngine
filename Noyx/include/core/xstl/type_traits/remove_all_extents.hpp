@@ -18,5 +18,4 @@ namespace xstl {
 
   template<typename T>
   using remove_all_extents_t = remove_all_extents<T>::type;
-  
 }

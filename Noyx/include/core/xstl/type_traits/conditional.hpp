@@ -12,4 +12,5 @@ namespace xstl {
 
   template<bool cond, typename Tt, typename Tf>
   using conditional_t = conditional<cond, Tt, Tf>::type;
+
 } //xstl

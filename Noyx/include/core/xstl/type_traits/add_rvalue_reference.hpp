@@ -7,7 +7,7 @@ namespace xstl{
     using type = T;
   };
   template<typename T>
-  struct add_rvalue_reference<T, xstl::void_t<T&&>>
+  struct add_rvalue_reference<T, xstl::void_t<T&&>> 
   {
     using type = T&&;
   };

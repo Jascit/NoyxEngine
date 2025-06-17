@@ -79,13 +79,6 @@ constexpr void tt_test_integral_constant() {
 #endif
 }
 
-template<typename T, T Val>
-struct IntegralConstantInvoker {
-  constexpr void operator()() const {
-    tt_test_integral_constant<T, Val>();
-  }
-};
-
 NOYX_TEST(IntegralConstant, UnitTest) {
   tt_test_integral_constant<int, 0>();
   tt_test_integral_constant<int, 42>();
