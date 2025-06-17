@@ -1,6 +1,5 @@
 #pragma once
-#include <type_traits>
-std::remove_const<int>;
+#include <core/xstldef.hpp>
 namespace xstl {
   template<typename T>
   struct remove_const {
@@ -12,7 +11,7 @@ namespace xstl {
     using type = T;
   };
 
-  template<typename T, std::size_t N>
+  template<typename T, xstl::size_t N >
   struct remove_const<const T[N]> {
     using type = T[N];
   };

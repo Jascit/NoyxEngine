@@ -17,7 +17,6 @@ struct TestInvokerTypeIdentity {
   }
 };
 
-
 NOYX_TEST(TypeIdentity, UnitTest) {
   xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestInvokerTypeIdentity>();
   xstl_test_detail::test_all_types_with_suffix<0, TestInvokerTypeIdentity>(xstl_test_detail::all_test_types{});

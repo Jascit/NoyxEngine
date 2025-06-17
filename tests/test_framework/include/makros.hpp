@@ -13,7 +13,7 @@
 #else
 #define NOYX_MESSAGE_WRAPPER(expr) 
 #endif
-                    
+
 #define NOYX_TEST(SuiteName, TestName)                                                      \
     static void NOYX_CONCAT(SuiteName, _##TestName)();                                      \
     static TestRegistrar NOYX_CONCAT(registrar_, NOYX_CONCAT(SuiteName, _##TestName)) (     \

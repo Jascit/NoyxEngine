@@ -1,6 +1,7 @@
 #pragma once
+#include<type_traits/void_t.hpp>
 namespace xstl {
-  template<bool cond, typename T>
+  template<bool cond, typename T = void>
   struct enable_if{};
 
   template<typename T>

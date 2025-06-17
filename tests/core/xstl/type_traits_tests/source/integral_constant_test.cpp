@@ -1,4 +1,3 @@
-#pragma once
 #include <tt_test_detail.hpp>
 #include <type_traits/integral_constant.hpp>  //  xstl::integral_constant
 #include <type_traits/is_same.hpp>         // xstl::is_same_v
@@ -78,13 +77,6 @@ constexpr void tt_test_integral_constant() {
 
 #endif
 }
-
-template<typename T, T Val>
-struct IntegralConstantInvoker {
-  constexpr void operator()() const {
-    tt_test_integral_constant<T, Val>();
-  }
-};
 
 NOYX_TEST(IntegralConstant, UnitTest) {
   tt_test_integral_constant<int, 0>();

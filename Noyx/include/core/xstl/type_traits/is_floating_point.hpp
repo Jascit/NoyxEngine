@@ -9,7 +9,7 @@ namespace xstl {
     template<>
     struct _is_floating_point_helper<float> : true_type {};
     
-      template<>
+    template<>
     struct _is_floating_point_helper<double> : true_type {};
 
     template<>

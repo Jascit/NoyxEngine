@@ -27,7 +27,7 @@ constexpr void tt_is_member_function_pointer_test_type()
 #else
   NOYX_ASSERT_TRUE_MESSAGE(
     NOYX_EVAL((actual == Expected)),
-    "is_member_function_pointer<" << xstl::type_identity<T>::type() << "> returned "
+    "is_member_function_pointer<" << typeid(T).name() << "> returned "
     << actual << ", expected " << Expected
   );
 #endif
