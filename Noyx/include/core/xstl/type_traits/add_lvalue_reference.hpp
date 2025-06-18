@@ -2,12 +2,18 @@
 #include <type_traits/void_t.hpp>
 
 namespace xstl {
-  template<typename T, typename = void>
+    namespace details {
+        template<typename T>
+        concept _ConceptLValueReferenceable = requires(T && t) {
+            (void)t;
+        };
+    }
+  template<typename T>
   struct add_lvalue_reference {
     using type = T;
   };
-  template<typename T>
-  struct add_lvalue_reference<T, xstl::void_t<T&>>
+  template<details::_ConceptLValueReferenceable T>
+  struct add_lvalue_reference<T>
   {
     using type = T&;
   };

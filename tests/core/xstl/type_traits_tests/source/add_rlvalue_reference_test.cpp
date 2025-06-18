@@ -8,7 +8,6 @@
 template<typename T>
 constexpr void tt_add_lvalue_ref_test_type() {
 #if TEST_WITH_STATIC_ASSERT
-
   NOYX_ASSERT_TRUE_MESSAGE(
     NOYX_EVAL((xstl::is_same<typename xstl::add_lvalue_reference<T>::type, T&>::value)),
     "add_lvalue_reference failed"
