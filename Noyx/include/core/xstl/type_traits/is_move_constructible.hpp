@@ -24,25 +24,25 @@ namespace xstl {
     namespace details {
         template<typename T>
         concept _ConceptIsMoveConstructible = requires(T && t) {
-            T(std::move(t));
+            T(move(t));
         };
 
         template<typename T>
         concept _ConceptIsNothrowMoveConstructible = requires(T && t) {
-            { T(std::move(t)) } noexcept;
+            { T(move(t)) } noexcept;
         };
     }
 
     template<typename T>
-    struct is_move_constructible : std::false_type {};
+    struct is_move_constructible : false_type {};
 
     template<details::_ConceptIsMoveConstructible T>
-    struct is_move_constructible<T> : std::true_type {};
+    struct is_move_constructible<T> : true_type {};
 
     template<typename T>
-    struct is_nothrow_move_constructible : std::false_type {};
+    struct is_nothrow_move_constructible : false_type {};
 
     template<details::_ConceptIsNothrowMoveConstructible T>
-    struct is_nothrow_move_constructible<T> : std::true_type {};
+    struct is_nothrow_move_constructible<T> : true_type {};
 #endif // _MSVC_VER 
 }
