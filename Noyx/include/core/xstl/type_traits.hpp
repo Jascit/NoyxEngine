@@ -67,6 +67,7 @@
 #include <type_traits/is_assignable.hpp> // test
 #include <type_traits/is_base_of.hpp> // test
 
-#include <type_traits/is_move_constructable.hpp> // test
-#include <type_traits/is_move_assignable.hpp> // test
-#include <type_traits/move.hpp> // test
+#include <type_traits/is_move_constructable.hpp>
+#include <type_traits/is_move_assignable.hpp>
+#include <type_traits/swap.hpp> 
+#include <type_traits/move.hpp>

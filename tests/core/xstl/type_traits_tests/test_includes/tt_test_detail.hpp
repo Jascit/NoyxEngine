@@ -37,7 +37,7 @@ namespace xstl_test_detail
     }
 } // namespace xstl_test_detail
 
-#define TEST_WITH_STATIC_ASSERT 1
+#define TEST_WITH_STATIC_ASSERT 0
 
 #if TEST_WITH_STATIC_ASSERT
 #undef NOYX_FAIL
