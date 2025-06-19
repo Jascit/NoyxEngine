@@ -66,6 +66,20 @@
 #include <type_traits/is_convertible.hpp> // test
 #include <type_traits/is_assignable.hpp> // test
 #include <type_traits/is_base_of.hpp> // test
+#include <type_traits/is_trivial.hpp> // test
+#include <type_traits/is_standard_layout.hpp> // test
+#include <type_traits/is_literal_type.hpp> // test
+#include <type_traits/is_trivially_copyable.hpp> // test
+#include <type_traits/is_trivially_move_constructible.hpp> // test
+#include <type_traits/has_virtual_destructor.hpp> // test
+#include <type_traits/is_empty.hpp> // test
+#include <type_traits/is_aggregate.hpp> // test
+#include <type_traits/is_polymorphic.hpp> // test
+#include <type_traits/is_final.hpp> // test
+#include <type_traits/is_layout_compatible.hpp> // test
+#include <type_traits/is_pointer_interconvertible_base_of.hpp> // test
+#include <type_traits/is_constant_evaluated.hpp> // test
+
 
 #include <type_traits/is_move_constructable.hpp>
 #include <type_traits/is_move_assignable.hpp>

@@ -3,8 +3,8 @@
 
 namespace xstl {
 		template<typename T>
-		struct is_empty : bool_constant<__is_empty(T)>{};
+		struct is_aggregate : bool_constant<__is_aggregate(T)>{};
 
 		template<typename T>
-		constexpr bool is_empty_v = is_empty<T>::value;
+		constexpr bool is_aggregate_v = is_aggregate<T>::value;
 }
