@@ -3,7 +3,7 @@
 //TODO: Clang, GCC
 namespace xstl {
   template<typename T>
-  struct is_destructible : bool_constant<__is_destructible(_Ty)>{};
+  struct is_destructible : bool_constant<__is_destructible(T)>{};
   template<typename T>
   constexpr bool is_destructible_v = is_destructible<T>::value;
 } // xstl

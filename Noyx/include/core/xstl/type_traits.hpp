@@ -13,7 +13,7 @@
 #include <type_traits/remove_const.hpp>
 #include <type_traits/conditional.hpp> 
 #include <type_traits/is_function.hpp>
-#include <type_traits/conjuction.hpp> 
+#include <type_traits/conjunction.hpp> 
 #include <type_traits/remove_cv.hpp>
 #include <type_traits/is_same.hpp>
 #include <type_traits/is_enum.hpp>
@@ -21,13 +21,21 @@
 #include <type_traits/void_t.hpp>
 #include <type_traits/decay.hpp> 
 #include <type_traits/rank.hpp> 
+#include <type_traits/is_move_constructible.hpp>
+#include <type_traits/is_move_assignable.hpp>
+#include <type_traits/swap.hpp> 
+#include <type_traits/move.hpp>
+#include <type_traits/same_as.hpp>
+#include <type_traits/integral.hpp>
+#include <type_traits/signed_integral.hpp>
+#include <type_traits/floating_point.hpp>
 
 
 #include <type_traits/remove_all_extents.hpp> // test
 #include <type_traits/remove_pointer.hpp> // test
 #include <type_traits/add_volatile.hpp> // test
 #include <type_traits/add_pointer.hpp> // test
-#include <type_traits/disjuction.hpp> // test 
+#include <type_traits/disjunction.hpp> // test 
 #include <type_traits/enable_if.hpp> // test
 #include <type_traits/add_const.hpp> // test
 #include <type_traits/negation.hpp> // test
@@ -41,7 +49,7 @@
 #include <type_traits/is_unsigned.hpp> // test
 #include <type_traits/is_signed.hpp> // test
 
-#include<type_traits/is_arihmetic.hpp> // test
+#include<type_traits/is_arithmetic.hpp> // test
 #include<type_traits/is_null_pointer.hpp> // test
 #include<type_traits/is_void.hpp> // test
 #include<type_traits/is_class.hpp> // test
@@ -79,9 +87,8 @@
 #include <type_traits/is_layout_compatible.hpp> // test
 #include <type_traits/is_pointer_interconvertible_base_of.hpp> // test
 #include <type_traits/is_constant_evaluated.hpp> // test
+#include <type_traits/underlying_type.hpp> // test
+#include <type_traits/derived_from.hpp> // test
+#include <type_traits/convertible_to.hpp> // test
+#include <type_traits/equality_comparable.hpp> // test
 
-
-#include <type_traits/is_move_constructable.hpp>
-#include <type_traits/is_move_assignable.hpp>
-#include <type_traits/swap.hpp> 
-#include <type_traits/move.hpp>
