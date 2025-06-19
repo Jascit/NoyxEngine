@@ -8,8 +8,6 @@ namespace xstl {
     concept _half_ordered_helper = requires(const remove_reference_t<T>&t, const remove_reference_t<U>&u) {
       { t < u } -> boolean_testable;
       { t > u } -> boolean_testable;
-      { t == u } -> boolean_testable;
-      { t != u } -> boolean_testable;
     };
   }
 
