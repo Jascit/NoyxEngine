@@ -6,6 +6,7 @@
 #include <type_traits/remove_all_extents.hpp>
 #include <tt_test_detail.hpp>
 #include <type_traits/decay.hpp>
+#include <type_traits.hpp>
 #include <iostream>
 
 template<typename T, typename Expected>

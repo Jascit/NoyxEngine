@@ -3,8 +3,8 @@
 
 namespace xstl {
   template<typename T>
-  struct is_polymorphic : bool_constant<__is_polymorphic(T)>{};
+  struct is_aggregate : bool_constant<__is_aggregate(T)>{};
   
   template<typename T>
-  constexpr bool is_polymorphic_v = is_polymorphic<T>::value;
+  constexpr bool is_aggregate_v = is_aggregate<T>::value;
 }
