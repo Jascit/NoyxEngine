@@ -91,5 +91,6 @@
 #include <type_traits/derived_from.hpp> // test
 #include <type_traits/convertible_to.hpp> // test
 #include <type_traits/equality_comparable.hpp> // test
+#include <type_traits/totally_ordered.hpp> // test
 #include <type_traits/common_type.hpp> // test
 
