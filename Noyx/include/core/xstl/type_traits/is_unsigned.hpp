@@ -11,8 +11,8 @@ namespace xstl {
   } // details
 
   template<typename T>
-  struct is_signed : bool_constant<details::_is_unsigned_helper<remove_cv_t<T>>::value> {};
+  struct is_unsigned : bool_constant<details::_is_unsigned_helper<remove_cv_t<T>>::value> {};
 
   template<typename T>
-  constexpr bool is_unsigned_v = details::_is_unsigned_helper<remove_cv_t<T>>::value;
+  constexpr bool is_unsigned_v = is_unsigned<T>::value;
 } // xstl

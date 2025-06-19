@@ -1,6 +1,6 @@
 #pragma once 
-#include <integral_constant.hpp>
-#include <conditional.hpp>
+#include <type_traits/integral_constant.hpp>
+#include <type_traits/conditional.hpp>
 namespace xstl {
   template<typename...>
   struct disjunction : false_type {};
