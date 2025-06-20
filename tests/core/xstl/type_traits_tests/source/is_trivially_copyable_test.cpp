@@ -12,21 +12,21 @@ constexpr void tt_is_trivially_copyable_test_value(bool expected) {
   );
 }
 
-struct TriviallyCopyable {
+struct IsTriviallyCopyableUnitTest_TriviallyCopyable {
   int x;
   double y;
 };
 
-struct NonTriviallyCopyableCtor {
-  NonTriviallyCopyableCtor() {}
-  NonTriviallyCopyableCtor(const NonTriviallyCopyableCtor&) {}
+struct IsTriviallyCopyableUnitTest_NonTriviallyCopyableCtor {
+  IsTriviallyCopyableUnitTest_NonTriviallyCopyableCtor() {}
+  IsTriviallyCopyableUnitTest_NonTriviallyCopyableCtor(const IsTriviallyCopyableUnitTest_NonTriviallyCopyableCtor&) {}
 };
 
-struct NonTriviallyCopyableDtor {
-  ~NonTriviallyCopyableDtor() {}
+struct IsTriviallyCopyableUnitTest_NonTriviallyCopyableDtor {
+  ~IsTriviallyCopyableUnitTest_NonTriviallyCopyableDtor() {}
 };
 
-struct WithVirtual {
+struct IsTriviallyCopyableUnitTest_WithVirtual {
   virtual void foo() {}
 };
 
@@ -34,11 +34,11 @@ struct TestTypeInvokerIsTriviallyCopyable {
   constexpr void operator()() const {
     tt_is_trivially_copyable_test_value<int>(true);
     tt_is_trivially_copyable_test_value<double>(true);
-    tt_is_trivially_copyable_test_value<TriviallyCopyable>(true);
+    tt_is_trivially_copyable_test_value<IsTriviallyCopyableUnitTest_TriviallyCopyable>(true);
 
-    tt_is_trivially_copyable_test_value<NonTriviallyCopyableCtor>(false);
-    tt_is_trivially_copyable_test_value<NonTriviallyCopyableDtor>(false);
-    tt_is_trivially_copyable_test_value<WithVirtual>(false);
+    tt_is_trivially_copyable_test_value<IsTriviallyCopyableUnitTest_NonTriviallyCopyableCtor>(false);
+    tt_is_trivially_copyable_test_value<IsTriviallyCopyableUnitTest_NonTriviallyCopyableDtor>(false);
+    tt_is_trivially_copyable_test_value<IsTriviallyCopyableUnitTest_WithVirtual>(false);
 
     tt_is_trivially_copyable_test_value<int[5]>(true);
   }
