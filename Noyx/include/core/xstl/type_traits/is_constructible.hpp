@@ -5,5 +5,5 @@ namespace xstl {
   template<typename T, typename... Args>
   struct is_constructible : bool_constant<__is_constructible(T, Args...)> {};
   template<typename T, typename... Args>
-  using is_constructible_v = is_constructible<T, Args...>::value;
+  constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
 } // xstl

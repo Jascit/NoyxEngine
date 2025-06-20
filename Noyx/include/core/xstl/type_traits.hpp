@@ -71,10 +71,10 @@
 #include<type_traits/is_member_object_pointer.hpp> 
 #include<type_traits/is_member_pointer.hpp> 
 #include <type_traits/is_compound.hpp> 
+#include <type_traits/is_object.hpp> 
+#include <type_traits/is_const.hpp> 
+#include <type_traits/is_constructible.hpp> 
 
-#include <type_traits/is_object.hpp> // test
-#include <type_traits/is_const.hpp> // test
-#include <type_traits/is_constructible.hpp> // test
 #include <type_traits/is_destructible.hpp> // test
 #include <type_traits/is_assignable.hpp> // test
 #include <type_traits/totally_ordered.hpp> // test
