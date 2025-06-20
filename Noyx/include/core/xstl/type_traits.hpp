@@ -87,6 +87,7 @@
 #include <type_traits/is_trivially_move_constructible.hpp> // test
 #include <type_traits/is_aggregate.hpp> // test
 #include <type_traits/is_pointer_interconvertible_base_of.hpp> // test
+#include <type_traits/common_type.hpp> // test
 
 
 

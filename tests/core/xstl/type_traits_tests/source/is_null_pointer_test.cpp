@@ -4,8 +4,8 @@
 
 template <typename T, bool Expected>
 constexpr void tt_is_null_pointer_test() {
-  static_assert(xstl::is_null_pointer<T>::value == Expected, "is_null_pointer returned wrong value");
-  static_assert(xstl::is_null_pointer_v<T> == Expected, "is_null_pointer_v returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_null_pointer<T>::value == Expected, "is_null_pointer returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_null_pointer_v<T> == Expected, "is_null_pointer_v returned wrong value");
   NOYX_ASSERT_TRUE_MESSAGE(xstl::is_null_pointer<T>::value == Expected, "is_null_pointer returned wrong value");
 }
 
