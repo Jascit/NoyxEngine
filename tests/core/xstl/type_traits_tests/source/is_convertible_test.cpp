@@ -13,13 +13,13 @@ constexpr void tt_is_convertible_test_value(bool expected) {
   );
 }
 
-struct A {};
-struct B {
-  B(const A&) {}  
+struct IsConvertibleUnitTest_A {};
+struct IsConvertibleUnitTest_B {
+  IsConvertibleUnitTest_B(const IsConvertibleUnitTest_A&) {}  
 };
 
-struct C {
-  explicit C(const A&) {} 
+struct IsConvertibleUnitTest_C {
+  explicit IsConvertibleUnitTest_C(const IsConvertibleUnitTest_A&) {} 
 };
 
 struct TestTypeInvokerIsConvertible {
@@ -29,8 +29,8 @@ struct TestTypeInvokerIsConvertible {
     tt_is_convertible_test_value<int, int>(true);
     tt_is_convertible_test_value<int, void*>(false);
 
-    tt_is_convertible_test_value<A, B>(true);
-    tt_is_convertible_test_value<A, C>(false); 
+    tt_is_convertible_test_value<IsConvertibleUnitTest_A, IsConvertibleUnitTest_B>(true);
+    tt_is_convertible_test_value<IsConvertibleUnitTest_A, IsConvertibleUnitTest_C>(false); 
 
     tt_is_convertible_test_value<int*, void*>(true);
     tt_is_convertible_test_value<void*, int*>(false);
