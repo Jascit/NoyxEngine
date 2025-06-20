@@ -12,20 +12,20 @@ constexpr void tt_is_trivial_test_value(bool expected) {
   );
 }
 
-struct TrivialStruct {
+struct IsTrivialUnitTest_TrivialStruct {
   int x;
   double y;
 };
 
-struct NonTrivialCtor {
+struct IsTrivialUnitTest_NonTrivialCtor {
   NonTrivialCtor() {}
 };
 
-struct NonTrivialDtor {
+struct IsTrivialUnitTest_NonTrivialDtor {
   ~NonTrivialDtor() {}
 };
 
-struct WithVirtual {
+struct IsTrivialUnitTest_WithVirtual {
   virtual void foo() {}
 };
 
@@ -33,11 +33,11 @@ struct TestTypeInvokerIsTrivial {
   constexpr void operator()() const {
     tt_is_trivial_test_value<int>(true);
     tt_is_trivial_test_value<double>(true);
-    tt_is_trivial_test_value<TrivialStruct>(true);
+    tt_is_trivial_test_value<IsTrivialUnitTest_TrivialStruct>(true);
 
-    tt_is_trivial_test_value<NonTrivialCtor>(false);
-    tt_is_trivial_test_value<NonTrivialDtor>(false);
-    tt_is_trivial_test_value<WithVirtual>(false);
+    tt_is_trivial_test_value<IsTrivialUnitTest_NonTrivialCtor>(false);
+    tt_is_trivial_test_value<IsTrivialUnitTest_NonTrivialDtor>(false);
+    tt_is_trivial_test_value<IsTrivialUnitTest_WithVirtual>(false);
 
     tt_is_trivial_test_value<int[5]>(true);
   }
