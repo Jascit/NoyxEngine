@@ -93,4 +93,5 @@
 #include <type_traits/equality_comparable.hpp> // test
 #include <type_traits/totally_ordered.hpp> // test
 #include <type_traits/is_abstract.hpp> // test
+#include <type_traits/common_type.hpp> // test
 
