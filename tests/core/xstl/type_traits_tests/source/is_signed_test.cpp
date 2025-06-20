@@ -4,8 +4,8 @@
 
 template <typename T, bool Expected>
 constexpr void tt_is_signed_test() {
-  static_assert(xstl::is_signed<T>::value == Expected, "is_signed returned wrong value");
-  static_assert(xstl::is_signed_v<T> == Expected, "is_signed_v returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_signed<T>::value == Expected, "is_signed returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_signed_v<T> == Expected, "is_signed_v returned wrong value");
   NOYX_ASSERT_TRUE_MESSAGE(xstl::is_signed<T>::value == Expected, "is_signed returned wrong value");
 }
 
