@@ -12,7 +12,6 @@ constexpr void tt_add_volatile_test_type() {
   );
 }
 
-// Викликає тести для кожного типу
 template <typename T>
 struct TestTypeInvokerAddVolatile {
   constexpr void operator()() const {
@@ -20,7 +19,6 @@ struct TestTypeInvokerAddVolatile {
   }
 };
 
-// Основний тестовий блок
 NOYX_TEST(AddVolatile, UnitTest) {
   xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestTypeInvokerAddVolatile>();
   xstl_test_detail::test_all_types_with_suffix<0, TestTypeInvokerAddVolatile>(xstl_test_detail::all_test_types{});
