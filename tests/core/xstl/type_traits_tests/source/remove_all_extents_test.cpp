@@ -7,8 +7,6 @@
 
 template <typename T, typename Expected>
 constexpr void tt_remove_all_extents_test_type() {
-  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_same_v<xstl::remove_all_extents_t<T>, Expected>,
-    "remove_all_extents_t<T> returned wrong type");
   constexpr bool result = xstl::is_same_v<xstl::remove_all_extents_t<T>, Expected>;
   NOYX_ASSERT_TRUE_MESSAGE(
     (result),

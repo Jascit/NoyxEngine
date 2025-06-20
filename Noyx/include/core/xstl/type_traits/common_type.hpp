@@ -12,12 +12,12 @@ namespace xstl {
       typename _common_type_finder<T, U>; 
     };
 
-    template<typename, typename>
+    template<typename T, typename U, typename = void>
     struct _decay_common_type_finder {};
 
     template<typename T, typename U>
     requires _ConceptCommonTypeExists<T, U>
-    struct _decay_common_type_finder {
+    struct _decay_common_type_finder<T, U, void> {
       using type = decay_t<_common_type_finder<T, U>>;
     };
 
@@ -34,7 +34,7 @@ namespace xstl {
     template<typename T, typename U>
     struct _common_type_helper<T, U, T, U> : _common_type_impl<T, U> {};
 
-    template<typename...>
+    template<typename... Args>
     struct _common_type_args_helper {};
 
     template<typename T, typename U>
@@ -43,7 +43,7 @@ namespace xstl {
 
     template<typename T, typename U, typename... Args>
     requires requires{ typename _common_type_helper<T, U>::type; }
-    struct _common_type_args_helper<T, U, Args...> : _common_type_args_helper<_common_type_helper<T, U>::type, Args...> {};
+    struct _common_type_args_helper<T, U, Args...> : _common_type_args_helper<typename _common_type_helper<T, U>::type, Args...> {};
   }
 
   template<typename... Args>
@@ -64,4 +64,5 @@ namespace xstl {
   template<typename T, typename U, typename... Args>
   struct common_type<T, U, Args...> : details::_common_type_args_helper<T, U, Args...> {};
 } // xstl
+
 
