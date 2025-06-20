@@ -1,4 +1,5 @@
 #pragma once
+#include <core/xstldef.hpp>
 namespace xstl {
   template <typename T>
   struct remove_volatile {
@@ -15,7 +16,7 @@ namespace xstl {
     using type = T[]; 
   };
   
-  template<typename T, std::size_t N>
+  template<typename T, xstl::size_t N >
   struct remove_volatile<volatile T[N]> {
     using type = T[N];
   };

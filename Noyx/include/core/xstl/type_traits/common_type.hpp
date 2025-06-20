@@ -5,7 +5,7 @@
 namespace xstl {
   namespace details {
     template<typename T, typename U>
-    using _common_type_finder = decltype(false ? std::declval<T>() : std::declval<U>());
+    using _common_type_finder = decltype(false ? xstl::declval<T>() : xstl::declval<U>());
 
     template<typename T, typename U>
     concept _ConceptCommonTypeExists = requires {
