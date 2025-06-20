@@ -34,9 +34,10 @@ namespace xstl {
   template<typename T>
   struct make_signed {
     static_assert(!xstl::is_same_v<xstl::remove_cv_t<T>, bool>, "make_signed does not support bool");
-    static_assert(!xstl::is_integral_v<T>, "make_signed supports only integrals");
+    static_assert(xstl::is_integral_v<T>, "make_signed supports only integrals");
     using type = typename details::_make_signed_helper<sizeof(T)>::type;
   };
+
   
   template<typename T>
   using make_signed_t = make_signed<T>::type;

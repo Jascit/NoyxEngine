@@ -7,25 +7,26 @@
 //only LLP64/LP64
 namespace xstl {
   namespace details {
-    template<xstl::size_t Ts>
-    struct _make_unsigned_helper; // never called
+    template <xstl::size_t Ts>
+    struct _make_unsigned_helper; // undefined
 
-    template<>
+    template <>
     struct _make_unsigned_helper<1> {
       using type = unsigned char;
     };
 
-    template<>
+    template <>
     struct _make_unsigned_helper<2> {
       using type = unsigned short;
     };
 
-    template<>
+    // Для 4 байт можна додати перевірку типів
+    template <>
     struct _make_unsigned_helper<4> {
-      using type = unsigned int;
+      using type = unsigned int;  // або unsigned long, якщо це твоя платформа
     };
 
-    template<>
+    template <>
     struct _make_unsigned_helper<8> {
       using type = unsigned long long;
     };
@@ -33,10 +34,11 @@ namespace xstl {
 
   template<typename T>
   struct make_unsigned {
-    static_assert(!xstl::is_same_v<xstl::remove_cv_t<T>, bool>, "make_signed does not support bool");
-    static_assert(!xstl::is_integral_v<T>, "make_signed supports only integrals");
+    static_assert(!xstl::is_same_v<xstl::remove_cv_t<T>, bool>, "make_unsigned does not support bool");
+    static_assert(xstl::is_integral_v<T>, "make_unsigned supports only integrals");
     using type = typename details::_make_unsigned_helper<sizeof(T)>::type;
   };
+
 
   template<typename T>
   using make_unsigned_t = make_unsigned<T>::type;
