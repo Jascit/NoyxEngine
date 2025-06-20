@@ -74,6 +74,7 @@
 #include <type_traits/is_object.hpp> 
 #include <type_traits/is_const.hpp> 
 #include <type_traits/is_constructible.hpp> 
+#include <type_traits/is_complete.hpp>
 
 #include <type_traits/is_destructible.hpp> // test
 #include <type_traits/is_assignable.hpp> // test
