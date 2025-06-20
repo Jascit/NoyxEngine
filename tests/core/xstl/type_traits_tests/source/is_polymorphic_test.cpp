@@ -23,7 +23,7 @@ struct IsPolymorphicUnitTest_Polymorphic {
 
 struct IsPolymorphicUnitTest_DerivedPolymorphic : IsPolymorphicUnitTest_Polymorphic {};
 
-struct PolymorphicWithVirtualDtor {
+struct IsPolymorphicUnitTest_PolymorphicWithVirtualDtor {
   virtual ~IsPolymorphicUnitTest_PolymorphicWithVirtualDtor() {}
 };
 
