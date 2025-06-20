@@ -51,46 +51,45 @@
 #include <type_traits/add_pointer.hpp>
 #include <type_traits/make_signed.hpp>
 #include <type_traits/make_unsigned.hpp>
+#include <type_traits/is_fundamental.hpp>
+#include <type_traits/is_scalar.hpp>
+#include <type_traits/is_abstract.hpp>
+#include <type_traits/convertible_to.hpp>
+#include <type_traits/is_convertible.hpp>
+#include <type_traits/is_base_of.hpp>
+#include <type_traits/is_trivial.hpp>
+#include <type_traits/is_literal_type.hpp>
+#include <type_traits/is_trivially_copyable.hpp>
+#include <type_traits/has_virtual_destructor.hpp>
+#include <type_traits/is_empty.hpp>
+#include <type_traits/is_polymorphic.hpp>
+#include <type_traits/is_final.hpp>
+#include <type_traits/is_layout_compatible.hpp>
+
 
 
 #include<type_traits/is_arithmetic.hpp> // test
 #include<type_traits/is_member_function_pointer.hpp> // test
 #include<type_traits/is_member_object_pointer.hpp> // test
 #include<type_traits/is_member_pointer.hpp> // test
-
-
-
-
-
-#include <type_traits/is_fundamental.hpp> // test
 #include <type_traits/is_compound.hpp> // test
 #include <type_traits/is_object.hpp> // test
-#include <type_traits/is_scalar.hpp> // test
 #include <type_traits/is_const.hpp> // test
-
 #include <type_traits/is_constructible.hpp> // test
 #include <type_traits/is_destructible.hpp> // test
 #include <type_traits/is_assignable.hpp> // test
-#include <type_traits/is_convertible.hpp> // test
-#include <type_traits/is_assignable.hpp> // test
-#include <type_traits/is_base_of.hpp> // test
-#include <type_traits/is_trivial.hpp> // test
-#include <type_traits/is_standard_layout.hpp> // test
-#include <type_traits/is_literal_type.hpp> // test
-#include <type_traits/is_trivially_copyable.hpp> // test
-#include <type_traits/is_trivially_move_constructible.hpp> // test
-#include <type_traits/has_virtual_destructor.hpp> // test
-#include <type_traits/is_empty.hpp> // test
-#include <type_traits/is_aggregate.hpp> // test
-#include <type_traits/is_polymorphic.hpp> // test
-#include <type_traits/is_final.hpp> // test
-#include <type_traits/is_layout_compatible.hpp> // test
-#include <type_traits/is_pointer_interconvertible_base_of.hpp> // test
-#include <type_traits/is_constant_evaluated.hpp> // test
-#include <type_traits/underlying_type.hpp> // test
-#include <type_traits/derived_from.hpp> // test
-#include <type_traits/convertible_to.hpp> // test
-#include <type_traits/equality_comparable.hpp> // test
 #include <type_traits/totally_ordered.hpp> // test
-#include <type_traits/is_abstract.hpp> // test
+#include <type_traits/equality_comparable.hpp> // test
+#include <type_traits/derived_from.hpp> // test
+#include <type_traits/underlying_type.hpp> // test
+#include <type_traits/is_constant_evaluated.hpp> // test
+#include <type_traits/is_standard_layout.hpp> // test
+#include <type_traits/is_trivially_move_constructible.hpp> // test
+#include <type_traits/is_aggregate.hpp> // test
+#include <type_traits/is_pointer_interconvertible_base_of.hpp> // test
+
+
+
+
+
 

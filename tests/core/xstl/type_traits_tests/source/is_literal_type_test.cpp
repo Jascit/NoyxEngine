@@ -1,0 +1,44 @@
+#include <type_traits/is_literal_type.hpp>
+#include <tt_test_detail.hpp>
+#include <type_traits.hpp>
+
+template<typename T>
+constexpr void tt_is_literal_type_test_value(bool expected) {
+  constexpr bool actual = xstl::is_literal_type<T>::value;
+
+  NOYX_ASSERT_TRUE_MESSAGE(
+    actual == expected,
+    "is_literal_type<T> returned incorrect value"
+  );
+}
+
+struct LiteralType {
+  int x;
+  constexpr LiteralType(int v) : x(v) {}
+};
+
+struct NonLiteralType {
+  int x;
+  NonLiteralType() {}
+};
+
+struct NonLiteralTypeWithDtor {
+  ~NonLiteralTypeWithDtor() {}
+};
+
+struct TestTypeInvokerIsLiteralType {
+  constexpr void operator()() const {
+    tt_is_literal_type_test_value<int>(true);
+    tt_is_literal_type_test_value<double>(true);
+
+    tt_is_literal_type_test_value<LiteralType>(true);
+
+    tt_is_literal_type_test_value<NonLiteralType>(false);
+
+    tt_is_literal_type_test_value<NonLiteralTypeWithDtor>(false);
+  }
+};
+
+NOYX_TEST(IsLiteralType, UnitTest) {
+  TestTypeInvokerIsLiteralType{}();
+}
