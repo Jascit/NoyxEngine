@@ -15,7 +15,9 @@ constexpr void tt_is_scalar_test_value() {
 #else
   NOYX_ASSERT_TRUE_MESSAGE(
     NOYX_EVAL((actual == Expected)),
-    "is_scalar<T> returned incorrect value: got different from expected"
+    "is_scalar<T> returned incorrect value: actual = " << actual
+    << ", expected = " << Expected
+    << ", T = " << typeid(T).name()
   );
 #endif
 }

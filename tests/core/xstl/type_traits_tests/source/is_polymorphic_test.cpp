@@ -6,10 +6,19 @@ template<typename T>
 constexpr void tt_is_polymorphic_test_value(bool expected) {
   constexpr bool actual = xstl::is_polymorphic<T>::value;
 
+#if TEST_WITH_STATIC_ASSERT
   NOYX_ASSERT_TRUE_MESSAGE(
     actual == expected,
     "is_polymorphic<T> returned incorrect value"
   );
+#else
+  NOYX_ASSERT_TRUE_MESSAGE(
+    actual == expected,
+    "is_polymorphic<T> returned incorrect value: actual = " << actual
+    << ", expected = " << expected
+    << ", T = " << typeid(T).name()
+  );
+#endif
 }
 
 

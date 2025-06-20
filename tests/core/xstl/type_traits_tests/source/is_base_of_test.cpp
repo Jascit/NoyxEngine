@@ -6,10 +6,20 @@ template<typename Base, typename Derived>
 constexpr void tt_is_base_of_test_value(bool expected) {
   constexpr bool actual = xstl::is_base_of<Base, Derived>::value;
 
+#if TEST_WITH_STATIC_ASSERT
   NOYX_ASSERT_TRUE_MESSAGE(
     actual == expected,
     "is_base_of<Base, Derived> returned incorrect value"
   );
+#else
+  NOYX_ASSERT_TRUE_MESSAGE(
+    actual == expected,
+    "is_base_of<Base, Derived> returned incorrect value: actual = " << actual
+    << ", expected = " << expected
+    << ", Base = " << typeid(Base).name()
+    << ", Derived = " << typeid(Derived).name()
+  );
+#endif
 }
 
 struct IsBaseOfUnitTest_Base {};

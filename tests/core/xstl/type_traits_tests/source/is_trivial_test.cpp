@@ -6,10 +6,19 @@ template<typename T>
 constexpr void tt_is_trivial_test_value(bool expected) {
   constexpr bool actual = xstl::is_trivial<T>::value;
 
+#if TEST_WITH_STATIC_ASSERT
   NOYX_ASSERT_TRUE_MESSAGE(
     actual == expected,
     "is_trivial<T> returned incorrect value"
   );
+#else
+  NOYX_ASSERT_TRUE_MESSAGE(
+    actual == expected,
+    "is_trivial<T> returned incorrect value: actual = " << actual
+    << ", expected = " << expected
+    << ", T = " << typeid(T).name()
+  );
+#endif
 }
 
 struct IsTrivialUnitTest_TrivialStruct {

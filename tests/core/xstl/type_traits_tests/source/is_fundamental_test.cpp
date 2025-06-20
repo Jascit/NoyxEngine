@@ -5,10 +5,20 @@
 template<typename T, bool Expected>
 constexpr void tt_is_fundamental_test_type() {
   constexpr bool actual = xstl::is_fundamental_v<T>;
+
+#if TEST_WITH_STATIC_ASSERT
   NOYX_ASSERT_TRUE_MESSAGE(
     actual == Expected,
-    "is_fundamental<T> returned incorrect result: got " << actual << ", expected " << Expected
+    "is_fundamental<T> returned incorrect result"
   );
+#else
+  NOYX_ASSERT_TRUE_MESSAGE(
+    actual == Expected,
+    "is_fundamental<T> returned incorrect result: actual = " << actual
+    << ", expected = " << Expected
+    << ", T = " << typeid(T).name()
+  );
+#endif
 }
 
 template<typename T>

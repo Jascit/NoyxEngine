@@ -15,7 +15,9 @@ constexpr void tt_is_abstract_test_value(bool expected) {
 #else
   NOYX_ASSERT_TRUE_MESSAGE(
     NOYX_EVAL((actual == expected)),
-    "is_abstract<T> returned incorrect value: got different from expected"
+    "is_abstract<T> returned incorrect value: actual = " << actual
+    << ", expected = " << expected
+    << ", T = " << typeid(T).name()
   );
 #endif
 }

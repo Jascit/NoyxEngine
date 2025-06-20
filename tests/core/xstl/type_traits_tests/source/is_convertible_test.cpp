@@ -7,10 +7,20 @@ template<typename From, typename To>
 constexpr void tt_is_convertible_test_value(bool expected) {
   constexpr bool actual = xstl::is_convertible<From, To>::value;
 
+#if TEST_WITH_STATIC_ASSERT
   NOYX_ASSERT_TRUE_MESSAGE(
     actual == expected,
     "is_convertible<From, To> returned incorrect value"
   );
+#else
+  NOYX_ASSERT_TRUE_MESSAGE(
+    actual == expected,
+    "is_convertible<From, To> returned incorrect value: actual = " << actual
+    << ", expected = " << expected
+    << ", From = " << typeid(From).name()
+    << ", To = " << typeid(To).name()
+  );
+#endif
 }
 
 struct IsConvertibleUnitTest_A {};

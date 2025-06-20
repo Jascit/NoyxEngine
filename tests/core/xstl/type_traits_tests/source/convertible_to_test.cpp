@@ -15,7 +15,10 @@ constexpr void tt_convertible_to_test_value(bool expected) {
 #else
   NOYX_ASSERT_TRUE_MESSAGE(
     NOYX_EVAL((actual == expected)),
-    "convertible_to<From, To> returned incorrect value: got different from expected"
+    "convertible_to<From, To> returned incorrect value: actual = " << actual
+    << ", expected = " << expected
+    << ", From = " << typeid(From).name()
+    << ", To = " << typeid(To).name()
   );
 #endif
 }
