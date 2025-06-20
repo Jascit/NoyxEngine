@@ -4,8 +4,8 @@
 
 template <typename T, bool Expected>
 constexpr void tt_is_void_test() {
-  static_assert(xstl::is_void<T>::value == Expected, "is_void returned wrong value");
-  static_assert(xstl::is_void_v<T> == Expected, "is_void_v returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_void<T>::value == Expected, "is_void returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_void_v<T> == Expected, "is_void_v returned wrong value");
   NOYX_ASSERT_TRUE_MESSAGE(xstl::is_void<T>::value == Expected, "is_void returned wrong value");
 }
 
