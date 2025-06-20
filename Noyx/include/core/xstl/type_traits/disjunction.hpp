@@ -9,5 +9,5 @@ namespace xstl {
   struct disjunction<T, Args...> : xstl::conditional_t<static_cast<bool>(T::value), true_type, disjunction<Args...>> {};
   
   template<typename... Args>
-  using disjunction_v = disjunction<Args...>::value;
+  constexpr bool disjunction_v = disjunction<Args...>::value;
 } 

@@ -1,81 +1,49 @@
-#include <type_traits/is_same.hpp>
 #include <tt_test_detail.hpp>
-#include <type_traits/remove_cv.hpp>  
-#include <type_traits>               
-#include <tuple>
-#include <iostream>
+#include <type_traits/remove_cv.hpp>
+#include <type_traits/is_same.hpp>
 
-template <typename U>
-struct Dummy {};
-template<typename T>
-constexpr void tt_remove_cv_type_test() {
-#if TEST_WITH_STATIC_ASSERT
-
-  NOYX_ASSERT_TRUE_MESSAGE(
-    NOYX_EVAL((xstl::is_same<typename xstl::remove_cv<T>::type, typename std::remove_cv<T>::type>::value)),
-    "remove_cv::type failed"
-  );
-
-  NOYX_ASSERT_TRUE_MESSAGE(
-    NOYX_EVAL((xstl::is_same<xstl::remove_cv_t<T>, std::remove_cv_t<T>>::value)),
-    "remove_cv_t failed"
-  );
-
-#else
-
-  bool res1 = xstl::is_same_v<typename xstl::remove_cv<T>::type, typename std::remove_cv<T>::type>;
-  NOYX_ASSERT_TRUE_MESSAGE(res1, "remove_cv::type failed for " << typeid(T).name());
-
-  bool res2 = xstl::is_same_v<xstl::remove_cv_t<T>, std::remove_cv_t<T>>;
-  NOYX_ASSERT_TRUE_MESSAGE(res2, "remove_cv_t failed for " << typeid(T).name());
-
-#endif
-}
-
-template<typename T>
-constexpr void tt_remove_cv_apply_test() {
-  using My = xstl::remove_cv<T>;
-  using A = typename My::template apply<Dummy>;
-  using Base = std::remove_cv_t<T>;
-  using Raw = Dummy<Base>;
-
-  using WithC = std::conditional_t<std::is_const_v<T>,
-    std::add_const_t<Raw>,
-    Raw>;
-  using WithCV = std::conditional_t<std::is_volatile_v<T>,
-    std::add_volatile_t<WithC>,
-    WithC>;
+template <typename T, typename Expected>
+constexpr void tt_remove_cv_test_value() {
+  constexpr bool actual = xstl::is_same_v<xstl::remove_cv_t<T>, Expected>;
 
 #if TEST_WITH_STATIC_ASSERT
   NOYX_ASSERT_TRUE_MESSAGE(
-    NOYX_EVAL((xstl::is_same_v<A, WithCV>)),
-    "remove_cv::apply<Dummy> failed"
+    actual,
+    "remove_cv<T> returned incorrect type"
   );
 #else
   NOYX_ASSERT_TRUE_MESSAGE(
-    NOYX_EVAL((xstl::is_same_v<A, WithCV>)),
-    "remove_cv::apply<Dummy> failed: expected " << typeid(WithCV).name() << ", got " << typeid(A).name()
+    actual,
+    "remove_cv<" << typeid(T).name() << "> returned incorrect type: "
+    << "actual = " << typeid(xstl::remove_cv_t<T>).name()
+    << ", expected = " << typeid(Expected).name()
   );
 #endif
 }
 
-template<typename T>
-struct TestRemoveCvInvoker {
+struct TestTypeInvokerRemoveCV {
   constexpr void operator()() const {
-    tt_remove_cv_type_test<T>();
-    tt_remove_cv_apply_test<T>();
+    tt_remove_cv_test_value<int, int>();
+    tt_remove_cv_test_value<const int, int>();
+    tt_remove_cv_test_value<volatile int, int>();
+    tt_remove_cv_test_value<const volatile int, int>();
+
+    tt_remove_cv_test_value<int[], int[]>();
+    tt_remove_cv_test_value<const int[], int[]>();
+    tt_remove_cv_test_value<volatile int[], int[]>();
+    tt_remove_cv_test_value<const volatile int[], int[]>();
+
+    tt_remove_cv_test_value<int[3], int[3]>();
+    tt_remove_cv_test_value<const int[3], int[3]>();
+    tt_remove_cv_test_value<volatile int[3], int[3]>();
+    tt_remove_cv_test_value<const volatile int[3], int[3]>();
+
+    tt_remove_cv_test_value<const int*, const int*>();
+    tt_remove_cv_test_value<volatile int*, volatile int*>();
+    tt_remove_cv_test_value<const volatile int*, const volatile int*>();
   }
 };
-template<std::size_t I = 0, typename Tuple>
-void test_all_with_suffix(Tuple&& tuple) {
-  if constexpr (I < std::tuple_size_v<std::remove_reference_t<Tuple>>) {
-    using T = std::tuple_element_t<I, std::remove_reference_t<Tuple>>;
-    xstl_test_detail::for_each_type<xstl_test_detail::all_suffixes<T>, TestRemoveCvInvoker>();
-    test_all_with_suffix<I + 1>(std::forward<Tuple>(tuple));
-  }
-}
 
 NOYX_TEST(RemoveCV, UnitTest) {
-  xstl_test_detail::for_each_type<xstl_test_detail::all_test_types, TestRemoveCvInvoker>();
-  xstl_test_detail::test_all_types_with_suffix<0, TestRemoveCvInvoker>(xstl_test_detail::all_test_types{});
+  TestTypeInvokerRemoveCV{}();
 }

@@ -39,10 +39,16 @@ namespace xstl {
     template<details::_ConceptIsMoveConstructible T>
     struct is_move_constructible<T> : true_type {};
 
+    template <typename T>
+    constexpr bool is_move_constructible_v = is_move_constructible<T>::value;
+
     template<typename T>
     struct is_nothrow_move_constructible : false_type {};
 
     template<details::_ConceptIsNothrowMoveConstructible T>
     struct is_nothrow_move_constructible<T> : true_type {};
+
+    template <typename T>
+    constexpr bool is_nothrow_move_constructible_v = is_nothrow_move_constructible<T>::value;
 #endif // _MSVC_VER 
 }
