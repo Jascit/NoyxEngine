@@ -12,22 +12,22 @@ constexpr void tt_is_layout_compatible_test_value(bool expected) {
   );
 }
 
-struct A {
+struct IsLayoutCompatibleUnitTest_A {
   int x;
   double y;
 };
 
-struct B {
+struct IsLayoutCompatibleUnitTest_B {
   int x;
   double y;
 };
 
-struct C {
+struct IsLayoutCompatibleUnitTest_C {
   double y;
   int x;
 };
 
-struct D {
+struct IsLayoutCompatibleUnitTest_D {
   int x;
   double y;
   char z;
@@ -36,12 +36,12 @@ struct D {
 struct TestTypeInvokerIsLayoutCompatible {
   constexpr void operator()() const {
     tt_is_layout_compatible_test_value<int, int>(true);
-    tt_is_layout_compatible_test_value<A, A>(true);
+    tt_is_layout_compatible_test_value<IsLayoutCompatibleUnitTest_A, IsLayoutCompatibleUnitTest_A>(true);
 
-    tt_is_layout_compatible_test_value<A, B>(true);
-    tt_is_layout_compatible_test_value<A, C>(false);
+    tt_is_layout_compatible_test_value<IsLayoutCompatibleUnitTest_A, IsLayoutCompatibleUnitTest_B>(true);
+    tt_is_layout_compatible_test_value<IsLayoutCompatibleUnitTest_A, IsLayoutCompatibleUnitTest_C>(false);
 
-    tt_is_layout_compatible_test_value<A, D>(false);
+    tt_is_layout_compatible_test_value<IsLayoutCompatibleUnitTest_A, IsLayoutCompatibleUnitTest_D>(false);
 
     tt_is_layout_compatible_test_value<int, double>(false);
   }
