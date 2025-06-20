@@ -12,30 +12,30 @@ constexpr void tt_is_empty_test_value(bool expected) {
   );
 }
 
-struct Empty1 {};
+struct IsEmptyUnitTest_Empty1 {};
 
-struct Empty2 : Empty1 {};
+struct IsEmptyUnitTest_Empty2 : IsEmptyUnitTest_Empty1 {};
 
-struct NonEmpty1 {
+struct IsEmptyUnitTest_NonEmpty1 {
   int x;
 };
 
-struct NonEmpty2 : Empty1 {
+struct IsEmptyUnitTest_NonEmpty2 : IsEmptyUnitTest_Empty1 {
   int y;
 };
 
-struct WithVirtual {
+struct IsEmptyUnitTest_WithVirtual {
   virtual void foo() {}
 };
 
 struct TestTypeInvokerIsEmpty {
   constexpr void operator()() const {
     tt_is_empty_test_value<int>(false);
-    tt_is_empty_test_value<Empty1>(true);
-    tt_is_empty_test_value<Empty2>(true);
-    tt_is_empty_test_value<NonEmpty1>(false);
-    tt_is_empty_test_value<NonEmpty2>(false);
-    tt_is_empty_test_value<WithVirtual>(false);
+    tt_is_empty_test_value<IsEmptyUnitTest_Empty1>(true);
+    tt_is_empty_test_value<IsEmptyUnitTest_Empty2>(true);
+    tt_is_empty_test_value<IsEmptyUnitTest_NonEmpty1>(false);
+    tt_is_empty_test_value<IsEmptyUnitTest_NonEmpty2>(false);
+    tt_is_empty_test_value<IsEmptyUnitTest_WithVirtual>(false);
   }
 };
 
