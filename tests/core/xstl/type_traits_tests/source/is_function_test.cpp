@@ -38,8 +38,10 @@ struct TestTypeInvokerIsFunction {
     tt_is_function_test_type<void(), true>();
     tt_is_function_test_type<void(Tre), true>();
     tt_is_function_test_type<int(Tre, double), true>();
-    tt_is_function_test_type<void(...) noexcept, true>();
+    tt_is_function_test_type<void(...) const noexcept, true>();
+    tt_is_function_test_type<const void(...) const noexcept, true>();
     tt_is_function_test_type<int(Tre, ...) noexcept, true>();
+    tt_is_function_test_type<const int(Tre, ...) const volatile noexcept, true>();
 
     tt_is_function_test_type<void(*)(), false>();
     tt_is_function_test_type<int(*)(Tre), false>();

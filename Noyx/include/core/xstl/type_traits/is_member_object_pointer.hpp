@@ -21,6 +21,6 @@ namespace xstl {
   struct is_member_object_pointer : details::_is_member_object_pointer_helper<remove_cv_t<T>> {};
 
   template<typename T>
-  using is_member_object_pointer_v = is_member_object_pointer<T>::value;
+  constexpr bool is_member_object_pointer_v = is_member_object_pointer<T>::value;
 #endif
 } // xstl

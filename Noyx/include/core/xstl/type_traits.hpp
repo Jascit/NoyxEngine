@@ -65,14 +65,13 @@
 #include <type_traits/is_polymorphic.hpp>
 #include <type_traits/is_final.hpp>
 #include <type_traits/is_layout_compatible.hpp>
+#include <type_traits/common_type.hpp>
+#include<type_traits/is_arithmetic.hpp> 
+#include<type_traits/is_member_function_pointer.hpp> 
+#include<type_traits/is_member_object_pointer.hpp> 
+#include<type_traits/is_member_pointer.hpp> 
+#include <type_traits/is_compound.hpp> 
 
-
-
-#include<type_traits/is_arithmetic.hpp> // test
-#include<type_traits/is_member_function_pointer.hpp> // test
-#include<type_traits/is_member_object_pointer.hpp> // test
-#include<type_traits/is_member_pointer.hpp> // test
-#include <type_traits/is_compound.hpp> // test
 #include <type_traits/is_object.hpp> // test
 #include <type_traits/is_const.hpp> // test
 #include <type_traits/is_constructible.hpp> // test
@@ -87,7 +86,6 @@
 #include <type_traits/is_trivially_move_constructible.hpp> // test
 #include <type_traits/is_aggregate.hpp> // test
 #include <type_traits/is_pointer_interconvertible_base_of.hpp> // test
-#include <type_traits/common_type.hpp> // test
 
 
 
