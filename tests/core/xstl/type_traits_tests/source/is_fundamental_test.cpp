@@ -16,7 +16,6 @@ constexpr void tt_is_fundamental_test_type() {
     actual == Expected,
     "is_fundamental<T> returned incorrect result: actual = " << actual
     << ", expected = " << Expected
-    << ", T = " << typeid(T).name()
   );
 #endif
 }
