@@ -4,8 +4,8 @@
 
 template <typename T, bool Expected>
 constexpr void tt_is_integral_test() {
-  static_assert(xstl::is_integral<T>::value == Expected, "is_integral returned wrong value");
-  static_assert(xstl::is_integral_v<T> == Expected, "is_integral_v returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_integral<T>::value == Expected, "is_integral returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_integral_v<T> == Expected, "is_integral_v returned wrong value");
   NOYX_ASSERT_TRUE_MESSAGE(xstl::is_integral<T>::value == Expected, "is_integral returned wrong value");
 }
 
