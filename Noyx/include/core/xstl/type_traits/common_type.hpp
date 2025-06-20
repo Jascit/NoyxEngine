@@ -1,6 +1,6 @@
 #pragma once 
-#include <type_traits/declval.hpp>
-#include <type_traits/decay.hpp>
+#include "declval.hpp"
+#include "decay.hpp"
 
 namespace xstl {
   namespace details {

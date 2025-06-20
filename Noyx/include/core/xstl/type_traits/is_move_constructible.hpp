@@ -1,9 +1,9 @@
 #pragma once
-#include <type_traits/void_t.hpp>
-#include <type_traits/integral_constant.hpp>
-#include <type_traits/remove_reference.hpp>
-#include <type_traits/declval.hpp>
-#include <type_traits/move.hpp>
+#include "void_t.hpp"
+#include "integral_constant.hpp"
+#include "remove_reference.hpp"
+#include "declval.hpp"
+#include "move.hpp"
 
 //TODO: GCC, Clang
 namespace xstl {

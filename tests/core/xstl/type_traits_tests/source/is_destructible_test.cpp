@@ -1,5 +1,6 @@
 #include <tt_test_detail.hpp>
 #include <type_traits/is_destructible.hpp>
+#include <type_traits/is_complete.hpp>
 
 
 template<typename T, bool Expected>
@@ -11,11 +12,20 @@ constexpr void tt_is_destructible_test_value() {
     "is_destructible<T> returned incorrect value"
   );
 #else
-  NOYX_ASSERT_TRUE_MESSAGE(
-    actual == Expected,
-    "is_destructible<" << typeid(T).name() << "> returned incorrect: actual = " << actual
-    << ", expected = " << Expected
-  );
+  if constexpr (xstl::is_complete_v<T>) {
+    NOYX_ASSERT_TRUE_MESSAGE(
+      actual == Expected,
+      "is_destructible<" << typeid(T).name() << "> returned incorrect: actual = " << actual
+      << ", expected = " << Expected
+    );
+  }
+  else {
+    NOYX_ASSERT_TRUE_MESSAGE(
+      actual == Expected,
+      "is_destructible<" << "TestTypeInvokerIsDestructible::operator()::C" << "> returned incorrect: actual = " << actual
+      << ", expected = " << Expected
+    );
+  }
 #endif
 }
 

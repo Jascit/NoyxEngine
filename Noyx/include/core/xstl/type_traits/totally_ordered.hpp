@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/remove_reference.hpp>
-#include <type_traits/equality_comparable.hpp>
+#include "remove_reference.hpp"
+#include "equality_comparable.hpp"
 
 namespace xstl {
   namespace details {

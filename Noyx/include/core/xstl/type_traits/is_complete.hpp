@@ -1,5 +1,5 @@
 #pragma once
-#include "../type_traits/integral_constant.hpp"
+#include "integral_constant.hpp"
 
 namespace xstl {
   namespace details {
@@ -8,10 +8,12 @@ namespace xstl {
   }
 
   template <typename T, typename = void>
-  struct is_complete : xstl::false_type {};
+  struct is_complete : false_type {};
 
   template <typename T>
   requires details::_ConceptIsComplete<T>
-  struct is_complete<T, void> : xstl::true_type{};
+  struct is_complete<T, void> : true_type{};
 
+  template <typename T>
+  constexpr bool is_complete_v = is_complete<T>::value;
 }

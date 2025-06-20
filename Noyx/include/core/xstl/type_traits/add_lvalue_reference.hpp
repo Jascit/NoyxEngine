@@ -1,5 +1,5 @@
 #pragma once
-#include <type_traits/void_t.hpp>
+#include "void_t.hpp"
 
 namespace xstl {
     namespace details {

@@ -1,10 +1,10 @@
 #pragma once
-#include <type_traits/remove_cvref_t.hpp>
-#include <type_traits/is_function.hpp>
-#include <type_traits/is_array.hpp>
-#include <type_traits/conditional.hpp>
-#include <type_traits/add_pointer.hpp>
-#include <type_traits/remove_all_extents.hpp>
+#include "remove_cvref_t.hpp"
+#include "is_function.hpp"
+#include "is_array.hpp"
+#include "conditional.hpp"
+#include "add_pointer.hpp"
+#include "remove_all_extents.hpp"
 
 namespace xstl {
 	namespace details {

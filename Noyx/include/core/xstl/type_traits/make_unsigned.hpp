@@ -1,8 +1,8 @@
 #pragma once
-#include <core/xstldef.hpp>
-#include <type_traits/remove_cv.hpp>
-#include <type_traits/is_same.hpp>
-#include <type_traits/is_integral.hpp>
+#include "../core/xstldef.hpp"
+#include "remove_cv.hpp"
+#include "is_same.hpp"
+#include "is_integral.hpp"
 
 //only LLP64/LP64
 namespace xstl {

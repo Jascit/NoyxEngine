@@ -1,7 +1,7 @@
 #pragma once
-#include <type_traits/is_move_constructible.hpp>
-#include <type_traits/is_move_assignable.hpp>
-#include <type_traits/move.hpp>
+#include "is_move_constructible.hpp"
+#include "is_move_assignable.hpp"
+#include "move.hpp"
 
 namespace xstl {
 	namespace details {

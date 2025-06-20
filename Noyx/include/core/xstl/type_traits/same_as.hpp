@@ -1,5 +1,5 @@
 #pragma once
-#include <type_traits/is_same.hpp>
+#include "is_same.hpp"
 
 namespace xstl {
   template<typename T, typename U>

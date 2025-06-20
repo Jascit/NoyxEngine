@@ -1,9 +1,9 @@
 #pragma once
-#include <type_traits/is_integral.hpp>
-#include <type_traits/is_floating_point.hpp>
-#include <type_traits/is_same.hpp>
-#include <type_traits/integral_constant.hpp>
-#include <type_traits/remove_cv.hpp>
+#include "is_integral.hpp"
+#include "is_floating_point.hpp"
+#include "is_same.hpp"
+#include "integral_constant.hpp"
+#include "remove_cv.hpp"
 
 namespace xstl {
   namespace details {

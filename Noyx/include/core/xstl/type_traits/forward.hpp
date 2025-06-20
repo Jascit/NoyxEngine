@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/remove_reference.hpp>
-#include <type_traits/is_lvalue_reference.hpp>
+#include "remove_reference.hpp"
+#include "is_lvalue_reference.hpp"
 
 namespace xstl {
   template<typename T>

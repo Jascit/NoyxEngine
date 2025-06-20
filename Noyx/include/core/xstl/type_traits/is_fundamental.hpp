@@ -1,8 +1,8 @@
 #pragma once
-#include <type_traits/integral_constant.hpp>
-#include <type_traits/is_arithmetic.hpp>
-#include <type_traits/is_null_pointer.hpp>
-#include <type_traits/is_void.hpp>
+#include "integral_constant.hpp"
+#include "is_arithmetic.hpp"
+#include "is_null_pointer.hpp"
+#include "is_void.hpp"
 
 namespace xstl {
   namespace details {
