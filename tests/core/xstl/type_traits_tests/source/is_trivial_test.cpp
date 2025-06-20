@@ -18,11 +18,11 @@ struct IsTrivialUnitTest_TrivialStruct {
 };
 
 struct IsTrivialUnitTest_NonTrivialCtor {
-  NonTrivialCtor() {}
+  IsTrivialUnitTest_NonTrivialCtor() {}
 };
 
 struct IsTrivialUnitTest_NonTrivialDtor {
-  ~NonTrivialDtor() {}
+  ~IsTrivialUnitTest_NonTrivialDtor() {}
 };
 
 struct IsTrivialUnitTest_WithVirtual {
