@@ -3,8 +3,8 @@
 
 template <typename T, bool Expected>
 constexpr void tt_is_reference_test() {
-  static_assert(xstl::is_reference<T>::value == Expected, "is_reference returned wrong value");
-  static_assert(xstl::is_reference_v<T> == Expected, "is_reference_v returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_reference<T>::value == Expected, "is_reference returned wrong value");
+  NOYX_ASSERT_TRUE_MESSAGE(xstl::is_reference_v<T> == Expected, "is_reference_v returned wrong value");
   NOYX_ASSERT_TRUE_MESSAGE(xstl::is_reference<T>::value == Expected, "is_reference returned wrong value");
 }
 
