@@ -12,19 +12,19 @@ constexpr void tt_is_base_of_test_value(bool expected) {
   );
 }
 
-struct Base {};
-struct DerivedPublic : Base {};
-struct DerivedPrivate : private Base {};
-struct Unrelated {};
+struct IsBaseOfUnitTest_Base {};
+struct IsBaseOfUnitTest_DerivedPublic : IsBaseOfUnitTest_Base {};
+struct IsBaseOfUnitTest_DerivedPrivate : private IsBaseOfUnitTest_Base {};
+struct IsBaseOfUnitTest_Unrelated {};
 
 struct TestTypeInvokerIsBaseOf {
   constexpr void operator()() const {
-    tt_is_base_of_test_value<Base, DerivedPublic>(true);
-    tt_is_base_of_test_value<Base, DerivedPrivate>(true);
-    tt_is_base_of_test_value<Base, Base>(true);  
+    tt_is_base_of_test_value<IsBaseOfUnitTest_Base, IsBaseOfUnitTest_DerivedPublic>(true);
+    tt_is_base_of_test_value<IsBaseOfUnitTest_Base, IsBaseOfUnitTest_DerivedPrivate>(true);
+    tt_is_base_of_test_value<IsBaseOfUnitTest_Base, IsBaseOfUnitTest_Base>(true);  
 
-    tt_is_base_of_test_value<Base, Unrelated>(false);
-    tt_is_base_of_test_value<DerivedPublic, Base>(false);
+    tt_is_base_of_test_value<IsBaseOfUnitTest_Base, IsBaseOfUnitTest_Unrelated>(false);
+    tt_is_base_of_test_value<IsBaseOfUnitTest_DerivedPublic, IsBaseOfUnitTest_Base>(false);
     tt_is_base_of_test_value<int, int>(false);
   }
 };
