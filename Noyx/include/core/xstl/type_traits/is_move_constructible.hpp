@@ -1,7 +1,6 @@
 #pragma once
 #include "integral_constant.hpp"
 #include "remove_reference.hpp"
-#include "declval.hpp"
 #include "move.hpp"
 
 //TODO: GCC, Clang
@@ -23,12 +22,12 @@ namespace xstl {
     namespace details {
         template<typename T>
         concept _ConceptIsMoveConstructible = requires(T && t) {
-            T(move(t));
+            T(xstl::move(t));
         };
 
         template<typename T>
         concept _ConceptIsNothrowMoveConstructible = requires(T && t) {
-            { T(move(t)) } noexcept;
+            { T(xstl::move(t)) } noexcept;
         };
     }
 

@@ -19,8 +19,8 @@ namespace xstl {
 	template<typename T>
   requires details::_ConceptIsSwapable<T>
 	constexpr void swap(T& a, T& b) noexcept(is_nothrow_move_constructible_v<T> && is_nothrow_move_assignable_v<T>) {
-			T temp = move(a);
-			a = move(b);
-			b = move(temp);
+			T temp = xstl::move(a);
+			a = xstl::move(b);
+			b = xstl::move(temp);
 	}
 }

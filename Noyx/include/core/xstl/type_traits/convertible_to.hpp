@@ -4,5 +4,5 @@
 
 namespace xstl {
   template<typename T, typename U>
-  concept convertible_to = is_convertible_v<T, U> && requires { static_cast<U>(declval<T>()); };
+  concept convertible_to = is_convertible_v<T, U> && requires { static_cast<U>(xstl::declval<T>()); };
 }
