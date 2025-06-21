@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/integral_constant.hpp>
-#include <type_traits/add_lvalue_reference.hpp>
+#include "integral_constant.hpp"
+#include "add_lvalue_reference.hpp"
 
 //TODO: Clang, GCC
 namespace xstl {

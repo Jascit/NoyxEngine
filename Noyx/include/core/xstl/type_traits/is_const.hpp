@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/integral_constant.hpp>
-#include <type_traits/remove_volatile.hpp>
+#include "integral_constant.hpp"
+#include "remove_volatile.hpp"
 namespace xstl {
   namespace details {
     template<typename>

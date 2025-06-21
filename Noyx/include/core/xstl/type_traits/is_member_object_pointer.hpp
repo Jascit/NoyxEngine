@@ -1,5 +1,5 @@
 #pragma once 
-#include <type_traits/is_function.hpp>
+#include "is_function.hpp"
 
 namespace xstl {
 #if defined(__clang__)

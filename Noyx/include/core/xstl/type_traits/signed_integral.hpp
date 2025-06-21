@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/is_signed.hpp>
-#include <type_traits/is_integral.hpp>
+#include "is_signed.hpp"
+#include "is_integral.hpp"
 
 namespace xstl {
   template<typename T>

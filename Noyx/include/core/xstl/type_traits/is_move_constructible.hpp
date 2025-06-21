@@ -1,14 +1,13 @@
 #pragma once
-#include <type_traits/void_t.hpp>
-#include <type_traits/integral_constant.hpp>
-#include <type_traits/remove_reference.hpp>
-#include <type_traits/declval.hpp>
-#include <type_traits/move.hpp>
+#include "integral_constant.hpp"
+#include "remove_reference.hpp"
+#include "declval.hpp"
+#include "move.hpp"
 
 //TODO: GCC, Clang
 namespace xstl {
 #if defined(_MSVC_LANG)
-  template<typename T, typename = void>
+  template<typename T>
   struct is_move_constructible : bool_constant<__is_constructible(T, T)>{};
 
   template <typename T>
@@ -36,7 +35,8 @@ namespace xstl {
     template<typename T>
     struct is_move_constructible : false_type {};
 
-    template<details::_ConceptIsMoveConstructible T>
+    template<typename T>
+    requires details::_ConceptIsMoveConstructible<T>
     struct is_move_constructible<T> : true_type {};
 
     template <typename T>
@@ -45,7 +45,8 @@ namespace xstl {
     template<typename T>
     struct is_nothrow_move_constructible : false_type {};
 
-    template<details::_ConceptIsNothrowMoveConstructible T>
+    template<typename T>
+    requires details::_ConceptIsNothrowMoveConstructible<T>
     struct is_nothrow_move_constructible<T> : true_type {};
 
     template <typename T>

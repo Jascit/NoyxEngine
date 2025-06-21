@@ -1,7 +1,7 @@
 #pragma once 
-#include <type_traits/integral_constant.hpp>
-#include <type_traits/is_integral.hpp>
-#include <type_traits/is_floating_point.hpp>
+#include "integral_constant.hpp"
+#include "is_integral.hpp"
+#include "is_floating_point.hpp"
 
 namespace xstl {
   template<typename T>

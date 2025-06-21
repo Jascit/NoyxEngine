@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/integral_constant.hpp>
-#include <core/xstldef.hpp>
+#include "integral_constant.hpp"
+#include "../core/xstldef.hpp"
 
 namespace xstl {
   template<typename>

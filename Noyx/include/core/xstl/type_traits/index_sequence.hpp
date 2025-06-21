@@ -1,5 +1,5 @@
 #pragma once
-#include <type_traits/integer_sequence.hpp>
+#include "integer_sequence.hpp"
 
 namespace xstl {
 	namespace details {

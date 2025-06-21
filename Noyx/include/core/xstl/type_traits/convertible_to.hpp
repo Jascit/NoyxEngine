@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/is_convertible.hpp>
-#include <type_traits/declval.hpp>
+#include "is_convertible.hpp"
+#include "declval.hpp"
 
 namespace xstl {
   template<typename T, typename U>

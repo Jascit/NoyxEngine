@@ -1,7 +1,7 @@
 #pragma once
-#include <type_traits/is_void.hpp>
-#include <type_traits/is_reference.hpp>
-#include <type_traits/is_function.hpp>
+#include "is_void.hpp"
+#include "is_reference.hpp"
+#include "is_function.hpp"
 
 namespace xstl {
   template<typename T>

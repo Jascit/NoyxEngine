@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/convertible_to.hpp>
-#include <type_traits/remove_reference.hpp>
+#include "convertible_to.hpp"
+#include "remove_reference.hpp"
 
 namespace xstl {
   namespace details {

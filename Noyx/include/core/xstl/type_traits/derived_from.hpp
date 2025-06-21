@@ -1,6 +1,6 @@
 #pragma once
-#include <type_traits/is_base_of.hpp>
-#include <type_traits/is_convertible.hpp>
+#include "is_base_of.hpp"
+#include "is_convertible.hpp"
 
 namespace xstl {
   template<typename T, typename U>

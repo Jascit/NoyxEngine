@@ -1,6 +1,5 @@
 #pragma once
-#include <type_traits/is_reference.hpp>
-#include <type_traits/void_t.hpp>
+#include "is_reference.hpp"
 
 namespace xstl {
   template <typename T, bool = xstl::is_reference_v<T>>
