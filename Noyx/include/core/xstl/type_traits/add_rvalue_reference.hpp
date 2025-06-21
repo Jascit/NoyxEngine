@@ -1,5 +1,6 @@
 #pragma once
 #include "void_t.hpp"
+#include "../core/xstldef.hpp"
 
 namespace xstl{
     namespace details {
@@ -8,15 +9,18 @@ namespace xstl{
             (void)t;
         };
     }
-  template<typename T, typename = void>
+  template<typename T>
   struct add_rvalue_reference {
     using type = T;
   };
-  template<details::_ConceptRValueReferenceable T>
-  struct add_rvalue_reference<T, xstl::void_t<T&&>> 
+
+  template<typename T>
+  requires details::_ConceptRValueReferenceable<T>
+  struct add_rvalue_reference<T> 
   {
     using type = T&&;
   };
+  
   template<typename T>
   using add_rvalue_reference_t = add_rvalue_reference<T>::type;
 } // xstl 

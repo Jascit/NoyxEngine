@@ -1,4 +1,5 @@
 #pragma once
+#include "is_enum.hpp"
 
 namespace xstl {
   namespace details {

@@ -12,21 +12,21 @@ namespace xstl {
       typename _common_type_finder<T, U>; 
     };
 
-    template<typename T, typename U, typename = void>
+    template<typename T, typename U>
     struct _decay_common_type_finder {};
 
     template<typename T, typename U>
     requires _ConceptCommonTypeExists<T, U>
-    struct _decay_common_type_finder<T, U, void> {
+    struct _decay_common_type_finder<T, U> {
       using type = decay_t<_common_type_finder<T, U>>;
     };
 
-    template<typename T, typename U, typename = void>
+    template<typename T, typename U>
     struct _common_type_impl : _decay_common_type_finder<const T&, const U&> {};
 
     template<typename T, typename U>
     requires _ConceptCommonTypeExists<T, U>
-    struct _common_type_impl<T, U, void> : _decay_common_type_finder<T, U> {};
+    struct _common_type_impl<T, U> : _decay_common_type_finder<T, U> {};
 
     template<typename T, typename U, typename Td = decay_t<T>, typename Ud = decay_t<U>>
     struct _common_type_helper : _common_type_impl<Td, Ud> {};
