@@ -1,5 +1,4 @@
 #pragma once
-
 #include "addressof.hpp"      
 #include "is_convertible.hpp" 
 #include "remove_cvref_t.hpp" 
@@ -75,17 +74,13 @@ namespace xstl {
     /// @tparam Args Argument types
     /// @param args Arguments for the call
     /// @return The result of invoking *ptr(args...)
+    /// TODO: change to invoke
     template <typename... Args>
-    constexpr auto operator()(Args&&... args) const
-      noexcept(noexcept((*ptr)(xstl::forward<Args>(args)...)))
-      -> decltype((*ptr)(xstl::forward<Args>(args)...))
-    {
-      return (*ptr)(xstl::forward<Args>(args)...);
-    }
+    constexpr auto operator()(Args&&... args) const noexcept(false){}
 
   private:
     /// @brief Pointer to the wrapped object
-    T* ptr = xstl::nullptr_t;
+    T* ptr{};
   };
 
 } // namespace xstl
