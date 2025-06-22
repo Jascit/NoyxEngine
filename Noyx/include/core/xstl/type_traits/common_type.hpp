@@ -50,7 +50,7 @@ namespace xstl {
   struct common_type;
   
   template<typename... Args>
-  using common_type_t = common_type<Args...>::type;
+  using common_type_t = typename common_type<Args...>::type;
   
   template<>
   struct common_type<> {};

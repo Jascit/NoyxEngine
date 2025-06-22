@@ -17,5 +17,5 @@ namespace xstl {
   };
 
   template<typename T>
-  using remove_extent_t = remove_extent<T>::type;
+  using remove_extent_t = typename remove_extent<T>::type;
 }

@@ -22,5 +22,5 @@ namespace xstl{
   };
   
   template<typename T>
-  using add_rvalue_reference_t = add_rvalue_reference<T>::type;
+  using add_rvalue_reference_t = typename add_rvalue_reference<T>::type;
 } // xstl 

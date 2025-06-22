@@ -41,5 +41,5 @@ namespace xstl {
 
 
   template<typename T>
-  using make_unsigned_t = make_unsigned<T>::type;
+  using make_unsigned_t = typename make_unsigned<T>::type;
 } // xstl

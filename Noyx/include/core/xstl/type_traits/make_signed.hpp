@@ -40,5 +40,5 @@ namespace xstl {
 
   
   template<typename T>
-  using make_signed_t = make_signed<T>::type;
+  using make_signed_t = typename make_signed<T>::type;
 } // xstl

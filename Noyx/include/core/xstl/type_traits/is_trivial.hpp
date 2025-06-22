@@ -1,5 +1,4 @@
 #pragma once
-#include <type_traits>
 #include "integral_constant.hpp"
 
 namespace xstl {
