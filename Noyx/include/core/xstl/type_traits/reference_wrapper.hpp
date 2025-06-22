@@ -16,7 +16,7 @@ namespace xstl {
 
     template <typename T, typename U, typename Wrapper>
     concept _ConceptBindableToRefWrapper = 
-      xstl::is_same_v<remove_cvref_t<T>, Wrapper> && requires { _RW_test_bind<T>(xstl::declval<U>()); };
+      !xstl::is_same_v<remove_cvref_t<T>, Wrapper> && requires { _RW_test_bind<T>(xstl::declval<U>()); };
 
   } // namespace detail
 
