@@ -17,12 +17,12 @@ namespace xstl {
 
     /// @brief Deleted overload: rvalue cannot bind to T&
     template <typename T>
-    void _RW_test_bind(T&&) = delete;
+    T& _RW_test_bind(T&&) = delete;
 
     /// Concept that checks if U can bind to T& without conflict with reference_wrapper
     template <typename T, typename U, typename Wrapper>
     concept _ConceptBindableToRefWrapper =
-      !xstl::is_same_v<remove_cvref_t<T>, Wrapper>&&
+      !xstl::is_same_v<remove_cvref_t<T>, Wrapper> &&
       requires { detail::_RW_test_bind<T>(xstl::declval<U>()); };
   } // namespace detail
 

@@ -90,3 +90,4 @@
 #include "type_traits/addressof.hpp" // test
 #include "type_traits/equality_comparable.hpp" // test
 #include "type_traits/derived_from.hpp" // test
+#include "type_traits/common_reference.hpp" // test

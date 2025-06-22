@@ -1,11 +1,10 @@
 #pragma once
-#include "void_t.hpp"
 #include "../core/xstldef.hpp"
 
 namespace xstl{
     namespace details {
         template<typename T>
-        concept _ConceptRValueReferenceable = requires(T && t) {
+        concept _ConceptRValueReferenceable = requires(T&& t) {
             (void)t;
         };
     }
