@@ -10,5 +10,5 @@ namespace xstl {
   };
 
   template<bool cond, typename T>
-  using enable_if_t = enable_if<cond, T>::type;
+  using enable_if_t = typename enable_if<cond, T>::type;
 } //xstl

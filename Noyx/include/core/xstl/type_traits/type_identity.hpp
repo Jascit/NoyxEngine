@@ -5,5 +5,5 @@ namespace xstl{
     using type = T;
   };
   template<typename T>
-  using type_identity_t = type_identity<T>::type;
+  using type_identity_t = typename type_identity<T>::type;
 }

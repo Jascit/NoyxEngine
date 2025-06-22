@@ -19,6 +19,6 @@ namespace xstl {
 	struct decay : details::_details_helper<remove_reference_t<T>> {};
 
 	template<typename T>
-	using decay_t = decay<T>::type;
+	using decay_t = typename decay<T>::type;
 }
 

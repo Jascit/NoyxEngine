@@ -7,5 +7,5 @@ namespace xstl {
   };
 
   template<typename T>
-  using add_const_t = add_const<T>::type;
+  using add_const_t = typename add_const<T>::type;
 }

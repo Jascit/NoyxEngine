@@ -18,5 +18,5 @@ namespace xstl {
     using type = T&;
   };
   template<typename T>
-  using add_lvalue_reference_t = add_lvalue_reference<T>::type;
+  using add_lvalue_reference_t = typename add_lvalue_reference<T>::type;
 } // xstl

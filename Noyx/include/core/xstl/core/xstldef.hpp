@@ -4,7 +4,7 @@ namespace xstl {
 #if NOYX_PLATFORM_WINDOWS
   using size_t = unsigned long long;
   using ptrdiff_t = decltype(static_cast<int*>(nullptr) - static_cast<int*>(nullptr));
-  using nullptr_t = decltype(__nullptr);
+  using nullptr_t = decltype(nullptr);
   
   using int8_t = char;
   using int16_t = short int;
@@ -19,6 +19,6 @@ namespace xstl {
   using max_align_t = double;
   using intmax_t = long long;  
   using uintmax_t = unsigned long long;
-
+#else
 #endif
 } // xstl

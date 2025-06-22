@@ -16,5 +16,5 @@ namespace xstl {
   struct underlying_type : details::_underlying_type_helper<T> {};
 
   template<typename T>
-  using underlying_type_t = underlying_type<T>::type;
+  using underlying_type_t = typename underlying_type<T>::type;
 }
