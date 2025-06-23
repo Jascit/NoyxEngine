@@ -93,3 +93,17 @@
 #include "type_traits/equality_comparable.hpp" // test
 #include "type_traits/derived_from.hpp" // test
 #include "type_traits/common_reference.hpp" // test
+
+#include "type_traits/has_post_decrement.hpp" // test
+#include "type_traits/has_post_increment.hpp" // test
+#include "type_traits/has_pre_decrement.hpp" // test
+#include "type_traits/has_pre_increment.hpp" // test
+#include "type_traits/has_right_shift.hpp" // test
+#include "type_traits/has_right_shift_assign.hpp" // test
+#include "type_traits/has_trivial_assign.hpp" // test
+#include "type_traits/has_trivial_default_constructor.hpp" // test
+#include "type_traits/has_trivial_destructor.hpp" // test
+#include "type_traits/has_trivial_move_assign.hpp" // test
+#include "type_traits/has_trivial_move_constructor.hpp" // test
+#include "type_traits/has_unary_minus.hpp" // test
+#include "type_traits/has_unary_plus.hpp" // test
