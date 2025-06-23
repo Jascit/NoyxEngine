@@ -86,6 +86,7 @@
 #include "type_traits/class_of_member.hpp"
 
 #include "type_traits/reference_wrapper.hpp" // test 
+#include "type_traits/copy_cv_ref.hpp" // test 
 #include "type_traits/totally_ordered.hpp" // test
 #include "type_traits/invoke_result.hpp" // test
 #include "type_traits/addressof.hpp" // test

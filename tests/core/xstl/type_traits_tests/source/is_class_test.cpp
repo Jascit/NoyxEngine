@@ -2,11 +2,6 @@
 #include <type_traits/is_same.hpp>
 #include <tt_test_detail.hpp>
 
-class IsClassUnitTestMyClass {};
-struct IsClassUnitTestMyStruct {};
-union IsClassUnitTestMyUnion {};
-enum IsClassUnitTestMyEnum { A, B, C };
-using IsClassUnitTestFuncType = void();
 
 template <typename T, bool Expected>
 constexpr void tt_is_class_test() {
@@ -16,13 +11,19 @@ constexpr void tt_is_class_test() {
 }
 
 NOYX_TEST(IsClass, UnitTest) {
-  tt_is_class_test<IsClassUnitTestMyClass, true>();
-  tt_is_class_test<IsClassUnitTestMyStruct, true>();
+  class MyClass {};
+  struct MyStruct {};
+  union MyUnion {};
+  enum MyEnum { A, B, C };
+  using FuncType = void();
 
-  tt_is_class_test<IsClassUnitTestMyUnion, false>();
-  tt_is_class_test<IsClassUnitTestMyEnum, false>();
+  tt_is_class_test<MyClass, true>();
+  tt_is_class_test<MyStruct, true>();
+
+  tt_is_class_test<MyUnion, false>();
+  tt_is_class_test<MyEnum, false>();
   tt_is_class_test<int, false>();
   tt_is_class_test<void, false>();
-  tt_is_class_test<IsClassUnitTestFuncType, false>();
+  tt_is_class_test<FuncType, false>();
   tt_is_class_test<int*, false>();
 }

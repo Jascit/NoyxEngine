@@ -8,19 +8,17 @@ constexpr void tt_disjunction_test_case() {
   static_assert(result == Expected, "disjunction<Bs...>::value is incorrect");
   NOYX_ASSERT_TRUE_MESSAGE(result == Expected, "disjunction<Bs...> returned wrong result");
 }
-
-struct True1 { static constexpr bool value = true; };
-struct True2 { static constexpr bool value = true; };
-struct False1 { static constexpr bool value = false; };
-struct False2 { static constexpr bool value = false; };
-
+struct Disjunction_True1 { static constexpr bool value = true; };
+struct Disjunction_True2 { static constexpr bool value = true; };
+struct Disjunction_False1 { static constexpr bool value = false; };
+struct Disjunction_False2 { static constexpr bool value = false; };
 NOYX_TEST(Disjunction, UnitTest) {
-  tt_disjunction_test_case<false>();                                    
-  tt_disjunction_test_case<true, True1>();                             
-  tt_disjunction_test_case<false, False1>();                            
-  tt_disjunction_test_case<true, True1, False1>();                     
-  tt_disjunction_test_case<true, False1, True1>();                     
-  tt_disjunction_test_case<false, False1, False2>();                    
-  tt_disjunction_test_case<true, False1, False2, True2>();             
-  tt_disjunction_test_case<true, True1, True2, False1, False2>();
+  tt_disjunction_test_case<false>();
+  tt_disjunction_test_case<true, Disjunction_True1>();
+  tt_disjunction_test_case<false, Disjunction_False1>();
+  tt_disjunction_test_case<true, Disjunction_True1, Disjunction_False1>();
+  tt_disjunction_test_case<true, Disjunction_False1, Disjunction_True1>();
+  tt_disjunction_test_case<false, Disjunction_False1, Disjunction_False2>();
+  tt_disjunction_test_case<true, Disjunction_False1, Disjunction_False2, Disjunction_True2>();
+  tt_disjunction_test_case<true, Disjunction_True1, Disjunction_True2, Disjunction_False1, Disjunction_False2>();
 }

@@ -2,8 +2,8 @@
 #include <type_traits/is_same.hpp>
 #include <tt_test_detail.hpp>
 
-struct NegationUnitTestTrueType { static constexpr bool value = true; };
-struct NegationUnitTestFalseType { static constexpr bool value = false; };
+struct Negation_TrueType { static constexpr bool value = true; };
+struct Negation_FalseType { static constexpr bool value = false; };
 
 template <typename B, bool Expected>
 constexpr void tt_negation_test_type() {
@@ -13,6 +13,6 @@ constexpr void tt_negation_test_type() {
 }
 
 NOYX_TEST(Negation, UnitTest) {
-  tt_negation_test_type<NegationUnitTestTrueType, false>();
-  tt_negation_test_type<NegationUnitTestFalseType, true>();
+  tt_negation_test_type<Negation_TrueType, false>();
+  tt_negation_test_type<Negation_FalseType, true>();
 }
