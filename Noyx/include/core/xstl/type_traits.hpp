@@ -83,6 +83,7 @@
 #include "type_traits/is_trivially_move_constructible.hpp" 
 #include "type_traits/is_aggregate.hpp" 
 #include "type_traits/is_pointer_interconvertible_base_of.hpp" 
+#include "type_traits/class_of_member.hpp"
 
 #include "type_traits/reference_wrapper.hpp" // test 
 #include "type_traits/totally_ordered.hpp" // test
@@ -90,3 +91,4 @@
 #include "type_traits/addressof.hpp" // test
 #include "type_traits/equality_comparable.hpp" // test
 #include "type_traits/derived_from.hpp" // test
+#include "type_traits/common_reference.hpp" // test

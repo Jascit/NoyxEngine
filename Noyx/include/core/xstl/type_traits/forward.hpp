@@ -11,6 +11,6 @@ namespace xstl {
   template<typename T>
   constexpr T&& forward(remove_reference_t<T>&& obj) noexcept {
     static_assert(!is_lvalue_reference_v<T>, "Cannot forward an rvalue as an lvalue");
-    return static_cast<T&&>(t);
+    return static_cast<T&&>(obj);
   }
 } // xstl

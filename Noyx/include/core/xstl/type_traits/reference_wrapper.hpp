@@ -1,5 +1,4 @@
 #pragma once
-
 #include "addressof.hpp"      
 #include "is_convertible.hpp" 
 #include "remove_cvref_t.hpp" 
@@ -17,12 +16,12 @@ namespace xstl {
 
     /// @brief Deleted overload: rvalue cannot bind to T&
     template <typename T>
-    void _RW_test_bind(T&&) = delete;
+    T& _RW_test_bind(T&&) = delete;
 
     /// Concept that checks if U can bind to T& without conflict with reference_wrapper
     template <typename T, typename U, typename Wrapper>
     concept _ConceptBindableToRefWrapper =
-      !xstl::is_same_v<remove_cvref_t<T>, Wrapper>&&
+      !xstl::is_same_v<remove_cvref_t<T>, Wrapper> &&
       requires { detail::_RW_test_bind<T>(xstl::declval<U>()); };
   } // namespace detail
 
@@ -75,17 +74,13 @@ namespace xstl {
     /// @tparam Args Argument types
     /// @param args Arguments for the call
     /// @return The result of invoking *ptr(args...)
+    /// TODO: change to invoke
     template <typename... Args>
-    constexpr auto operator()(Args&&... args) const
-      noexcept(noexcept((*ptr)(xstl::forward<Args>(args)...)))
-      -> decltype((*ptr)(xstl::forward<Args>(args)...))
-    {
-      return (*ptr)(xstl::forward<Args>(args)...);
-    }
+    constexpr auto operator()(Args&&... args) const noexcept(false){}
 
   private:
     /// @brief Pointer to the wrapped object
-    T* ptr = xstl::nullptr_t;
+    T* ptr{};
   };
 
 } // namespace xstl
