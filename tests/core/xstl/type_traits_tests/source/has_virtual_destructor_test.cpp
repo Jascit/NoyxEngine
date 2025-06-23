@@ -21,25 +21,23 @@ constexpr void tt_has_virtual_destructor_test_value(bool expected) {
 #endif
 }
 
-struct HasVirtualDestructorUnitTest_NoVirtualDtor {
-  ~HasVirtualDestructorUnitTest_NoVirtualDtor() {}
-};
-
-struct HasVirtualDestructorUnitTest_VirtualDtor {
-  virtual ~HasVirtualDestructorUnitTest_VirtualDtor() {}
-};
-
-struct HasVirtualDestructorUnitTestDerived_VirtualDtor : HasVirtualDestructorUnitTest_VirtualDtor {};
-
-struct HasVirtualDestructorUnitTest_NoDestructor {}; 
 
 struct TestTypeInvokerHasVirtualDestructor {
   constexpr void operator()() const {
+  struct NoVirtualDtor {
+    ~NoVirtualDtor() {}
+  };
+  struct VirtualDtor {
+    virtual ~VirtualDtor() {}
+  };
+  struct Derived_VirtualDtor : VirtualDtor {};
+  struct NoDestructor {}; 
+
     tt_has_virtual_destructor_test_value<int>(false); 
-    tt_has_virtual_destructor_test_value<HasVirtualDestructorUnitTest_NoVirtualDtor>(false);
-    tt_has_virtual_destructor_test_value<HasVirtualDestructorUnitTest_VirtualDtor>(true);
-    tt_has_virtual_destructor_test_value<HasVirtualDestructorUnitTestDerived_VirtualDtor>(true);
-    tt_has_virtual_destructor_test_value<HasVirtualDestructorUnitTest_NoDestructor>(false);
+    tt_has_virtual_destructor_test_value<NoVirtualDtor>(false);
+    tt_has_virtual_destructor_test_value<VirtualDtor>(true);
+    tt_has_virtual_destructor_test_value<Derived_VirtualDtor>(true);
+    tt_has_virtual_destructor_test_value<NoDestructor>(false);
   }
 };
 

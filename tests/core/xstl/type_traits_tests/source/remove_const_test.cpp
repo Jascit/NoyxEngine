@@ -26,16 +26,6 @@ struct RemoveConstInvoker {
   }
 };
 
-template<std::size_t I = 0, typename Tuple>
-void remove_const_test_all_suffixes() {
-  if constexpr (I < std::tuple_size_v<std::remove_reference_t<Tuple>>) {
-    using Base = std::tuple_element_t<I, Tuple>;
-    using Suffixes = xstl_test_detail::all_suffixes<Base>;
-    xstl_test_detail::for_each_type<Suffixes, RemoveConstInvoker>();
-    remove_const_test_all_suffixes<I + 1, Tuple>();
-  }
-}
-
 NOYX_TEST(RemoveConst, UnitTest) {
-  remove_const_test_all_suffixes<0, xstl_test_detail::all_test_types>();
+  xstl_test_detail::test_all_types_with_suffix<0, RemoveConstInvoker>(xstl_test_detail::all_test_types{});
 }

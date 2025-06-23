@@ -5,13 +5,13 @@
 #include <iostream>
 
 template <bool... Bs>
-struct BoolSeq {};
+struct Conjunction_BoolSeq {};
 
 template <typename Seq>
 struct TestInvokerConjunction;
 
 template <bool... Bs>
-struct TestInvokerConjunction<BoolSeq<Bs...>> {
+struct TestInvokerConjunction<Conjunction_BoolSeq<Bs...>> {
   constexpr void operator()() const {
     using C = xstl::conjunction<xstl::integral_constant<bool, Bs>...>;
     constexpr bool expected = (Bs && ...);  // C++17-Fold
@@ -46,24 +46,6 @@ struct TestInvokerConjunction<BoolSeq<Bs...>> {
   }
 };
 
-using AllBoolSeqs = std::tuple<
-  BoolSeq<>,                    // 0 Parameter
-  BoolSeq<true>,                // 1 Parameter
-  BoolSeq<false>,
-  BoolSeq<true, true>,           // 2 Parameter
-  BoolSeq<true, false>,
-  BoolSeq<false, true>,
-  BoolSeq<false, false>,
-  BoolSeq<true, true, true>,      // 3 Parameter
-  BoolSeq<true, true, false>,
-  BoolSeq<true, false, true>,
-  BoolSeq<false, true, true>,
-  BoolSeq<true, false, false>,
-  BoolSeq<false, true, false>,
-  BoolSeq<false, false, true>,
-  BoolSeq<false, false, false>
->;
-
 template <typename Seq>
 struct TestTypeInvokerConjunction {
   constexpr void operator()() const {
@@ -72,5 +54,22 @@ struct TestTypeInvokerConjunction {
 };
 
 NOYX_TEST(Conjunction, UnitTest) {
+  using AllBoolSeqs = std::tuple<
+    Conjunction_BoolSeq<>,                    // 0 Parameter
+    Conjunction_BoolSeq<true>,                // 1 Parameter
+    Conjunction_BoolSeq<false>,
+    Conjunction_BoolSeq<true, true>,           // 2 Parameter
+    Conjunction_BoolSeq<true, false>,
+    Conjunction_BoolSeq<false, true>,
+    Conjunction_BoolSeq<false, false>,
+    Conjunction_BoolSeq<true, true, true>,      // 3 Parameter
+    Conjunction_BoolSeq<true, true, false>,
+    Conjunction_BoolSeq<true, false, true>,
+    Conjunction_BoolSeq<false, true, true>,
+    Conjunction_BoolSeq<true, false, false>,
+    Conjunction_BoolSeq<false, true, false>,
+    Conjunction_BoolSeq<false, false, true>,
+    Conjunction_BoolSeq<false, false, false>
+  >;
   xstl_test_detail::for_each_type<AllBoolSeqs, TestTypeInvokerConjunction>();
 }

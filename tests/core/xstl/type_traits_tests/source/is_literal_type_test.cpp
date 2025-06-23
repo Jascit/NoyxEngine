@@ -21,30 +21,28 @@ constexpr void tt_is_literal_type_test_value(bool expected) {
 #endif
 }
 
-struct IsLiteralTypeUnitTest_LiteralType {
-  int x;
-  constexpr IsLiteralTypeUnitTest_LiteralType(int v) : x(v) {}
-};
-
-struct IsLiteralTypeUnitTest_NonLiteralType {
-  int x;
-  IsLiteralTypeUnitTest_NonLiteralType() {}
-};
-
-struct IsLiteralTypeUnitTest_NonLiteralTypeWithDtor {
-  ~IsLiteralTypeUnitTest_NonLiteralTypeWithDtor() {}
-};
-
 struct TestTypeInvokerIsLiteralType {
   constexpr void operator()() const {
+    struct LiteralType {
+      int x;
+      constexpr LiteralType(int v) : x(v) {}
+    };
+
+    struct NonLiteralType {
+      int x;
+      NonLiteralType() {}
+    };
+
+    struct NonLiteralTypeWithDtor {
+      ~NonLiteralTypeWithDtor() {}
+    };
+
     tt_is_literal_type_test_value<int>(true);
     tt_is_literal_type_test_value<double>(true);
 
-    tt_is_literal_type_test_value<IsLiteralTypeUnitTest_LiteralType>(true);
-
-    tt_is_literal_type_test_value<IsLiteralTypeUnitTest_NonLiteralType>(false);
-
-    tt_is_literal_type_test_value<IsLiteralTypeUnitTest_NonLiteralTypeWithDtor>(false);
+    tt_is_literal_type_test_value<LiteralType>(true);
+    tt_is_literal_type_test_value<NonLiteralType>(false);
+    tt_is_literal_type_test_value<NonLiteralTypeWithDtor>(false);
   }
 };
 
