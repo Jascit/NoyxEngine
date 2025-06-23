@@ -22,24 +22,24 @@ constexpr void tt_is_abstract_test_value(bool expected) {
 #endif
 }
 
-struct IsAbstractUnitTest_AbstractBase {
-  virtual void foo() = 0;
-};
 
-struct IsAbstractUnitTest_ConcreteDerived : IsAbstractUnitTest_AbstractBase {
-  void foo() override {}
-};
-
-struct IsAbstractUnitTest_NotAbstract {
-  void foo() {}
-};
 
 struct TestTypeInvokerIsAbstract {
   constexpr void operator()() const {
-    tt_is_abstract_test_value<IsAbstractUnitTest_AbstractBase>(true);
+    struct AbstractBase {
+      virtual void foo() = 0;
+    };
+    struct ConcreteDerived : AbstractBase {
+      void foo() override {}
+    };
+    struct NotAbstract {
+      void foo() {}
+    };
 
-    tt_is_abstract_test_value<IsAbstractUnitTest_ConcreteDerived>(false);
-    tt_is_abstract_test_value<IsAbstractUnitTest_NotAbstract>(false);
+    tt_is_abstract_test_value<AbstractBase>(true);
+
+    tt_is_abstract_test_value<ConcreteDerived>(false);
+    tt_is_abstract_test_value<NotAbstract>(false);
     tt_is_abstract_test_value<int>(false);
     tt_is_abstract_test_value<int[3]>(false);
     tt_is_abstract_test_value<void()>(false);

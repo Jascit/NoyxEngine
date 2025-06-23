@@ -21,28 +21,24 @@ constexpr void tt_is_polymorphic_test_value(bool expected) {
 #endif
 }
 
-
-struct IsPolymorphicUnitTest_NonPolymorphic {
-  void foo() {}
-};
-
-struct IsPolymorphicUnitTest_Polymorphic {
-  virtual void foo() {}
-};
-
-struct IsPolymorphicUnitTest_DerivedPolymorphic : IsPolymorphicUnitTest_Polymorphic {};
-
-struct IsPolymorphicUnitTest_PolymorphicWithVirtualDtor {
-  virtual ~IsPolymorphicUnitTest_PolymorphicWithVirtualDtor() {}
-};
-
 struct TestTypeInvokerIsPolymorphic {
   constexpr void operator()() const {
+    struct NonPolymorphic {
+      void foo() {}
+    };
+    struct Polymorphic {
+      virtual void foo() {}
+    };
+    struct DerivedPolymorphic : Polymorphic {};
+    struct PolymorphicWithVirtualDtor {
+      virtual ~PolymorphicWithVirtualDtor() {}
+    };
+
     tt_is_polymorphic_test_value<int>(false);
-    tt_is_polymorphic_test_value<IsPolymorphicUnitTest_NonPolymorphic>(false);
-    tt_is_polymorphic_test_value<IsPolymorphicUnitTest_Polymorphic>(true);
-    tt_is_polymorphic_test_value<IsPolymorphicUnitTest_DerivedPolymorphic>(true);
-    tt_is_polymorphic_test_value<IsPolymorphicUnitTest_PolymorphicWithVirtualDtor>(true);
+    tt_is_polymorphic_test_value<NonPolymorphic>(false);
+    tt_is_polymorphic_test_value<Polymorphic>(true);
+    tt_is_polymorphic_test_value<DerivedPolymorphic>(true);
+    tt_is_polymorphic_test_value<PolymorphicWithVirtualDtor>(true);
   }
 };
 
