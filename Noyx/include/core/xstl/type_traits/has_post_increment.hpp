@@ -6,6 +6,6 @@ namespace xstl {
   struct has_post_increment : false_type{};
 
   template<typename T>
-    requires requires (T t) { t++; }
+    requires requires { xstl::declval<T>()++; }
   struct has_post_increment<T> : true_type{};
 }

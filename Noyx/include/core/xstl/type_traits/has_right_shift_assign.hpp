@@ -6,7 +6,7 @@ namespace xstl {
   struct has_right_shift_assign : xstl::false_type {};
 
   template<typename T>
-    requires requires (T a, T b) { a >>= b; }
+    requires requires { xstl::declval<T>() >>= xstl::declval<T>(); }
   struct has_right_shift_assign<T> : xstl::true_type {};
 
 }

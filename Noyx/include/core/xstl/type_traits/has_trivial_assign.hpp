@@ -6,6 +6,6 @@ namespace xstl {
   struct has_trivial_assign : xstl::false_type{};
 
   template<typename T>
-    requires requires(T a, T b) { a = b; }
+    requires requires { xstl::declval<T>() = xstl::declval<T>(); }
   struct has_trivial_assign<T> : xstl::true_type{};
 }
