@@ -35,7 +35,7 @@ struct TestTypeInvokerHasTrivialMoveAssign {
       F& operator=(F&&) = delete; 
     };
     struct G {
-      virtual void foo(); 
+      virtual void foo() {};
     };
     struct H {
       H& operator=(const H&) = delete;

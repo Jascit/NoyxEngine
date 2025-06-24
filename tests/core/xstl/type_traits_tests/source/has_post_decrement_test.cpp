@@ -37,10 +37,10 @@ struct TestTypeInvokerHasPostDecrement {
 
     tt_has_post_decrement_test_value<int, true>();
     tt_has_post_decrement_test_value<double, true>();
-    tt_has_post_decrement_test_value<const int, false>(); 
+    tt_has_post_decrement_test_value < const int, false > ();
 
     tt_has_post_decrement_test_value<A, true>();
-    tt_has_post_decrement_test_value<B, false>();
+    tt_has_post_decrement_test_value<B, false>(); 
     tt_has_post_decrement_test_value<C, true>();
     tt_has_post_decrement_test_value<D, true>();
     tt_has_post_decrement_test_value<E, true>();

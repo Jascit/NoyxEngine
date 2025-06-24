@@ -32,14 +32,14 @@ struct TestTypeInvokerHasTrivialDefaultConstructor {
       F() = delete;
     };                                 
     struct G {
-      virtual void foo();              
+      virtual void foo() {};
     };
     struct H {
       int x;
     private:
       H() = default;                    
     };
-
+   
     tt_has_trivial_default_constructor_test_value<int, true>();
     tt_has_trivial_default_constructor_test_value<double, true>();
     tt_has_trivial_default_constructor_test_value<void, false>();
@@ -48,10 +48,10 @@ struct TestTypeInvokerHasTrivialDefaultConstructor {
     tt_has_trivial_default_constructor_test_value<B, true>();
     tt_has_trivial_default_constructor_test_value<C, false>();
     tt_has_trivial_default_constructor_test_value<D, true>();
-    tt_has_trivial_default_constructor_test_value<E, true>();
+    tt_has_trivial_default_constructor_test_value<E, false>();
     tt_has_trivial_default_constructor_test_value<F, false>();
     tt_has_trivial_default_constructor_test_value<G, false>();
-    tt_has_trivial_default_constructor_test_value<H, true>(); 
+    tt_has_trivial_default_constructor_test_value<H, false>(); 
   }
 };
 

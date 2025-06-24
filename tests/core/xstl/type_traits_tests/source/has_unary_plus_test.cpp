@@ -48,7 +48,7 @@ struct TestTypeInvokerHasUnaryPlus {
     tt_has_unary_plus_test_value<F, true>();
     tt_has_unary_plus_test_value<G, false>();
 
-    tt_has_unary_plus_test_value<int[3], false>();
+    tt_has_unary_plus_test_value<int[3], true>();
     tt_has_unary_plus_test_value<void, false>();
   }
 };

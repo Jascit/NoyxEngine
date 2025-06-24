@@ -33,7 +33,7 @@ struct TestTypeInvokerHasTrivialDestructor {
       ~F() = default;
     };                                
     struct G {
-      virtual void foo();
+      virtual void foo() {};
     };                                  
     struct H {
       virtual ~H() = default;
@@ -54,9 +54,9 @@ struct TestTypeInvokerHasTrivialDestructor {
     tt_has_trivial_destructor_test_value<D, true>();
     tt_has_trivial_destructor_test_value<E, false>();
     tt_has_trivial_destructor_test_value<F, true>();
-    tt_has_trivial_destructor_test_value<G, false>();
+    tt_has_trivial_destructor_test_value<G, true>();
     tt_has_trivial_destructor_test_value<H, false>();
-    tt_has_trivial_destructor_test_value<I, true>();
+    tt_has_trivial_destructor_test_value<I, false>();
   }
 };
 

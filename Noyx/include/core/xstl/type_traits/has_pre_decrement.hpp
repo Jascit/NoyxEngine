@@ -6,6 +6,6 @@ namespace xstl {
   struct has_pre_decrement : xstl::false_type{};
 
   template<typename T>
-    requires requires { --xstl::declval<T>(); }
+    requires requires (T& t) { --t; }
   struct has_pre_decrement<T> : xstl::true_type{};
 }

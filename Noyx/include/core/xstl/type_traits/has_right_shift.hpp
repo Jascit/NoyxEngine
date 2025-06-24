@@ -2,10 +2,10 @@
 #include "integral_constant.hpp"
 
 namespace xstl {
-  template<typename T>
+  template<typename T, typename U>
   struct has_right_shift : xstl::false_type{};
 
-  template<typename T>
-    requires requires { xstl::declval<T>() >> xstl::declval<T>(); }
-  struct has_right_shift<T> : xstl::true_type{};
+  template<typename T, typename U>
+    requires requires (T a, U b) { a >> b; }
+  struct has_right_shift<T, U> : xstl::true_type{};
 }
