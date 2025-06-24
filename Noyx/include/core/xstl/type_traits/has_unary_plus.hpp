@@ -6,6 +6,6 @@ namespace xstl {
   struct has_unary_plus : xstl::false_type {};
 
   template<typename T>
-    requires requires(T t) { +t; }
+    requires requires(T& t) { +t; }
   struct has_unary_plus<T> : xstl::true_type {};
 }
