@@ -1,7 +1,7 @@
 #pragma once
 #include "common_type.hpp"
 #include "remove_reference.hpp"
-
+//TODO: don't work, need to find the error
 namespace xstl {
   namespace details {
     template<typename T, typename U>
@@ -36,7 +36,7 @@ namespace xstl {
   struct common_reference {};
 
   template<typename T>
-  struct common_reference<T> {
+  struct common_reference<T, T> {
     using type = T;
   };
 

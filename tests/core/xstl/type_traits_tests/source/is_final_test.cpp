@@ -21,18 +21,16 @@ constexpr void tt_is_final_test_value(bool expected) {
 #endif
 }
 
-struct IsFinalUnitTest_NotFinal {};
-
-struct IsFinalUnitTest_Final final {};
-
-struct IsFinalUnitTest_DerivedFromNotFinal : IsFinalUnitTest_NotFinal {};
-
 struct TestTypeInvokerIsFinal {
   constexpr void operator()() const {
+    struct NotFinal {};
+    struct Final final {};
+    struct DerivedFromNotFinal : NotFinal {};
+
     tt_is_final_test_value<int>(false);
-    tt_is_final_test_value<IsFinalUnitTest_NotFinal>(false);
-    tt_is_final_test_value<IsFinalUnitTest_Final>(true);
-    tt_is_final_test_value<IsFinalUnitTest_DerivedFromNotFinal>(false);
+    tt_is_final_test_value<NotFinal>(false);
+    tt_is_final_test_value<Final>(true);
+    tt_is_final_test_value<DerivedFromNotFinal>(false);
   }
 };
 

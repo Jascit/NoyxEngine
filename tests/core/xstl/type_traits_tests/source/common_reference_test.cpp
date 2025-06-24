@@ -1,4 +1,4 @@
-#include "common_reference.hpp"    // ваш заголовок з common_reference_t
+#include <type_traits/common_reference.hpp>    // ваш заголовок з common_reference_t
 #include <type_traits/is_same.hpp> // для xstl::is_same
 #include <tt_test_detail.hpp>      // ваш фреймворк NOYX_ASSERT_…
 

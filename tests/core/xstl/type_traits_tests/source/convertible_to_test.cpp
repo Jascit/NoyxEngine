@@ -23,19 +23,17 @@ constexpr void tt_convertible_to_test_value(bool expected) {
 #endif
 }
 
-struct ConvertibleToUnitTestA {};
-struct ConvertibleToUnitTestB {
-  ConvertibleToUnitTestB(const ConvertibleToUnitTestA&) {} 
-};
-
-struct ConvertibleToUnitTestC {
-  explicit ConvertibleToUnitTestC(const ConvertibleToUnitTestA&) {}
-};
-
-struct ConvertibleToUnitTestD {};
-
 struct TestTypeInvokerConvertibleTo {
   constexpr void operator()() const {
+    struct A {};
+    struct B {
+      B(const A&) {}
+    };
+    struct C {
+      explicit C(const A&) {}
+    };
+    struct D {};
+
     tt_convertible_to_test_value<int, double>(true);     
     tt_convertible_to_test_value<double, int>(true);        
     tt_convertible_to_test_value<int, char>(true);
@@ -45,12 +43,12 @@ struct TestTypeInvokerConvertibleTo {
     tt_convertible_to_test_value<void*, int*>(false);
     tt_convertible_to_test_value<int*, const void*>(true);
 
-    tt_convertible_to_test_value<ConvertibleToUnitTestA, ConvertibleToUnitTestB>(true);    
-    tt_convertible_to_test_value<ConvertibleToUnitTestA, ConvertibleToUnitTestC>(false);   
-    tt_convertible_to_test_value<ConvertibleToUnitTestA, ConvertibleToUnitTestD>(false);   
+    tt_convertible_to_test_value<A, B>(true);    
+    tt_convertible_to_test_value<A, C>(false);   
+    tt_convertible_to_test_value<A, D>(false);   
 
     tt_convertible_to_test_value<int, int>(true);
-    tt_convertible_to_test_value<ConvertibleToUnitTestB, ConvertibleToUnitTestB>(true);
+    tt_convertible_to_test_value<B, B>(true);
   }
 };
 
