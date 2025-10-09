@@ -6,7 +6,7 @@ if(EXPLICIT_SUBDIRECTORIES)
     )
 else()
     set(CORE_TEST_SUBDIRECTORIES 
-	    xstl
+        
     )
 endif()
 
