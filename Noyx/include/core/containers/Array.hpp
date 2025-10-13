@@ -4,7 +4,6 @@
 #include <../../platform/Typedef.hpp>
 #include <../../utility/utility.hpp>
 #include <type_traits>
-#include "XMemory.hpp"
 #include <vector>
 
 namespace noyx {
