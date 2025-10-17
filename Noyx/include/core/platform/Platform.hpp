@@ -75,3 +75,11 @@
 #if (defined(NOYX_ARCH_ARM) || defined(_M_ARM) || defined(__arm__)) && !defined(PLATFORM_CPU_ARM_FAMILY)
 #define PLATFORM_CPU_ARM_FAMILY
 #endif
+
+#if defined(_MSC_VER)
+#  define FORCE_INLINE __forceinline
+#elif defined(__GNUC__) || defined(__clang__)
+#  define FORCE_INLINE inline __attribute__((always_inline))
+#else
+#  define FORCE_INLINE inline
+#endif

@@ -1,5 +1,7 @@
 #pragma once
 #include <type_traits>
+#include <xmemory>
+
 namespace noyx {
   namespace utility {
     template<typename T>
@@ -11,10 +13,10 @@ namespace noyx {
     }
 
     struct _FirstOneSecondArgs {
-      FirstOneSecondArgs() = default;
+      _FirstOneSecondArgs() = default;
     };
     struct _FirstZeroSecondArgs {
-      FirstZeroSecondArgs() = default;
+      _FirstZeroSecondArgs() = default;
     };
 
     template<typename T1, typename T2, bool = std::is_empty_v<T1> && !std::is_final_v<T1>>//fuck T2
@@ -23,6 +25,21 @@ namespace noyx {
       T2 second_;
 
     public:
+      // need to have overload move operator=
+      constexpr void swap(TCompressedPair<T1, T2, false>&& other) noexcept(std::is_nothrow_copy_assignable_v<T1>&& std::is_nothrow_copy_assignable_v<T2>) {
+        T2 temp1_ = std::move(first_);
+        T2 temp2_ = std::move(second_);
+        second_ = std::move(other.second());
+        first_ = std::move(other.first());
+        other.second_ = std::move(temp1_);
+        other.second_ = std::move(temp2_);
+      }
+      // need to have overload copy operator=
+      constexpr void copy(const TCompressedPair<T1, T2, false>& other) noexcept(std::is_nothrow_copy_assignable_v<T1>&& std::is_nothrow_copy_assignable_v<T2>) {
+        second_ = other.second();
+        first_ = other.first();
+      }
+      TCompressedPair() = default;
       template<typename... Args>
       constexpr TCompressedPair(_FirstZeroSecondArgs, Args&&... args) noexcept(
         std::conjunction_v<
@@ -50,19 +67,19 @@ namespace noyx {
         : first_(std::forward<U1>(f)), second_(std::forward<U2>(s)) {
       }
 
-      constexpr T1& GetFirst() noexcept {
+      constexpr T1& first() noexcept {
         return first_;
       }
 
-      constexpr const T1& GetFirst() const noexcept {
+      constexpr const T1& first() const noexcept {
         return first_;
       }
 
-      constexpr T2& GetSecond() noexcept {
+      constexpr T2& second() noexcept {
         return second_;
       }
 
-      constexpr const T2& GetSecond() const noexcept {
+      constexpr const T2& second() const noexcept {
         return second_;
       }
     };
@@ -72,6 +89,20 @@ namespace noyx {
       T2 second_;
 
     public:
+      // need to have overload move operator=
+      constexpr void swap(TCompressedPair<T1, T2>&& other) noexcept(
+        std::is_nothrow_move_assignable_v<T1>&& std::is_nothrow_move_assignable_v<T2>)
+      {
+        T2 tmp2 = std::move(second_);
+        second_ = std::move(other.second_);
+        other.second_ = std::move(tmp2);
+      }
+
+      // need to have overload copy operator=
+      constexpr void copy(const TCompressedPair<T1, T2>& other) noexcept(std::is_nothrow_copy_assignable_v<T1>&& std::is_nothrow_copy_assignable_v<T2>) {
+        second_ = other.second();
+      }
+      TCompressedPair() : T1() {};
       template<typename... Args>
       constexpr TCompressedPair(_FirstZeroSecondArgs, Args&&... args) noexcept(
         std::conjunction_v<
@@ -99,21 +130,51 @@ namespace noyx {
         : T1(std::forward<U1>(f)), second_(std::forward<U2>(s)) {
       }
 
-      constexpr T1& GetFirst() noexcept {
-        return *this;
+      inline constexpr T1& first() noexcept {
+        return static_cast<T1&>(*this);
       }
 
-      constexpr const T1& GetFirst() const noexcept {
-        return *this;
+      inline constexpr const T1& first() const noexcept {
+        return static_cast<T1&>(*this);
       }
 
-      constexpr T2& GetSecond() noexcept {
+      inline constexpr T2& second() noexcept {
         return second_;
       }
 
-      constexpr const T2& GetSecond() const noexcept {
+      inline constexpr const T2& second() const noexcept {
         return second_;
       }
     };
+
+    template<typename Alloc, typename InputPtr, typename DestPtr, typename SizeType>
+    DestPtr _initialized_copy_n(InputPtr src, SizeType count, DestPtr dest, Alloc& alloc) {
+      using traits = std::allocator_traits<Alloc>;
+      using value_type = typename traits::value_type;
+      using raw_ptr = typename Alloc::value_type*;
+
+      if constexpr (std::is_trivially_copyable_v<value_type>) {
+        memcpy(static_cast<void*>(dest), static_cast<const void*>(src), static_cast<size_t>(count) * sizeof(value_type));
+        return dest + count;
+      }
+      else {
+        // Загальний шлях: поелементно construct + rollback при виключенні
+        size_t constructed = 0;
+        try {
+          for (SizeType i = 0; i < count; ++i) {
+            traits::construct(alloc, dest + i, src[i]); // placement new через аллокатор
+            ++constructed;
+          }
+          return dest + count;
+        }
+        catch (...) {
+          // знищити те, що вже сконструйовано
+          for (size_t j = 0; j < constructed; ++j) {
+            traits::destroy(alloc, dest + (constructed - 1 - j));
+          }
+          throw;
+        }
+      }
+    }
   }
 }

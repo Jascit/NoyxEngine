@@ -1,7 +1,7 @@
 #pragma once
 
 #include <../../memory/allocators/AllocatorTraits.hpp>
-#include <../../platform/Typedef.hpp>
+#include <../../platform/typedef.hpp>
 #include <../../utility/utility.hpp>
 #include <type_traits>
 #include <vector>

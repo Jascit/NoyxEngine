@@ -17,7 +17,7 @@ namespace noyx {
         virtualBase_ = VirtualAlloc(NULL, virtualSpaceSize_, MEM_RESERVE, PAGE_READWRITE);
       }
     private:
-      const uint64 virtualSpaceSize_ = 200ULL * 1024 * 1024 * 1024;
+      const uint64 virtualSpaceSize_ = 100ULL * 1024 * 1024 * 1024;
       void* virtualBase_ = nullptr;
 
     };
