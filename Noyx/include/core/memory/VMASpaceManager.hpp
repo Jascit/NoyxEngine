@@ -3,10 +3,10 @@
 #include <Windows.h> 
 #include <memory>
 #include "typedef.hpp"
+#include "containers/XArray.hpp"
 
 namespace noyx {
   namespace detail {
-    class RadixMap; 
     struct PageMetadata;
     //reserve | free virtual memory space, hold metadata in radix tree
     class VMASpaceMG {
