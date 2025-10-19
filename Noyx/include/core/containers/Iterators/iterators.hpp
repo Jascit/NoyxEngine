@@ -1,6 +1,6 @@
 #pragma once
 #include <array>
-#include "../../../platform/typedef.hpp"
+#include <platform/typedef.hpp>
 
 namespace noyx {
   namespace containers {

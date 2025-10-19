@@ -1,7 +1,7 @@
 #pragma once
 
-#include <../../platform/typedef.hpp>
-#include <../../utility/utility.hpp>
+#include <platform/typedef.hpp>
+#include <utility/utility.hpp>
 #include <type_traits>
 #include <memory>
 #include <cstring>

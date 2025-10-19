@@ -28,7 +28,7 @@ endforeach()
 #explicit directories to test from subdirectories (core/platform/audio)
 #if NOT EXISTS, then you'll be testing whole module/modules
 set(EXPLICIT_SUBDIRECTORIES 
-    xstl
+    containers
 )
 
 message(STATUS "------TOP_TEST CMAKE------")
