@@ -1,5 +1,5 @@
 # CMakeLists.txt for the Core Module (Containers)
-
+set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/Noyx/Include/core")
 file(GLOB_RECURSE TESTS_CORE_CONTAINERS_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp
 )
@@ -12,6 +12,7 @@ else()
 
     add_library(CORE_MODULE_CONTAINERS_TESTS OBJECT ${TESTS_CORE_CONTAINERS_SOURCES})
     target_include_directories(CORE_MODULE_CONTAINERS_TESTS PUBLIC
+        ${CORE_INCLUDES}
         ${TEST_DETAILS_PATH}
     )
     target_link_libraries(CORE_MODULE_CONTAINERS_TESTS PUBLIC CORE_MODULE)

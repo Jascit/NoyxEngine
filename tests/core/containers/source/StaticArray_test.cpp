@@ -2,7 +2,7 @@
 // Simple unit-test harness for noyx::containers::TStaticArray
 // Drop into your project that contains StaticArray.h
 #include <tests_details.hpp>
-#include "containers/StaticArray.hpp" 
+#include <containers/StaticArray.hpp>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -174,7 +174,7 @@ void TStaticArray_test_zero_size() {
 
 // Test 10: destructor behavior / RAII smoke test (run many allocations)
 void TStaticArray_test_stress_alloc_dealloc() {
-  for (int iter = 0; iter < 2000; ++iter) {
+  for (int iter = 0; iter < 20000; ++iter) {
     TStaticArray<int> a((TStaticArray<int>::size_type)(iter % 100));
     // write something if non-empty
     if (a.size() > 0) a[(TStaticArray<int>::size_type)0] = iter;

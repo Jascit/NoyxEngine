@@ -1,6 +1,7 @@
 #pragma once
 #include "Platform.hpp"
 
+#define NODISCARD [[nodiscard]]
 namespace noyx {
 #if defined(PLATFORM_WINDOWS)
   using size_t = unsigned int;

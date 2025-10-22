@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <memory>
 #include <cstring>
-#include "Iterators/iterators.hpp"
+#include "iterators/iterators.hpp"
 
 namespace noyx {
   namespace containers {
@@ -13,8 +13,7 @@ namespace noyx {
     template<typename T>
     class TStaticArray {
       using allocator_type = std::allocator<T>;// TODO: add StaticAllocator
-      using rebinded_alloc = typename std::allocator_traits<allocator_type>::template rebind_alloc<T>;
-      using alloc_traits = std::allocator_traits<rebinded_alloc>;
+      using alloc_traits = std::allocator_traits<allocator_type>;
 
     public:
       using value_type = T;
@@ -47,7 +46,7 @@ namespace noyx {
         }
 
         // otherwise construct elements with rollback on exception
-        rebinded_alloc& al = pair_.first();
+        allocator_type& al = pair_.first();
         size_type constructed = 0;
         try {
           for (; constructed < size_; ++constructed) {
@@ -74,7 +73,7 @@ namespace noyx {
         }
 
         pair_.second() = pair_.first().allocate(size_);
-        rebinded_alloc& al = pair_.first();
+        allocator_type& al = pair_.first();
         size_type constructed = 0;
         try {
           if constexpr (std::is_trivially_copyable_v<T>) {
@@ -101,7 +100,7 @@ namespace noyx {
       // ---- move ctor
       TStaticArray(TStaticArray&& other) noexcept {
         // steal resources
-        pair_ = std::move(other.pair_);
+        pair_.copy(other.pair_);
         size_ = other.size_;
         other.pair_.second() = nullptr;
         other.size_ = 0;
@@ -110,7 +109,7 @@ namespace noyx {
       // ---- dtor
       ~TStaticArray() {
         if (pair_.second() != nullptr) {
-          rebinded_alloc& al = pair_.first();
+          allocator_type& al = pair_.first();
           if constexpr (!std::is_trivially_destructible_v<T>) {
             for (size_type i = 0; i < size_; ++i) {
               alloc_traits::destroy(al, pair_.second() + i);
@@ -135,10 +134,10 @@ namespace noyx {
         if (this == &other) return *this;
 
         // destroy and deallocate current storage
-        _clear_and_deallocate();
+        clear_and_deallocate();
 
         // steal other's resources
-        pair_ = std::move(other.pair_);
+        pair_.swap(other.pair_);
         size_ = other.size_;
         other.pair_.second() = nullptr;
         other.size_ = 0;
@@ -196,20 +195,20 @@ namespace noyx {
 
       // ---- swap
       void swap(TStaticArray<T>& other) noexcept(
-        noexcept(std::declval<noyx::utility::TCompressedPair<allocator_type, T*>>().swap(std::declval<noyx::utility::TCompressedPair<allocator_type, T*>>()))
+        noexcept(std::declval<noyx::utility::TCompressedPair<allocator_type, T*>&>().swap(std::declval<noyx::utility::TCompressedPair<allocator_type, T*>&>()))
         )
       {
+        pair_.swap(other.pair_);
         size_type tmp2_ = other.size_;
-        pair_.swap(std::move(other.pair_));
         other.size_ = size_;
         size_ = tmp2_;
       }
 
     private:
       // helper to destroy elements and deallocate storage
-      void _clear_and_deallocate() noexcept {
+      void clear_and_deallocate() noexcept {
         if (pair_.second() == nullptr) return;
-        rebinded_alloc& al = pair_.first();
+        allocator_type& al = pair_.first();
         if constexpr (!std::is_trivially_destructible_v<T>) {
           for (size_type i = 0; i < size_; ++i)
             alloc_traits::destroy(al, pair_.second() + i);
@@ -228,7 +227,7 @@ namespace noyx {
   namespace utility {
     template<typename T>
     constexpr void swap(containers::TStaticArray<T>& first, containers::TStaticArray<T>& second)
-      noexcept(noexcept(first.swap(second))) {
+      noexcept(noexcept(std::declval<containers::TStaticArray<T>&>().swap(std::declval<containers::TStaticArray<T>&>()))) {
       first.swap(second);
     }
   }
