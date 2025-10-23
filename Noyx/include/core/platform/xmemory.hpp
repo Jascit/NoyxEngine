@@ -293,7 +293,7 @@ inline unsigned int popcount_zero_u32(noyx::uint32 x) noexcept {
 #if defined(__GNUC__) || defined(__clang__)
   return __builtin_popcount(y);
 #elif defined(_MSC_VER)
-  return __popcnt(y);
+  return __popcnt(y); 
 #else
   uint32_t v = y;
   v = v - ((v >> 1) & 0x55555555);
@@ -305,7 +305,6 @@ inline unsigned int popcount_zero_u32(noyx::uint32 x) noexcept {
 #endif
 }
 
-#if defined(PLATFORM_CPU_X86_64_FAMILY)
 // ---------- uint64_t variants ----------
 
 /**
@@ -440,6 +439,5 @@ inline noyx::uint64 popcount_zero_u64(noyx::uint64 x) noexcept {
   return v & 0x7F;
 #endif
 }
-#endif // PLATFORM_CPU_X86_64_FAMILY
 
 // TODO:SIMD instructions
