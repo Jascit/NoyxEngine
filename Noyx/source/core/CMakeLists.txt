@@ -1,5 +1,5 @@
 # CMakeLists.txt for the Core module
-
+set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/Noyx/Include/core")
 file(GLOB_RECURSE CORE_SRC CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )

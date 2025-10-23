@@ -6,7 +6,6 @@ set(NOYX_SUBDIRECTORIES
     render
 )
 
-set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/Noyx/Include/core")
 set(PLATFORM_INCLUDES "${CMAKE_SOURCE_DIR}/Noyx/Include/platform")
 
 foreach(SUBDIR ${NOYX_SUBDIRECTORIES})

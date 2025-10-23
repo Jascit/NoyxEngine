@@ -26,7 +26,7 @@ namespace noyx {
 
     public:
       // need to have overload move operator=
-      constexpr void swap(TCompressedPair<T1, T2, false>&& other) noexcept(std::is_nothrow_copy_assignable_v<T1>&& std::is_nothrow_copy_assignable_v<T2>) {
+      constexpr void swap(TCompressedPair<T1, T2, false>& other) noexcept(std::is_nothrow_copy_assignable_v<T1>&& std::is_nothrow_copy_assignable_v<T2>) {
         T2 temp1_ = std::move(first_);
         T2 temp2_ = std::move(second_);
         second_ = std::move(other.second());
@@ -90,7 +90,7 @@ namespace noyx {
 
     public:
       // need to have overload move operator=
-      constexpr void swap(TCompressedPair<T1, T2>&& other) noexcept(
+      constexpr void swap(TCompressedPair<T1, T2>& other) noexcept(
         std::is_nothrow_move_assignable_v<T1>&& std::is_nothrow_move_assignable_v<T2>)
       {
         T2 tmp2 = std::move(second_);
@@ -175,6 +175,14 @@ namespace noyx {
           throw;
         }
       }
+    }
+    template<typename T1, typename T2, bool B>
+    constexpr void swap(TCompressedPair<T1, T2, B>& first,
+      TCompressedPair<T1, T2, B>& second)
+      noexcept(noexcept(std::declval<TCompressedPair<T1, T2, B>&>().swap(
+        std::declval<TCompressedPair<T1, T2, B>&>())))
+    {
+      first.swap(second);
     }
   }
 }

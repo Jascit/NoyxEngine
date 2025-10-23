@@ -1,5 +1,3 @@
-#pragma once
-
 #include "xmap.hpp"
 #include "traits.hpp"
 #include <array>
@@ -117,10 +115,10 @@ namespace noyx {
       //std::optional<mapped_type> lookup(const key_type& index) const;
 
       // collect range [start, end] inclusive
-      //std::vector<std::pair<key_type, mapped_type>>
-      //  collect_range(const key_type& start, const key_type& end) const {
+      std::vector<std::pair<key_type, mapped_type>>
+        collect_range(const key_type& start, const key_type& end) const {
 
-      //};
+      };
 
       // iterators (begin/end) - declarations only
       iterator begin() noexcept {
