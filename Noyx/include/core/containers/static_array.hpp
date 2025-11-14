@@ -9,26 +9,6 @@
 
 namespace noyx {
 	namespace containers {
-        template <typename First, typename Second>
-        class compressed_pair : private First, private Second
-        {
-        public:
-            compressed_pair(const First& f, const Second& s)
-                : First(f), Second(s) {
-            }
-
-            compressed_pair(First&& f, Second&& s)
-                : First(std::move(f)), Second(std::move(s)) {
-            }
-
-            First& first() noexcept { return static_cast<First&>(*this); }
-            const First& first() const noexcept { return static_cast<const First&>(*this); }
-
-            Second& second() noexcept { return static_cast<Second&>(*this); }
-            const Second& second() const noexcept { return static_cast<const Second&>(*this); }
-        };
-
-
         template<typename T, size_t N, typename Alloc = std::allocator<T>>
         class StaticArray {
         private:
@@ -39,7 +19,7 @@ namespace noyx {
 
             using pointer = T*;
 
-            compressed_pair<pointer, Alloc> storage_;
+            noyx::utility::TCompressedPair<T[N], Alloc> storage_;
 
             size_t size_ = N;
 
@@ -51,38 +31,29 @@ namespace noyx {
 
 
         public:
-            explicit StaticArray(const Alloc& alloc = Alloc()) noexcept : storage_(inline_data_, alloc) {} 
+            explicit StaticArray(const Alloc& a = Alloc()) noexcept : storage_({ _FirstZeroSecondArgs{}, a }) {}
 
 
-            StaticArray(const StaticArray& other) : storage_(inline_data_, other.alloc())                          //copy-constructor
+            StaticArray(const StaticArray& other) : storage_({ _FirstZeroSecondArgs{}, other.alloc() })                          //copy-constructor
+            {
+                noyx::utility::_initialized_copy_n(other.data_ptr(), N, data_ptr(), alloc());
+            }
+
+            StaticArray(StaticArray&& other) noexcept : storage_({_FirstZeroSecondArgs{}, std::move(other.alloc())})           //move-constructor
             {
                 if constexpr (kTrivial) {
-                    std::memcpy(inline_data_, other.inline_data_, sizeof(T) * N);
+                    std::memcpy(data_ptr(), other.data_ptr(), sizeof(T) * N);
                 }
                 else {
-                    for (size_t i = 0; i < N; ++i) {
-                        new (&inline_data_[i]) T(other.inline_data_[i]);
-                    }
+                    for (size_t i = 0; i < N; ++i)
+                        new(&data_ptr()[i]) T(std::move(other.data_ptr()[i]));
                 }
             }
 
-            StaticArray(StaticArray&& other) noexcept : storage_(inline_data_, std::move(other.alloc()))           //move-constructor
-            {
-                if constexpr (kTrivial) {
-                    std::memcpy(inline_data_, other.inline_data_, sizeof(T) * N);
-                }
-                else {
-                    for (size_t i = 0; i < N; ++i) {
-                        new (&inline_data_[i]) T(std::move(other.inline_data_[i]));
-                    }
-                }
-            }
-
-            ~StaticArray() noexcept {                                                                              //destructor
+            ~StaticArray() {
                 if constexpr (!std::is_trivially_destructible_v<T>) {
-                    for (size_t i = 0; i < size_; ++i) {
-                        inline_data_[i].~T();
-                    }
+                    for (size_t i = 0; i < N; ++i)
+                        alloc().destroy(data_ptr() + i);
                 }
             }
 
@@ -93,19 +64,14 @@ namespace noyx {
             size_t size() const noexcept { return size_; }
             bool empty() const noexcept { return size_ == 0; }
 
+            T* at(size_t i) noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
+            const T* at(size_t i) const noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
+
             T& front() noexcept { return data_ptr()[0]; }
             const T& front() const noexcept { return data_ptr()[0]; }
 
             T& back() noexcept { return data_ptr()[N - 1]; }
             const T& back() const noexcept { return data_ptr()[N - 1]; }
-
-            T* at(size_t i) noexcept {
-                return (i < N) ? &data_ptr()[i] : nullptr;
-            }
-
-            const T* at(size_t i) const noexcept {
-                return (i < N) ? &data_ptr()[i] : nullptr;
-            }
 		};
 	}
 }
