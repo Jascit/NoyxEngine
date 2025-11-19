@@ -3,6 +3,7 @@
 #include <platform/typedef.hpp>
 #include <utility/utility.hpp>
 #include <type_traits>
+#include <xmemory>
 #include <memory>
 #include <cstring>
 #include "iterators/iterators.hpp"
@@ -13,65 +14,88 @@ namespace noyx {
         class StaticArray {
         private:
 
-            static constexpr bool kTrivial = std::is_trivially_copyable_v<T>;
+            static constexpr bool kTrivialCopyMove =
+                std::is_trivially_copyable_v<T> &&
+                std::is_trivially_move_constructible_v<T>;
 
-            T inline_data_[N];
+
+            static constexpr bool kTrivialDestroy = std::is_trivially_destructible_v<T>;
 
             using pointer = T*;
+            using allocator_type = Alloc;
+            using traits = std::allocator_traits<allocator_type>;
 
-            noyx::utility::TCompressedPair<T[N], Alloc> storage_;
+            noyx::utility::TCompressedPair<Alloc, T[N]> storage_;
 
-            size_t size_ = N;
+            pointer data_ptr() noexcept { return storage_.second(); }
+            const pointer data_ptr() const noexcept { return storage_.second(); }
 
-            pointer data_ptr() noexcept { return storage_.first(); }
-            const pointer data_ptr() const noexcept { return storage_.first(); }
-
-            Alloc& alloc() noexcept { return storage_.second(); }
-            const Alloc& alloc() const noexcept { return storage_.second(); }
+            Alloc& alloc() noexcept { return storage_.first(); }
+            const Alloc& alloc() const noexcept { return storage_.first(); }
 
 
         public:
-            explicit StaticArray(const Alloc& a = Alloc()) noexcept : storage_({ _FirstZeroSecondArgs{}, a }) {}
-
-
-            StaticArray(const StaticArray& other) : storage_({ _FirstZeroSecondArgs{}, other.alloc() })                          //copy-constructor
+                                                                                               // default ctor
+            explicit StaticArray(const allocator_type& a = allocator_type()) noexcept
+                : storage_({ _FirstZeroSecondArgs{}, a })
             {
-                noyx::utility::_initialized_copy_n(other.data_ptr(), N, data_ptr(), alloc());
+                if constexpr (!std::is_trivially_default_constructible_v<T>) {
+                    for (size_t i = 0; i < N; ++i)
+                        ::new (data_ptr() + i) T();
+                }
             }
 
-            StaticArray(StaticArray&& other) noexcept : storage_({_FirstZeroSecondArgs{}, std::move(other.alloc())})           //move-constructor
+
+                                                                                               // copy ctor
+            StaticArray(const StaticArray& other)
+                : storage_({ _FirstZeroSecondArgs{},
+                traits::select_on_container_copy_construction(other.alloc()) })
             {
-                if constexpr (kTrivial) {
+                if constexpr (kTrivialCopyMove) {
                     std::memcpy(data_ptr(), other.data_ptr(), sizeof(T) * N);
                 }
                 else {
                     for (size_t i = 0; i < N; ++i)
-                        new(&data_ptr()[i]) T(std::move(other.data_ptr()[i]));
+                        ::new (data_ptr() + i) T(other.data_ptr()[i]);
                 }
             }
 
-            ~StaticArray() {
-                if constexpr (!std::is_trivially_destructible_v<T>) {
+
+                                                                                                // move ctor
+            StaticArray(StaticArray&& other) noexcept
+                : storage_({ _FirstZeroSecondArgs{}, std::move(other.alloc()) })
+            {
+                if constexpr (kTrivialCopyMove) {
+                    std::memcpy(data_ptr(), other.data_ptr(), sizeof(T) * N);
+                }
+                else {
                     for (size_t i = 0; i < N; ++i)
-                        alloc().destroy(data_ptr() + i);
+                        ::new (data_ptr() + i) T(std::move(other.data_ptr()[i]));
+                }
+            }
+
+
+            ~StaticArray() {
+                if constexpr (!kTrivialDestroy) {
+                    for (size_t i = 0; i < N; ++i)
+                        data_ptr()[i].~T();
                 }
             }
 
         public:
-            T& operator[](size_t i) noexcept { return data_ptr()[i]; }
-            const T& operator[](size_t i) const noexcept { return data_ptr()[i]; }
+            constexpr T& operator[](size_t i) noexcept { return data_ptr()[i]; }
+            constexpr const T& operator[](size_t i) const noexcept { return data_ptr()[i]; }
 
-            size_t size() const noexcept { return size_; }
-            bool empty() const noexcept { return size_ == 0; }
+            constexpr size_t size() const noexcept { return N; }
 
-            T* at(size_t i) noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
-            const T* at(size_t i) const noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
+            constexpr T* at(size_t i) noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
+            constexpr const T* at(size_t i) const noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
 
-            T& front() noexcept { return data_ptr()[0]; }
-            const T& front() const noexcept { return data_ptr()[0]; }
+            constexpr T& front() noexcept { return data_ptr()[0]; }
+            constexpr const T& front() const noexcept { return data_ptr()[0]; }
 
-            T& back() noexcept { return data_ptr()[N - 1]; }
-            const T& back() const noexcept { return data_ptr()[N - 1]; }
+            constexpr T& back() noexcept { return data_ptr()[N - 1]; }
+            constexpr const T& back() const noexcept { return data_ptr()[N - 1]; }
 		};
 	}
 }
