@@ -55,7 +55,7 @@ namespace noyx {
                     return storage_.second();
                 }
                 else {
-                    return std::launder(reinterpret_cast<const T*>(storage_.second().buffer));
+                    return reinterpret_cast<const T*>(storage_.second().buffer);
                 }
             }
 
@@ -117,7 +117,7 @@ namespace noyx {
             {
                 if constexpr (kUseHeap) {
                     storage_.second() = other.storage_.second();
-                    other.storage_.second() = nullptr; // Забираємо володіння
+                    other.storage_.second() = nullptr;
                 }
                 else {
                     T* dest = data_ptr();
