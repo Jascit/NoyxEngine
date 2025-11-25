@@ -73,6 +73,15 @@ namespace noyx {
                 }
             }
 
+            void destroy_elements() {
+                if constexpr (!kTrivialDestroy) {
+                    T* ptr = data_ptr();
+                    for (size_t i = 0; i < N; ++i) {
+                        traits::destroy(alloc(), ptr + (N - 1 - i));
+                    }
+				}
+            }
+
         public:
             explicit constexpr StaticArray(const allocator_type& a = allocator_type())
                 : storage_({ _FirstZeroSecondArgs{}, a })
@@ -144,6 +153,131 @@ namespace noyx {
                 }
 
                 deallocate_storage();
+            }
+
+        public:
+            using POCMA = typename traits::propagate_on_container_move_assignment;
+            using POCCA = typename traits::propagate_on_container_copy_assignment;
+            using POCS = typename traits::propagate_on_container_swap;
+
+            // --- Move Assignment ---
+            StaticArray& operator=(StaticArray&& other) noexcept 
+            {
+                if(this == other) return *this;
+
+                if constexpr (POCMA::value)
+                {
+                    if constexpr (kUseHeap)
+                    {
+                        destroy_elements();
+						deallocate_storage();
+                    }
+                    else
+                    {
+                        destroy_elements();
+                    }
+					alloc() = std::move(other.alloc());
+                }
+
+                else
+                {
+                    destroy_elements();
+                    if constexpr (kUseHeap) {
+                        if (alloc() != other.alloc())
+                        {
+                            deallocate_storage();
+                            allocate_storage();
+                        }
+                    }
+                }
+
+                if constexpr (kUseHeap)
+                {
+                    if (alloc() == other.alloc())
+                    {
+                        storage_.second() = other.storage_.second();
+                        other.storage_.second() = nullptr;
+                        return *this;
+                    }
+                }
+                T* dest = data_ptr();
+                T* src = other.data_ptr();
+                for (size_t i = 0; i < N; ++i) {
+                    traits::construct(alloc(), dest + i, std::move(src[i]));
+                }
+                return *this;
+            }
+
+
+
+			// --- Copy Assignment ---
+            StaticArray& operator=(const StaticArray& other)
+            {
+                if (this == &other) return *this;
+
+                if constexpr (POCCA::value)
+                {
+                    if constexpr (alloc() != other.alloc())
+                    {
+                        destroy_elements();
+                        if constexpr (kUseHeap)
+                        {
+                            deallocate_storage();
+                        }
+                        alloc() = other.alloc();
+
+                        if constexpr (kUseHeap)
+                        {
+                            allocate_storage();
+                        }
+                    }
+                    else
+                    {
+                        destroy_elements();
+                    }
+                }
+                else
+                {
+                    destroy_elements();
+                }
+
+				T* dest = data_ptr();
+				const T* src = other.data_ptr();
+                if constexpr (kTrivialCopyMove) {
+                    std::memcpy(dest, src, kTotalBytes);
+                }
+                else {
+                    for (size_t i = 0; i < N; ++i) {
+                        traits::construct(alloc(), dest + i, src[i]);
+                    }
+				}
+                return *this;
+            }
+
+
+            void swap(StaticArray& other) noexcept {
+                if (this == &other) return;
+
+                if constexpr (POCS::value) {
+                    using std::swap;
+                    swap(alloc(), other.alloc());
+                }
+                else {
+
+                }
+
+                if constexpr (kUseHeap) {
+                    using std::swap;
+                    swap(storage_.second(), other.storage_.second());
+                }
+                else {
+                    T* a = data_ptr();
+                    T* b = other.data_ptr();
+                    for (size_t i = 0; i < N; ++i) {
+                        using std::swap;
+                        swap(a[i], b[i]);
+                    }
+                }
             }
 
         public:
