@@ -88,18 +88,7 @@ namespace noyx {
             {
                 allocate_storage();
 
-                if constexpr (!std::is_trivially_default_constructible_v<T>) {
-                    T* ptr = data_ptr();
-                    for (size_t i = 0; i < N; ++i) {
-                        traits::construct(alloc(), ptr + i);
-                    }
-                }
-                else {
-                    T* ptr = data_ptr();
-                    for (size_t i = 0; i < N; ++i) {
-                        traits::construct(alloc(), ptr + i);
-                    }
-                }
+                uninitialized_default_construct_n(alloc(), data_ptr(), N);
             }
 
             constexpr StaticArray(const StaticArray& other)
@@ -108,17 +97,7 @@ namespace noyx {
             {
                 allocate_storage();
 
-                T* dest = data_ptr();
-                const T* src = other.data_ptr();
-
-                if constexpr (kTrivialCopyMove) {
-                    std::memcpy(dest, src, kTotalBytes);
-                }
-                else {
-                    for (size_t i = 0; i < N; ++i) {
-                        traits::construct(alloc(), dest + i, src[i]);
-                    }
-                }
+                uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
             }
 
             StaticArray(StaticArray&& other) noexcept
@@ -154,6 +133,8 @@ namespace noyx {
 
                 deallocate_storage();
             }
+
+
 
         public:
             using POCMA = typename traits::propagate_on_container_move_assignment;
@@ -277,6 +258,111 @@ namespace noyx {
                         using std::swap;
                         swap(a[i], b[i]);
                     }
+                }
+            }
+
+
+
+        private:
+            // Function-helper to destroy elements from first to last;
+            static void destroy_range(Alloc& a, T* first, T* last) noexcept
+            {
+                // Optimization: No need to call destructor for trivial types.
+                if constexpr (!std::is_trivially_destructible_v<T>)
+                {
+                    while (last != first)
+                    {
+                        --last;
+						traits::destroy(a, last);
+                    }
+                }
+            }
+
+            
+            static T* uninitialized_default_construct_n(Alloc& a, T* first, size_t n)
+            {
+                // Optimization: Leave memory uninitialized for trivial types
+                if constexpr (std::is_trivially_default_constructible_v<T>)
+                {
+                    return first + n;
+                }
+                else
+                {
+					T* current = first;
+                    try
+                    {
+                        for (; n > 0; --n, ++current)
+                        {
+							traits::construct(a, current);
+                        }
+                    }
+					catch (...) // Exception safety: Rollback (destroy) elements constructed so far
+                    {
+                        destroy_range(a, first, current);
+                        throw;
+                    }
+                    return current;
+                }
+            }
+
+
+            static T* uninitialized_fill_n(Alloc& a, T* first, size_t n, const T& val)
+            {
+                // Optimization: Direct assignment (vectorized) for trivial types.
+                if constexpr (std::is_trivially_copy_constructible_v<T>)
+                {
+                    for (size_t i = 0; i < n; i++)
+                    {
+                        first[i] = val;
+                    }
+                    return first + n;
+                }
+                else {
+                    T* current = first;
+                    try {
+                        for (; n > 0; --n, ++current) {
+                            traits::construct(a, current, val);
+                        }
+                    }
+                    catch (...) {
+                        destroy_range(a, first, current);
+                        throw;
+                    }
+                    return current;
+                }
+            }
+
+
+            template <typename InputIter> 
+            static T* uninitialized_copy_n(Alloc& a, T* dest, size_t n, InputIter src)
+            {
+                constexpr bool kCanMemcpy = 
+                    std::is_pointer_v<InputIter> && 
+					std::is_trivially_copyable_v<T>;
+
+                if constexpr (kCanMemcpy)
+                {
+                    if (n > 0) {
+                        std::memcpy(dest, src, n * sizeof(T));
+                    }
+                    return dest + n;
+                }
+                else
+                {
+                    T* current = dest;
+                    try
+                    {
+                        for (; n > 0; --n, ++current, ++src)
+                        {
+							traits::construct(a, current, *src);
+                        }
+                    }
+                    catch (...)
+                    {
+                        destroy_range(a, dest, current);
+                        throw;
+					}
+					return current;
                 }
             }
 
