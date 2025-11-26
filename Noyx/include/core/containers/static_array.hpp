@@ -278,6 +278,31 @@ namespace noyx {
                 }
             }
 
+
+            struct ContructionGuard
+            {
+                Alloc& alloc;
+                T* first;
+                T* current;
+                bool commited;
+
+                ContructionGuard(Alloc& a, T* start_ptr, T*& cur_ptr) : alloc(a), first(start_ptr), current(cur_ptr), commited(false) {}
+
+                ~ContructionGuard()
+                {
+                    if (!commited)
+                    {
+                        destroy_range(alloc, first, current);
+                    }
+                }
+
+                void commit() noexcept
+                {
+                    commited = true;
+				}
+            };
+
+
             
             static T* uninitialized_default_construct_n(Alloc& a, T* first, size_t n)
             {
@@ -289,18 +314,14 @@ namespace noyx {
                 else
                 {
 					T* current = first;
-                    try
+                    ContructionGuard guard(a, first, current);
+
+					for (; n > 0; --n, ++current)
                     {
-                        for (; n > 0; --n, ++current)
-                        {
-							traits::construct(a, current);
-                        }
+                        traits::construct(a, current);
                     }
-					catch (...) // Exception safety: Rollback (destroy) elements constructed so far
-                    {
-                        destroy_range(a, first, current);
-                        throw;
-                    }
+
+					guard.commit();
                     return current;
                 }
             }
@@ -319,16 +340,15 @@ namespace noyx {
                 }
                 else {
                     T* current = first;
-                    try {
-                        for (; n > 0; --n, ++current) {
-                            traits::construct(a, current, val);
-                        }
+                    ContructionGuard guard(a, first, current);
+
+                    for (; n > 0; --n, ++current)
+                    {
+						traits::construct(a, current, val);
                     }
-                    catch (...) {
-                        destroy_range(a, first, current);
-                        throw;
-                    }
-                    return current;
+
+					guard.commit();
+					return current;
                 }
             }
 
@@ -350,18 +370,14 @@ namespace noyx {
                 else
                 {
                     T* current = dest;
-                    try
+                    ConstructionGuard guard(a, dest, current);
+
+                    for (; n > 0; --n, ++current, ++src)
                     {
-                        for (; n > 0; --n, ++current, ++src)
-                        {
-							traits::construct(a, current, *src);
-                        }
-                    }
-                    catch (...)
-                    {
-                        destroy_range(a, dest, current);
-                        throw;
+                        traits::construct(a, current, *src);
 					}
+
+					guard.commit();
 					return current;
                 }
             }
