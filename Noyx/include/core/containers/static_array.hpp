@@ -135,6 +135,38 @@ namespace noyx {
             }
 
 
+        private:
+            void reset() noexcept
+            {
+                destroy_elements();
+                if(kUseHeap)
+                {
+                    deallocate_storage();
+				}
+            }
+
+            bool try_Steal_Resources(StaticArray&& other) noexcept
+            {
+                if constexpr (kUseHeap)
+                {
+                    if (alloc() == other.alloc())
+                    {
+                        storage_.second() = other.storage_.second();
+                        other.storage_.second() = nullptr;
+                        return true;
+                    }
+                }
+                return false;
+			}
+
+            void prepare_buffer_for_write() {
+                if constexpr (kUseHeap) {
+                    if (storage_.second() == nullptr) {
+                        allocate_storage();
+                    }
+                }
+            }
+
 
         public:
             using POCMA = typename traits::propagate_on_container_move_assignment;
@@ -142,109 +174,80 @@ namespace noyx {
             using POCS = typename traits::propagate_on_container_swap;
 
             // --- Move Assignment ---
-            StaticArray& operator=(StaticArray&& other) noexcept 
-            {
-                if(this == other) return *this;
-
-                if constexpr (POCMA::value)
-                {
-                    if constexpr (kUseHeap)
-                    {
-                        destroy_elements();
-						deallocate_storage();
-                    }
-                    else
-                    {
-                        destroy_elements();
-                    }
-					alloc() = std::move(other.alloc());
-                }
-
-                else
-                {
-                    destroy_elements();
-                    if constexpr (kUseHeap) {
-                        if (alloc() != other.alloc())
-                        {
-                            deallocate_storage();
-                            allocate_storage();
-                        }
-                    }
-                }
-
-                if constexpr (kUseHeap)
-                {
-                    if (alloc() == other.alloc())
-                    {
-                        storage_.second() = other.storage_.second();
-                        other.storage_.second() = nullptr;
-                        return *this;
-                    }
-                }
-                T* dest = data_ptr();
-                T* src = other.data_ptr();
-                for (size_t i = 0; i < N; ++i) {
-                    traits::construct(alloc(), dest + i, std::move(src[i]));
-                }
-                return *this;
-            }
-
-
-
-			// --- Copy Assignment ---
-            StaticArray& operator=(const StaticArray& other)
-            {
+            StaticArray& operator=(StaticArray&& other) noexcept {
                 if (this == &other) return *this;
 
-                if constexpr (POCCA::value)
-                {
-                    if constexpr (alloc() != other.alloc())
-                    {
-                        destroy_elements();
-                        if constexpr (kUseHeap)
-                        {
-                            deallocate_storage();
-                        }
-                        alloc() = other.alloc();
+                constexpr bool pocma = POCMA::value;
 
-                        if constexpr (kUseHeap)
-                        {
-                            allocate_storage();
-                        }
-                    }
-                    else
-                    {
-                        destroy_elements();
-                    }
-                }
-                else
-                {
-                    destroy_elements();
+                bool do_full_reset = pocma;
+
+                if constexpr (kUseHeap) {
+                    if (alloc() == other.alloc()) do_full_reset = true;
                 }
 
-				T* dest = data_ptr();
-				const T* src = other.data_ptr();
-                if constexpr (kTrivialCopyMove) {
-                    std::memcpy(dest, src, kTotalBytes);
+                if (do_full_reset) reset();
+                else destroy_elements();
+
+                if constexpr (pocma) {
+                    alloc() = std::move(other.alloc());
                 }
-                else {
-                    for (size_t i = 0; i < N; ++i) {
-                        traits::construct(alloc(), dest + i, src[i]);
-                    }
-				}
+
+                if (try_steal_resources(std::move(other))) {
+                    return *this;
+                }
+
+                prepare_buffer_for_write();
+
+                uninitialized_move_n(alloc(), data_ptr(), N, other.data_ptr());
+
                 return *this;
             }
 
 
-            void swap(StaticArray& other) noexcept {
+            // --- Copy Assignment ---
+            StaticArray& operator=(const StaticArray& other) {
+                if (this == &other) return *this;
+
+                constexpr bool pocca = POCCA::value;
+
+                bool need_full_reset = false;
+                if constexpr (pocca) {
+                    if (alloc() != other.alloc()) {
+                        need_full_reset = true;
+                    }
+                }
+
+                if (need_full_reset) {
+                    reset(); 
+                    alloc() = other.alloc(); 
+                }
+                else {
+                    destroy_elements();
+                }
+
+                prepare_buffer_for_write();
+
+                uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
+
+                return *this;
+            }
+
+
+            // --- Swap ---
+            void swap(StaticArray& other) noexcept(
+                (traits::propagate_on_container_swap::value || traits::is_always_equal::value) &&
+                (!kUseHeap || noexcept(std::swap(std::declval<Alloc&>(), std::declval<Alloc&>())))
+                ) {
                 if (this == &other) return;
 
-                if constexpr (POCS::value) {
+                constexpr bool pocs = traits::propagate_on_container_swap::value;
+
+                if constexpr (pocs) {
                     using std::swap;
                     swap(alloc(), other.alloc());
                 }
                 else {
-
+                    // assert(alloc() == other.alloc());
                 }
 
                 if constexpr (kUseHeap) {
@@ -256,9 +259,13 @@ namespace noyx {
                     T* b = other.data_ptr();
                     for (size_t i = 0; i < N; ++i) {
                         using std::swap;
-                        swap(a[i], b[i]);
+                        swap(a[i], b[i]);   
                     }
                 }
+            }
+
+            friend void swap(StaticArray& lhs, StaticArray& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+                lhs.swap(rhs);
             }
 
 
@@ -304,83 +311,98 @@ namespace noyx {
 
 
             
-            static T* uninitialized_default_construct_n(Alloc& a, T* first, size_t n)
-            {
-                // Optimization: Leave memory uninitialized for trivial types
-                if constexpr (std::is_trivially_default_constructible_v<T>)
-                {
-                    return first + n;
+            private:
+                static T* uninitialized_default_construct_n(Alloc& a, T* first, size_t n) {
+                    if constexpr (std::is_trivially_default_constructible_v<T> && !std::is_volatile_v<T>) {
+                        std::memset(first, 0, n * sizeof(T));
+                        return first + n;
+                    }
+                    else {
+                        T* current = first;
+                        ConstructionGuard guard(a, first, current);
+                        for (; n > 0; --n, ++current) {
+                            traits::construct(a, current);
+                        }
+                        guard.commit();
+                        return current;
+                    }
                 }
-                else
-                {
-					T* current = first;
-                    ContructionGuard guard(a, first, current);
 
-					for (; n > 0; --n, ++current)
-                    {
-                        traits::construct(a, current);
+
+                static T* uninitialized_fill_n(Alloc& a, T* first, size_t n, const T& val) {
+                    constexpr bool kCanUseMemset =
+                        std::is_trivially_copy_constructible_v<T> &&
+                        !std::is_volatile_v<T> &&
+                        (sizeof(T) == 1);
+
+                    if constexpr (kCanUseMemset) {
+                        std::memset(first, static_cast<unsigned char>(val), n);
+                        return first + n;
                     }
 
-					guard.commit();
-                    return current;
-                }
-            }
-
-
-            static T* uninitialized_fill_n(Alloc& a, T* first, size_t n, const T& val)
-            {
-                // Optimization: Direct assignment (vectorized) for trivial types.
-                if constexpr (std::is_trivially_copy_constructible_v<T>)
-                {
-                    for (size_t i = 0; i < n; i++)
-                    {
-                        first[i] = val;
+                    else {
+                        if constexpr (std::is_trivially_copy_constructible_v<T>) {
+                            for (size_t i = 0; i < n; ++i) first[i] = val;
+                            return first + n;
+                        }
+                        else {
+                            T* current = first;
+                            ConstructionGuard guard(a, first, current);
+                            for (; n > 0; --n, ++current) {
+                                traits::construct(a, current, val);
+                            }
+                            guard.commit();
+                            return current;
+                        }
                     }
-                    return first + n;
                 }
-                else {
-                    T* current = first;
-                    ContructionGuard guard(a, first, current);
 
-                    for (; n > 0; --n, ++current)
-                    {
-						traits::construct(a, current, val);
+
+                template <typename InputIter>
+                static T* uninitialized_copy_n(Alloc& a, T* dest, size_t n, InputIter src) {
+                    constexpr bool kCanMemcpy =
+                        std::is_trivially_copy_constructible_v<T> &&
+                        std::is_pointer_v<InputIter> &&
+                        !std::is_volatile_v<T>;
+
+                    if constexpr (kCanMemcpy) {
+                        if (n > 0) {
+                            std::memcpy(dest, src, n * sizeof(T));
+                        }
+                        return dest + n;
                     }
-
-					guard.commit();
-					return current;
-                }
-            }
-
-
-            template <typename InputIter> 
-            static T* uninitialized_copy_n(Alloc& a, T* dest, size_t n, InputIter src)
-            {
-                constexpr bool kCanMemcpy = 
-                    std::is_pointer_v<InputIter> && 
-					std::is_trivially_copyable_v<T>;
-
-                if constexpr (kCanMemcpy)
-                {
-                    if (n > 0) {
-                        std::memcpy(dest, src, n * sizeof(T));
+                    else {
+                        T* current = dest;
+                        ConstructionGuard guard(a, dest, current);
+                        for (; n > 0; --n, ++current, ++src) {
+                            traits::construct(a, current, *src);
+                        }
+                        guard.commit();
+                        return current;
                     }
-                    return dest + n;
                 }
-                else
-                {
-                    T* current = dest;
-                    ConstructionGuard guard(a, dest, current);
 
-                    for (; n > 0; --n, ++current, ++src)
-                    {
-                        traits::construct(a, current, *src);
-					}
 
-					guard.commit();
-					return current;
+                static T* uninitialized_move_n(Alloc& a, T* dest, size_t n, T* src) {
+                    constexpr bool kCanMemcpy =
+                        std::is_trivially_move_constructible_v<T> &&
+                        !std::is_volatile_v<T>;
+
+                    if constexpr (kCanMemcpy) {
+                        if (n > 0) std::memcpy(dest, src, n * sizeof(T));
+                        return dest + n;
+                    }
+                    else {
+                        T* current = dest;
+                        ConstructionGuard guard(a, dest, current);
+                        for (; n > 0; --n, ++current, ++src) {
+                            traits::construct(a, current, std::move(*src));
+                        }
+                        guard.commit();
+                        return current;
+                    }
                 }
-            }
+
 
         public:
             constexpr T& operator[](size_t i) noexcept { return data_ptr()[i]; }
