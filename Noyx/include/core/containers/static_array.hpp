@@ -3,234 +3,424 @@
 #include <platform/typedef.hpp>
 #include <utility/utility.hpp>
 #include <type_traits>
+#include <xmemory>
 #include <memory>
 #include <cstring>
 #include "iterators/iterators.hpp"
 
 namespace noyx {
-  namespace containers {
+    namespace containers {
 
-    template<typename T>
-    class TStaticArray {
-      using allocator_type = std::allocator<T>;// TODO: add StaticAllocator
-      using alloc_traits = std::allocator_traits<allocator_type>;
+        template<typename T, size_t N, typename Alloc = std::allocator<T>>
+        class StaticArray {
+        private:
+            using allocator_type = Alloc;
+            using traits = std::allocator_traits<allocator_type>;
+            using pointer = typename traits::pointer;
+            using const_pointer = typename traits::const_pointer;
+            using value_type = T;
 
-    public:
-      using value_type = T;
-      using pointer = typename alloc_traits::pointer;
-      using const_pointer = typename alloc_traits::const_pointer;
-      using size_type = typename alloc_traits::size_type;
-      using difference_type = typename alloc_traits::difference_type;
-      using reference = T&;
-      using const_reference = const T&;
-      using iterator = _StaticArrayIterator<T>;
-      using const_iterator = _StaticArrayConstIterator<T>;
+            static constexpr size_t kStackThresholdBytes = 1024;
+            static constexpr size_t kTotalBytes = sizeof(T) * N;
+            static constexpr bool kUseHeap = kTotalBytes > kStackThresholdBytes;
 
-      static_assert(std::is_object_v<T>,
-        "T must be an object type (not void, function, reference, or incomplete type)");
+            static constexpr bool kTrivialCopyMove =
+                std::is_trivially_copyable_v<T> &&
+                std::is_trivially_move_constructible_v<T>;
 
-    public:
-      // ---- ctor
-      explicit TStaticArray(size_type size) : size_(size) {
-        if (size_ == 0) {
-          pair_.second() = nullptr;
-          return;
-        }
+            static constexpr bool kTrivialDestroy = std::is_trivially_destructible_v<T>;
 
-        // allocate may throw, that's fine
-        pair_.second() = pair_.first().allocate(size_);
+            struct StackStorage {
+                alignas(T) std::byte buffer[kTotalBytes];
+            };
 
-        // if trivially default constructible -> nothing to do
-        if constexpr (std::is_trivially_default_constructible_v<T>) {
-          return;
-        }
+            using StorageType = std::conditional_t<kUseHeap, T*, StackStorage>;
 
-        // otherwise construct elements with rollback on exception
-        allocator_type& al = pair_.first();
-        size_type constructed = 0;
-        try {
-          for (; constructed < size_; ++constructed) {
-            alloc_traits::construct(al, pair_.second() + constructed);
-          }
-        }
-        catch (...) {
-          // destroy constructed in reverse order
-          for (size_type j = constructed; j > 0; --j) {
-            alloc_traits::destroy(al, pair_.second() + (j - 1));
-          }
-          al.deallocate(pair_.second(), size_);
-          pair_.second() = nullptr;
-          size_ = 0;
-          throw;
-        }
-      }
+            noyx::utility::TCompressedPair<Alloc, StorageType> storage_;
 
-      // ---- copy ctor (exception-safe, optimized for trivially_copyable)
-      TStaticArray(const TStaticArray& other) : size_(other.size_) {
-        if (size_ == 0) {
-          pair_.second() = nullptr;
-          return;
-        }
+            Alloc& alloc() noexcept { return storage_.first(); }
+            const Alloc& alloc() const noexcept { return storage_.first(); }
 
-        pair_.second() = pair_.first().allocate(size_);
-        allocator_type& al = pair_.first();
-        size_type constructed = 0;
-        try {
-          if constexpr (std::is_trivially_copyable_v<T>) {
-            std::memcpy(pair_.second(), other.pair_.second(), static_cast<size_t>(size_) * sizeof(T));
-            constructed = size_;
-          }
-          else {
-            for (; constructed < size_; ++constructed) {
-              alloc_traits::construct(al, pair_.second() + constructed, other.pair_.second()[constructed]);
+            T* data_ptr() noexcept {
+                if constexpr (kUseHeap) {
+                    return storage_.second();
+                }
+                else {
+                    return reinterpret_cast<T*>(storage_.second().buffer);
+                }
             }
-          }
-        }
-        catch (...) {
-          for (size_type j = constructed; j > 0; --j) {
-            alloc_traits::destroy(al, pair_.second() + (j - 1));
-          }
-          al.deallocate(pair_.second(), size_);
-          pair_.second() = nullptr;
-          size_ = 0;
-          throw;
-        }
-      }
 
-      // ---- move ctor
-      TStaticArray(TStaticArray&& other) noexcept {
-        // steal resources
-        pair_.copy(other.pair_);
-        size_ = other.size_;
-        other.pair_.second() = nullptr;
-        other.size_ = 0;
-      }
-
-      // ---- dtor
-      ~TStaticArray() {
-        if (pair_.second() != nullptr) {
-          allocator_type& al = pair_.first();
-          if constexpr (!std::is_trivially_destructible_v<T>) {
-            for (size_type i = 0; i < size_; ++i) {
-              alloc_traits::destroy(al, pair_.second() + i);
+            const T* data_ptr() const noexcept {
+                if constexpr (kUseHeap) {
+                    return storage_.second();
+                }
+                else {
+                    return reinterpret_cast<const T*>(storage_.second().buffer);
+                }
             }
-          }
-          al.deallocate(pair_.second(), size_);
-          pair_.second() = nullptr;
-          size_ = 0;
-        }
-      }
 
-      // ---- copy-assignment (copy-and-swap = strong exception guarantee)
-      TStaticArray& operator=(const TStaticArray& other) {
-        if (this == &other) return *this;
-        TStaticArray tmp(other); // may throw, but strong guarantee
-        swap(tmp);
-        return *this;
-      }
+            void allocate_storage() {
+                if constexpr (kUseHeap) {
+                    storage_.second() = traits::allocate(alloc(), N);
+                }
+            }
 
-      // ---- move-assignment
-      TStaticArray& operator=(TStaticArray&& other) noexcept {
-        if (this == &other) return *this;
+            void deallocate_storage() {
+                if constexpr (kUseHeap) {
+                    if (storage_.second() != nullptr) {
+                        traits::deallocate(alloc(), storage_.second(), N);
+                    }
+                }
+            }
 
-        // destroy and deallocate current storage
-        clear_and_deallocate();
+            void destroy_elements() {
+                if constexpr (!kTrivialDestroy) {
+                    T* ptr = data_ptr();
+                    for (size_t i = 0; i < N; ++i) {
+                        traits::destroy(alloc(), ptr + (N - 1 - i));
+                    }
+				}
+            }
 
-        // steal other's resources
-        pair_.swap(other.pair_);
-        size_ = other.size_;
-        other.pair_.second() = nullptr;
-        other.size_ = 0;
-        return *this;
-      }
+        public:
+            explicit constexpr StaticArray(const allocator_type& a = allocator_type())
+                : storage_({ _FirstZeroSecondArgs{}, a })
+            {
+                allocate_storage();
 
-      // ---- accessors
-      [[nodiscard]] reference operator[](size_type index) {
-        return *(pair_.second() + index);
-      }
-      [[nodiscard]] const_reference operator[](size_type index) const {
-        return *(pair_.second() + index);
-      }
-      [[nodiscard]] reference at(size_type index) {
-        return *(pair_.second() + index);
-      }
-      [[nodiscard]] const_reference at(size_type index) const {
-        return *(pair_.second() + index);
-      }
-      [[nodiscard]] reference front() {
-        return *pair_.second();
-      }
-      [[nodiscard]] const_reference front() const {
-        return *pair_.second();
-      }
-      [[nodiscard]] reference back() {
-        return *(pair_.second() + size_ - 1);
-      }
-      [[nodiscard]] const_reference back() const {
-        return *(pair_.second() + size_ - 1);
-      }
-      [[nodiscard]] pointer data() {
-        return pair_.second();
-      };
-      [[nodiscard]] const_pointer data() const {
-        return pair_.second();
-      };
+                uninitialized_default_construct_n(alloc(), data_ptr(), N);
+            }
 
-      // ---- iterators
-      [[nodiscard]] iterator begin() noexcept { return iterator(pair_.second(), 0, size_); }
-      [[nodiscard]] const_iterator begin() const noexcept { return const_iterator(pair_.second(), 0, size_); }
-      [[nodiscard]] iterator end() noexcept { return iterator(pair_.second() + size_, size_, size_); }
-      [[nodiscard]] const_iterator end() const noexcept { return const_iterator(pair_.second() + size_, size_, size_); }
-      [[nodiscard]] const_iterator cbegin() const noexcept { return const_iterator(pair_.second(), 0, size_); }
-      [[nodiscard]] const_iterator cend() const noexcept { return const_iterator(pair_.second() + size_, size_, size_); }
+            constexpr StaticArray(const StaticArray& other)
+                : storage_({ _FirstZeroSecondArgs{},
+                  traits::select_on_container_copy_construction(other.alloc()) })
+            {
+                allocate_storage();
 
-      constexpr size_type size() const noexcept { return size_; }
+                uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
+            }
 
-      // ---- fill: only for copy-assignable types
-      template<typename U = T>
-      std::enable_if_t<std::is_copy_assignable_v<U>, void>
-        fill(const T& value) {
-        for (size_type i = 0; i < size_; ++i) pair_.second()[i] = value;
-      }
+            StaticArray(StaticArray&& other) noexcept
+                : storage_({ _FirstZeroSecondArgs{}, std::move(other.alloc()) })
+            {
+                if constexpr (kUseHeap) {
+                    storage_.second() = other.storage_.second();
+                    other.storage_.second() = nullptr;
+                }
+                else {
+                    T* dest = data_ptr();
+                    T* src = other.data_ptr();
 
-      // ---- swap
-      void swap(TStaticArray<T>& other) noexcept(
-        noexcept(std::declval<noyx::utility::TCompressedPair<allocator_type, T*>&>().swap(std::declval<noyx::utility::TCompressedPair<allocator_type, T*>&>()))
-        )
-      {
-        pair_.swap(other.pair_);
-        size_type tmp2_ = other.size_;
-        other.size_ = size_;
-        size_ = tmp2_;
-      }
+                    if constexpr (kTrivialCopyMove) {
+                        std::memcpy(dest, src, kTotalBytes);
+                    }
+                    else {
+                        for (size_t i = 0; i < N; ++i) {
+                            traits::construct(alloc(), dest + i, std::move(src[i]));
+                        }
+                    }
+                }
+            }
 
-    private:
-      // helper to destroy elements and deallocate storage
-      void clear_and_deallocate() noexcept {
-        if (pair_.second() == nullptr) return;
-        allocator_type& al = pair_.first();
-        if constexpr (!std::is_trivially_destructible_v<T>) {
-          for (size_type i = 0; i < size_; ++i)
-            alloc_traits::destroy(al, pair_.second() + i);
-        }
-        al.deallocate(pair_.second(), size_);
-        pair_.second() = nullptr;
-        size_ = 0;
-      }
+            ~StaticArray() {
+                T* ptr = data_ptr();
 
-    private:
-      noyx::utility::TCompressedPair<allocator_type, T*> pair_;
-      size_type size_ = 0;
-    };
-  } // namespace containers
+                if constexpr (!kTrivialDestroy) {
+                    for (size_t i = 0; i < N; ++i) {
+                        traits::destroy(alloc(), ptr + (N - 1 - i));
+                    }
+                }
 
-  namespace utility {
-    template<typename T>
-    constexpr void swap(containers::TStaticArray<T>& first, containers::TStaticArray<T>& second)
-      noexcept(noexcept(std::declval<containers::TStaticArray<T>&>().swap(std::declval<containers::TStaticArray<T>&>()))) {
-      first.swap(second);
+                deallocate_storage();
+            }
+
+
+        private:
+            void reset() noexcept
+            {
+                destroy_elements();
+                if(kUseHeap)
+                {
+                    deallocate_storage();
+				}
+            }
+
+            bool try_Steal_Resources(StaticArray&& other) noexcept
+            {
+                if constexpr (kUseHeap)
+                {
+                    if (alloc() == other.alloc())
+                    {
+                        storage_.second() = other.storage_.second();
+                        other.storage_.second() = nullptr;
+                        return true;
+                    }
+                }
+                return false;
+			}
+
+            void prepare_buffer_for_write() {
+                if constexpr (kUseHeap) {
+                    if (storage_.second() == nullptr) {
+                        allocate_storage();
+                    }
+                }
+            }
+
+
+        public:
+            using POCMA = typename traits::propagate_on_container_move_assignment;
+            using POCCA = typename traits::propagate_on_container_copy_assignment;
+            using POCS = typename traits::propagate_on_container_swap;
+
+            // --- Move Assignment ---
+            StaticArray& operator=(StaticArray&& other) noexcept {
+                if (this == &other) return *this;
+
+                constexpr bool pocma = POCMA::value;
+
+                bool do_full_reset = pocma;
+
+                if constexpr (kUseHeap) {
+                    if (alloc() == other.alloc()) do_full_reset = true;
+                }
+
+                if (do_full_reset) reset();
+                else destroy_elements();
+
+                if constexpr (pocma) {
+                    alloc() = std::move(other.alloc());
+                }
+
+                if (try_steal_resources(std::move(other))) {
+                    return *this;
+                }
+
+                prepare_buffer_for_write();
+
+                uninitialized_move_n(alloc(), data_ptr(), N, other.data_ptr());
+
+                return *this;
+            }
+
+
+            // --- Copy Assignment ---
+            StaticArray& operator=(const StaticArray& other) {
+                if (this == &other) return *this;
+
+                constexpr bool pocca = POCCA::value;
+
+                bool need_full_reset = false;
+                if constexpr (pocca) {
+                    if (alloc() != other.alloc()) {
+                        need_full_reset = true;
+                    }
+                }
+
+                if (need_full_reset) {
+                    reset(); 
+                    alloc() = other.alloc(); 
+                }
+                else {
+                    destroy_elements();
+                }
+
+                prepare_buffer_for_write();
+
+                uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
+
+                return *this;
+            }
+
+
+            // --- Swap ---
+            void swap(StaticArray& other) noexcept(
+                (traits::propagate_on_container_swap::value || traits::is_always_equal::value) &&
+                (!kUseHeap || noexcept(std::swap(std::declval<Alloc&>(), std::declval<Alloc&>())))
+                ) {
+                if (this == &other) return;
+
+                constexpr bool pocs = traits::propagate_on_container_swap::value;
+
+                if constexpr (pocs) {
+                    using std::swap;
+                    swap(alloc(), other.alloc());
+                }
+                else {
+                    // assert(alloc() == other.alloc());
+                }
+
+                if constexpr (kUseHeap) {
+                    using std::swap;
+                    swap(storage_.second(), other.storage_.second());
+                }
+                else {
+                    T* a = data_ptr();
+                    T* b = other.data_ptr();
+                    for (size_t i = 0; i < N; ++i) {
+                        using std::swap;
+                        swap(a[i], b[i]);   
+                    }
+                }
+            }
+
+            friend void swap(StaticArray& lhs, StaticArray& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+                lhs.swap(rhs);
+            }
+
+
+
+        private:
+            // Function-helper to destroy elements from first to last;
+            static void destroy_range(Alloc& a, T* first, T* last) noexcept
+            {
+                // Optimization: No need to call destructor for trivial types.
+                if constexpr (!std::is_trivially_destructible_v<T>)
+                {
+                    while (last != first)
+                    {
+                        --last;
+						traits::destroy(a, last);
+                    }
+                }
+            }
+
+
+            struct ContructionGuard
+            {
+                Alloc& alloc;
+                T* first;
+                T* current;
+                bool commited;
+
+                ContructionGuard(Alloc& a, T* start_ptr, T*& cur_ptr) : alloc(a), first(start_ptr), current(cur_ptr), commited(false) {}
+
+                ~ContructionGuard()
+                {
+                    if (!commited)
+                    {
+                        destroy_range(alloc, first, current);
+                    }
+                }
+
+                void commit() noexcept
+                {
+                    commited = true;
+				}
+            };
+
+
+            
+            private:
+                static T* uninitialized_default_construct_n(Alloc& a, T* first, size_t n) {
+                    if constexpr (std::is_trivially_default_constructible_v<T> && !std::is_volatile_v<T>) {
+                        std::memset(first, 0, n * sizeof(T));
+                        return first + n;
+                    }
+                    else {
+                        T* current = first;
+                        ConstructionGuard guard(a, first, current);
+                        for (; n > 0; --n, ++current) {
+                            traits::construct(a, current);
+                        }
+                        guard.commit();
+                        return current;
+                    }
+                }
+
+
+                static T* uninitialized_fill_n(Alloc& a, T* first, size_t n, const T& val) {
+                    constexpr bool kCanUseMemset =
+                        std::is_trivially_copy_constructible_v<T> &&
+                        !std::is_volatile_v<T> &&
+                        (sizeof(T) == 1);
+
+                    if constexpr (kCanUseMemset) {
+                        std::memset(first, static_cast<unsigned char>(val), n);
+                        return first + n;
+                    }
+
+                    else {
+                        if constexpr (std::is_trivially_copy_constructible_v<T>) {
+                            for (size_t i = 0; i < n; ++i) first[i] = val;
+                            return first + n;
+                        }
+                        else {
+                            T* current = first;
+                            ConstructionGuard guard(a, first, current);
+                            for (; n > 0; --n, ++current) {
+                                traits::construct(a, current, val);
+                            }
+                            guard.commit();
+                            return current;
+                        }
+                    }
+                }
+
+
+                template <typename InputIter>
+                static T* uninitialized_copy_n(Alloc& a, T* dest, size_t n, InputIter src) {
+                    constexpr bool kCanMemcpy =
+                        std::is_trivially_copy_constructible_v<T> &&
+                        std::is_pointer_v<InputIter> &&
+                        !std::is_volatile_v<T>;
+
+                    if constexpr (kCanMemcpy) {
+                        if (n > 0) {
+                            std::memcpy(dest, src, n * sizeof(T));
+                        }
+                        return dest + n;
+                    }
+                    else {
+                        T* current = dest;
+                        ConstructionGuard guard(a, dest, current);
+                        for (; n > 0; --n, ++current, ++src) {
+                            traits::construct(a, current, *src);
+                        }
+                        guard.commit();
+                        return current;
+                    }
+                }
+
+
+                static T* uninitialized_move_n(Alloc& a, T* dest, size_t n, T* src) {
+                    constexpr bool kCanMemcpy =
+                        std::is_trivially_move_constructible_v<T> &&
+                        !std::is_volatile_v<T>;
+
+                    if constexpr (kCanMemcpy) {
+                        if (n > 0) std::memcpy(dest, src, n * sizeof(T));
+                        return dest + n;
+                    }
+                    else {
+                        T* current = dest;
+                        ConstructionGuard guard(a, dest, current);
+                        for (; n > 0; --n, ++current, ++src) {
+                            traits::construct(a, current, std::move(*src));
+                        }
+                        guard.commit();
+                        return current;
+                    }
+                }
+
+
+        public:
+            constexpr T& operator[](size_t i) noexcept { return data_ptr()[i]; }
+            constexpr const T& operator[](size_t i) const noexcept { return data_ptr()[i]; }
+
+            constexpr size_t size() const noexcept { return N; }
+
+            constexpr T* at(size_t i) noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
+            constexpr const T* at(size_t i) const noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
+
+            constexpr T& front() noexcept { return data_ptr()[0]; }
+            constexpr const T& front() const noexcept { return data_ptr()[0]; }
+
+            constexpr T& back() noexcept { return data_ptr()[N - 1]; }
+            constexpr const T& back() const noexcept { return data_ptr()[N - 1]; }
+
+            constexpr T* data() noexcept { return data_ptr(); }
+            constexpr const T* data() const noexcept { return data_ptr(); }
+        };
     }
-  }
-} // namespace noyx
-
-using noyx::containers::TStaticArray;
+}
