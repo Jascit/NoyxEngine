@@ -1,198 +1,235 @@
-// tests.cpp
-// Simple unit-test harness for noyx::containers::TStaticArray
-// Drop into your project that contains StaticArray.h
-#include <tests_details.hpp>
-#include <containers/StaticArray.hpp>
-#include <iostream>
-#include <memory>
-#include <vector>
+#include <tests_details.hpp> // Твій фреймворк
+#include "containers/static_array.hpp" // Твій хедер масиву
+
 #include <string>
-#include <type_traits>
+#include <memory>
+#include <stdexcept>
 
-using noyx::containers::TStaticArray;
-using noyx::utility::swap;
+// Щоб код скомпілювався, якщо ASSERT_ABORT не визначено в headers
+#ifndef ASSERT_ABORT
+#include <cassert>
+#define ASSERT_ABORT(cond, msg) assert((cond) && (msg))
+#endif
 
-// Test 1: construct, operator[], at, front/back, data, size
-void TStaticArray_test_basic_int_behavior() {
-  const size_t N = 8;
-  TStaticArray<int> a((TStaticArray<int>::size_type)N);
-  // fill with 0..N-1
-  for (size_t i = 0; i < N; ++i) a[(TStaticArray<int>::size_type)i] = (int)i;
+using noyx::containers::StaticArray;
 
-  // check operator[] and at()
-  for (size_t i = 0; i < N; ++i) {
-    NOYX_ASSERT_EQ(a[(TStaticArray<int>::size_type)i], (int)i);
-    NOYX_ASSERT_EQ(a.at((TStaticArray<int>::size_type)i), (int)i);
-  }
+// --- ТЕСТ 1: Базова поведінка (int) ---
+NOYX_TEST(StaticArrayTest, BasicIntBehavior) {
+    constexpr size_t N = 8;
+    StaticArray<int, N> a;
 
-  // front() should be 0
-  NOYX_ASSERT_EQ(a.front(), 0);
-  // back() — EXPECTATION: last element (N-1)
-  // **If your implementation's back() is wrong (off-by-one), this will fail.**
-  if (a.back() != (int)(N - 1)) {
-    NOYX_FAIL_MESSAGE("BACK() MISMATCH: back() returned " << a.back() << " expected " << (N - 1));
-  }
+    // Перевірка size()
+    NOYX_ASSERT_EQ(a.size(), N);
 
-  // data() pointer check
-  auto p = a.data();
-  NOYX_ASSERT_TRUE(p != nullptr);
-  for (size_t i = 0; i < N; ++i) {
-    NOYX_ASSERT_EQ(p[i], (int)i);
-  }
+    // Заповнення через operator[]
+    for (size_t i = 0; i < N; ++i) {
+        a[i] = (int)i * 10;
+    }
+
+    // Перевірка читання
+    for (size_t i = 0; i < N; ++i) {
+        NOYX_ASSERT_EQ(a[i], (int)i * 10);
+
+        // У твоїй реалізації at() повертає вказівник T*, тому розіменовуємо
+        NOYX_ASSERT_EQ(a.at(i), (int)i * 10);
+    }
+
+    // Перевірка front/back
+    NOYX_ASSERT_EQ(a.front(), 0);
+    NOYX_ASSERT_EQ(a.back(), 70);
+
+    // Перевірка data()
+    NOYX_ASSERT_TRUE(a.data() != nullptr);
+    NOYX_ASSERT_EQ(*a.data(), 0);
 }
 
-// Test 2: fill
-void TStaticArray_test_fill() {
-  const size_t N = 16;
-  TStaticArray<int> a((TStaticArray<int>::size_type)N);
-  a.fill(123);
-  for (size_t i = 0; i < N; ++i) NOYX_ASSERT_EQ(a[(TStaticArray<int>::size_type)i], 123);
+// --- ТЕСТ 2: Методи fill та assign ---
+NOYX_TEST(StaticArrayTest, FillAndAssign) {
+    constexpr size_t N = 5;
+    StaticArray<int, N> a;
+
+    // Test fill
+    a.fill(a.begin(), a.end(), 123);
+    for (auto val : a) {
+        NOYX_ASSERT_EQ(val, 123);
+    }
+
+    // Test assign (часткове перезаписування)
+    // assign(count, value)
+    a.assign(3, 777);
+
+    NOYX_ASSERT_EQ(a[0], 777);
+    NOYX_ASSERT_EQ(a[1], 777);
+    NOYX_ASSERT_EQ(a[2], 777);
+    NOYX_ASSERT_EQ(a[3], 123); // Старе значення
 }
 
-// Test 3: copy constructor produces deep copy (modifying copy does not change original)
-void TStaticArray_test_copy_constructor_deep() {
-  const size_t N = 6;
-  TStaticArray<int> a((TStaticArray<int>::size_type)N);
-  for (size_t i = 0; i < N; ++i) a[(TStaticArray<int>::size_type)i] = (int)(i + 1);
+// --- ТЕСТ 3: Глибоке копіювання ---
+NOYX_TEST(StaticArrayTest, CopySemantics) {
+    constexpr size_t N = 3;
+    StaticArray<std::string, N> a;
+    a.replace_at(0, "Original");
+    a.replace_at(1, "Data");
+    a.replace_at(2, "Here");
 
-  TStaticArray<int> b(a); // copy ctor
-  // modify b
-  b[(TStaticArray<int>::size_type)0] = 9999;
+    // Copy Constructor
+    StaticArray<std::string, N> b(a);
 
-  // original must remain unchanged
-  NOYX_ASSERT_EQ(a[(TStaticArray<int>::size_type)0], 1);
-  NOYX_ASSERT_EQ(b[(TStaticArray<int>::size_type)0], 9999);
+    // Модифікуємо копію
+    b.replace_at(0, "Changed");
+
+    // Оригінал має залишитись старим
+    NOYX_ASSERT_TRUE(a[0] == "Original");
+    NOYX_ASSERT_TRUE(b[0] == "Changed");
+
+    // Copy Assignment
+    StaticArray<std::string, N> c;
+    c = b;
+    NOYX_ASSERT_TRUE(c[0] == "Changed");
 }
 
-// Test 4: copy assignment
-void TStaticArray_test_copy_assignment() {
-  const size_t N = 5;
-  TStaticArray<int> a((TStaticArray<int>::size_type)N);
-  for (size_t i = 0; i < N; ++i) a[(TStaticArray<int>::size_type)i] = (int)i + 10;
-  TStaticArray<int> b((TStaticArray<int>::size_type)N);
-  b = a;
-  // modify b
-  b[(TStaticArray<int>::size_type)1] = 77;
-  NOYX_ASSERT_EQ(a[(TStaticArray<int>::size_type)1], 11);
+// --- ТЕСТ 4: Move семантика (std::unique_ptr) ---
+NOYX_TEST(StaticArrayTest, MoveOnlyType) {
+    using U = std::unique_ptr<int>;
+    constexpr size_t N = 3;
+    StaticArray<U, N> arr;
+
+    // Ініціалізація через replace_at (in-place construction)
+    arr.replace_at(0, std::make_unique<int>(10));
+    arr.replace_at(1, std::make_unique<int>(20));
+    arr.replace_at(2, std::make_unique<int>(30));
+
+    // Move Constructor
+    StaticArray<U, N> moved(std::move(arr));
+
+    // Перевіряємо, що moved забрав ресурси
+    NOYX_ASSERT_TRUE(moved[0] != nullptr);
+    NOYX_ASSERT_EQ(*moved[0], 10);
+    NOYX_ASSERT_EQ(*moved[2], 30);
+
+    // Перевіряємо, що старий масив пустий (moved-from unique_ptr == nullptr)
+    NOYX_ASSERT_TRUE(arr[0] == nullptr);
 }
 
-// Test 5: move constructor and move assignment semantics (source.size() -> 0)
-void TStaticArray_test_move_semantics() {
-  const size_t N = 7;
-  TStaticArray<int> a((TStaticArray<int>::size_type)N);
-  for (size_t i = 0; i < N; ++i) a[(TStaticArray<int>::size_type)i] = (int)i * 2;
+// --- ТЕСТ 5: replace_at ---
+NOYX_TEST(StaticArrayTest, ReplaceAt) {
+    constexpr size_t N = 2;
+    StaticArray<std::string, N> a;
 
-  TStaticArray<int> moved(std::move(a)); // move ctor
-  // source should be zeroed size
-  NOYX_ASSERT_EQ(a.size(), 0);
+    // replace_at викликає деструктор старого і конструктор нового
+    a.replace_at(0, "Hello");
+    NOYX_ASSERT_TRUE(a[0] == "Hello");
 
-  // assume moved holds original content
-  for (size_t i = 0; i < N; ++i) NOYX_ASSERT_EQ(moved[(TStaticArray<int>::size_type)i], (int)i * 2);
-
-  // move assignment
-  TStaticArray<int> x((TStaticArray<int>::size_type)3);
-  for (size_t i = 0; i < 3; ++i) x[(TStaticArray<int>::size_type)i] = (int)(100 + i);
-  x = std::move(moved);
-  NOYX_ASSERT_EQ(moved.size(), 0);
-  NOYX_ASSERT_EQ(x.size(), N);
-  NOYX_ASSERT_EQ(x[(TStaticArray<int>::size_type)2], 4);
+    // Замінюємо "Hello" на довгий рядок (перевірка роботи з пам'яттю std::string)
+    a.replace_at(0, "Hello World, this is a longer string to verify allocation");
+    NOYX_ASSERT_TRUE(a[0].length() > 20);
 }
 
-// Test 6: iterators and range-based for
-void TStaticArray_test_iterators() {
-  const size_t N = 10;
-  TStaticArray<int> a((TStaticArray<int>::size_type)N);
-  for (size_t i = 0; i < N; ++i) a[(TStaticArray<int>::size_type)i] = int(i + 1);
+// --- ТЕСТ 6: Вихід за межі (Exceptions) ---
+NOYX_TEST(StaticArrayTest, OutOfRange) {
+    constexpr size_t N = 5;
+    StaticArray<int, N> a;
 
-  // range-for requires begin/end to work
-  size_t idx = 0;
-  for (auto& v : a) { // this requires iterator to be compatible with range-for
-    (void)v; // some compilers might need non-const begin() overloads
-    ++idx;
-  }
-  // if range-for iterated N times -> ok
-  NOYX_ASSERT_EQ((int)idx, (int)N);
+    bool caught = false;
+    try {
+        // Індекс N є першим неправильним (0..N-1)
+        a.at(N);
+    }
+    catch (const std::out_of_range&) {
+        caught = true;
+    }
+    catch (...) {
+        NOYX_FAIL_MESSAGE("Wrong exception type caught!");
+    }
 
-  // explicit iterator arithmetic test (random access)
-  auto it = a.begin();
-  it += 5;
-  NOYX_ASSERT_EQ(*it, 6);
-  it -= 3;
-  NOYX_ASSERT_EQ(*it, 3);
+    if (!caught) {
+        NOYX_FAIL_MESSAGE("at() did not throw std::out_of_range for invalid index");
+    }
 }
 
-// Test 7: swap (member and utility swap)
-void TStaticArray_test_swap() {
-  const size_t N = 4;
-  TStaticArray<int> a((TStaticArray<int>::size_type)N);
-  TStaticArray<int> b((TStaticArray<int>::size_type)N);
-  for (size_t i = 0; i < N; ++i) { a[(TStaticArray<int>::size_type)i] = int(i + 1); b[(TStaticArray<int>::size_type)i] = int((i + 1) * 10); }
+// --- ТЕСТ 7: SBO Check (Stack vs Heap) ---
+NOYX_TEST(StaticArrayTest, SBOCheck) {
+    // 1. STACK: 10 int * 4 bytes = 40 bytes. Поріг 1024.
+    // Масив має бути "жирним" (містити буфер всередині)
+    using StackArr = StaticArray<int, 10>;
+    // sizeof класу > розміру даних, бо там буфер
+    NOYX_ASSERT_TRUE(sizeof(StackArr) >= 40);
 
-  // keep original pointers to check that swap actually swapped underlying buffers
-  auto pa = a.data();
-  auto pb = b.data();
+    // 2. HEAP: 1000 int * 4 bytes = 4000 bytes. Поріг 1024.
+    // Масив має бути "худим" (тільки вказівник + алокатор)
+    using HeapArr = StaticArray<int, 1000>;
 
-  // use member swap
-  a.swap(b);
-  NOYX_ASSERT_TRUE(a.data() == pb && b.data() == pa);
-  // values swapped
-  NOYX_ASSERT_EQ(a[(TStaticArray<int>::size_type)0], 10);
-  // utility swap (ADL)
-  noyx::utility::swap(a, b);
-  NOYX_ASSERT_EQ(a[(TStaticArray<int>::size_type)0], 1);
+    // На 64-біт: вказівник (8) + алокатор (1->pad to 8) + discriminant (якщо є)
+    // Зазвичай це 16-24 байти, але точно менше ніж 4000!
+    NOYX_ASSERT_TRUE(sizeof(HeapArr) < 100);
 }
 
-// Test 8: type that is move-only (unique_ptr) — ensure storage and move of elements work
-void TStaticArray_test_move_only_type() {
-  using U = std::unique_ptr<int>;
-  const size_t N = 3;
-  TStaticArray<U> arr((TStaticArray<U>::size_type)N);
-  // assign via move into operator[]
-  arr[(TStaticArray<U>::size_type)0] = std::make_unique<int>(10);
-  arr[(TStaticArray<U>::size_type)1] = std::make_unique<int>(20);
-  arr[(TStaticArray<U>::size_type)2] = std::make_unique<int>(30);
+// --- ТЕСТ 8: Swap ---
+NOYX_TEST(StaticArrayTest, Swap) {
+    constexpr size_t N = 2;
+    StaticArray<int, N> a;
+    a[0] = 1; a[1] = 2;
 
-  NOYX_ASSERT_TRUE(arr[(TStaticArray<U>::size_type)0] && *arr[(TStaticArray<U>::size_type)0] == 10);
+    StaticArray<int, N> b;
+    b[0] = 10; b[1] = 20;
 
-  // move the whole array
-  TStaticArray<U> moved(std::move(arr));
-  NOYX_ASSERT_EQ(arr.size(), 0);
-  NOYX_ASSERT_TRUE(moved[(TStaticArray<U>::size_type)2] && *moved[(TStaticArray<U>::size_type)2] == 30);
+    // ADL swap
+    using std::swap;
+    swap(a, b);
 
-  // note: arr.fill(...) would not compile for unique_ptr (copy required) — this is expected
+    NOYX_ASSERT_EQ(a[0], 10);
+    NOYX_ASSERT_EQ(b[0], 1);
 }
 
-// Test 9: zero-sized array behavior
-void TStaticArray_test_zero_size() {
-  TStaticArray<int> z((TStaticArray<int>::size_type)0);
-  NOYX_ASSERT_EQ(z.size(), 0);
-  // data() may be nullptr or not depending on allocator; we only ensure no crash on begin/end
-  auto b = z.begin();
-  auto e = z.end();
-  NOYX_ASSERT_TRUE(b == e);
-}
 
-// Test 10: destructor behavior / RAII smoke test (run many allocations)
-void TStaticArray_test_stress_alloc_dealloc() {
-  for (int iter = 0; iter < 20000; ++iter) {
-    TStaticArray<int> a((TStaticArray<int>::size_type)(iter % 100));
-    // write something if non-empty
-    if (a.size() > 0) a[(TStaticArray<int>::size_type)0] = iter;
-  }
-  // if we reach here without leak/crash, good enough for basic test
-}
+// --- ТЕСТ 9: Heap Mode & Pointer Stealing ---
+NOYX_TEST(StaticArrayTest, HeapModeBehavior) {
+    // 1. Налаштування
+    // int = 4 байти. 1000 елементів = 4000 байт.
+    // Це більше за kStackThresholdBytes (1024), тому масив піде в Heap.
+    constexpr size_t N = 1000;
+    using HeapArray = StaticArray<int, N>;
 
-// Entry point
-NOYX_TEST(TStaticArray_test, unit_test) {
-    TStaticArray_test_basic_int_behavior();
-    TStaticArray_test_fill();
-    TStaticArray_test_copy_constructor_deep();
-    TStaticArray_test_copy_assignment();
-    TStaticArray_test_move_semantics();
-    TStaticArray_test_iterators();
-    TStaticArray_test_swap();
-    TStaticArray_test_move_only_type();
-    TStaticArray_test_zero_size();
-    TStaticArray_test_stress_alloc_dealloc();
-  return;
+    // Перевірка розміру самого класу: він має бути малим (тільки вказівник), 
+    // а не гігантським (якщо б буфер був всередині).
+    // sizeof(HeapArray) ~ 8-16 байт << 4000 байт.
+    NOYX_ASSERT_TRUE(sizeof(HeapArray) < 100);
+
+    // 2. Створення та заповнення
+    HeapArray a;
+    for (size_t i = 0; i < N; ++i) a[i] = (int)i;
+
+    // Запам'ятовуємо адресу виділеної пам'яті
+    int* original_ptr = a.data();
+    NOYX_ASSERT_TRUE(original_ptr != nullptr);
+
+    // 3. Тест Move Constructor (Pointer Stealing)
+    HeapArray b(std::move(a));
+
+    // ПЕРЕВІРКА 1: Адреса даних у 'b' має бути ТОЮ САМОЮ, що була у 'a'.
+    // Це означає, що копіювання не відбулося, ми просто вкрали вказівник.
+    NOYX_ASSERT_EQ(b.data(), original_ptr);
+
+    // ПЕРЕВІРКА 2: Старий об'єкт 'a' має бути пустим (nullptr у Heap режимі).
+    NOYX_ASSERT_TRUE(a.data() == nullptr);
+
+    // ПЕРЕВІРКА 3: Дані на місці
+    NOYX_ASSERT_EQ(b[0], 0);
+    NOYX_ASSERT_EQ(b[N - 1], 999);
+
+    // 4. Тест Swap
+    HeapArray c;
+    c.fill(c.begin(), c.end(), 777);
+    int* c_ptr = c.data();
+
+    // Свапаємо b (старий 'a') і c
+    using std::swap;
+    swap(b, c);
+
+    // Перевіряємо, що вказівники помінялися місцями
+    NOYX_ASSERT_EQ(b.data(), c_ptr);       // b тепер вказує на масив 777
+    NOYX_ASSERT_EQ(c.data(), original_ptr); // c тепер вказує на масив 0..999
+
+    NOYX_ASSERT_EQ(b[0], 777);
+    NOYX_ASSERT_EQ(c[0], 0);
 }

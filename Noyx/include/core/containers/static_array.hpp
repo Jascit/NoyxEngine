@@ -2,24 +2,32 @@
 
 #include <platform/typedef.hpp>
 #include <utility/utility.hpp>
+#include <utility/macros.hpp>
 #include <type_traits>
 #include <memory>
 #include "memory/guards.hpp"
 #include "memory/uninitialized.hpp"
+#include <stdexcept>
 #include <cstring>
 #include "iterators/iterators.hpp"
 
 namespace noyx {
     namespace containers {
 
-        template<typename T, size_t N, typename Alloc = std::allocator<T>>
+        template<typename T, size_t N>
         class StaticArray {
+			using _FirstZeroSecondArgs = noyx::utility::_FirstZeroSecondArgs;
+            using _FirstOneSecondArgs = noyx::utility::_FirstOneSecondArgs;
         private:
-            using allocator_type = Alloc;
+            using allocator_type = std::allocator<T>;
             using traits = std::allocator_traits<allocator_type>;
             using pointer = typename traits::pointer;
             using const_pointer = typename traits::const_pointer;
             using value_type = T;
+            using iterator = T*;
+            using const_iterator = const T*;
+            using reverse_iterator = std::reverse_iterator<iterator>;
+            using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
             static constexpr size_t kStackThresholdBytes = 1024;
             static constexpr size_t kTotalBytes = sizeof(T) * N;
@@ -37,10 +45,10 @@ namespace noyx {
 
             using StorageType = std::conditional_t<kUseHeap, T*, StackStorage>;
 
-            noyx::utility::TCompressedPair<Alloc, StorageType> storage_;
+            noyx::utility::TCompressedPair<allocator_type, StorageType> storage_;
 
-            Alloc& alloc() noexcept { return storage_.first(); }
-            const Alloc& alloc() const noexcept { return storage_.first(); }
+            allocator_type& alloc() noexcept { return storage_.first(); }
+            const allocator_type& alloc() const noexcept { return storage_.first(); }
 
             T* data_ptr() noexcept {
                 if constexpr (kUseHeap) {
@@ -76,53 +84,52 @@ namespace noyx {
 
 
         public:
+            static_assert(N > 0, "Static array must be > 0");
+
+			// --- Default Constructor ---
             explicit StaticArray(const allocator_type& a = allocator_type())
-                : storage_({ _FirstZeroSecondArgs{}, a })
+                : storage_( _FirstOneSecondArgs{}, a)
             {
                 allocate_storage();
                 if constexpr (kUseHeap)
                 {
-                    AllocationGuard mem_guard(alloc(), data_ptr(), N);
-                    uninitialized_default_construct_n(alloc(), data_ptr(), N);
+                    AllocationGuard<allocator_type> mem_guard(alloc(), data_ptr(), N);
+                    noyx::memory::uninitialized_default_construct_n(alloc(), data_ptr(), N);
                     mem_guard.commit();
                 }
                 else
                 {
-                    uninitialized_default_construct_n(alloc(), data_ptr(), N);
+                    noyx::memory::uninitialized_default_construct_n(alloc(), data_ptr(), N);
                 }
             }
 
+
+			// --- Copy Constructor ---
             StaticArray(const StaticArray& other)
-                : storage_({ _FirstZeroSecondArgs{},
-                  traits::select_on_container_copy_construction(other.alloc()) })
+                : storage_( _FirstOneSecondArgs{},
+                  traits::select_on_container_copy_construction(other.alloc()))
             {
                 allocate_storage();
 
-                uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
+                noyx::memory::uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
             }
 
+
+			// --- Move Constructor ---
             StaticArray(StaticArray&& other) noexcept
-                : storage_({ _FirstZeroSecondArgs{}, std::move(other.alloc()) })
+                : storage_(_FirstOneSecondArgs{}, std::move(other.alloc()))
             {
                 if constexpr (kUseHeap) {
                     storage_.second() = other.storage_.second();
                     other.storage_.second() = nullptr;
                 }
                 else {
-                    T* dest = data_ptr();
-                    T* src = other.data_ptr();
-
-                    if constexpr (kTrivialCopyMove) {
-                        std::memcpy(dest, src, kTotalBytes);
-                    }
-                    else {
-                        for (size_t i = 0; i < N; ++i) {
-                            traits::construct(alloc(), dest + i, std::move(src[i]));
-                        }
-                    }
+                    noyx::memory::uninitialized_move_n(alloc(), data_ptr(), N, other.data_ptr());
                 }
             }
 
+
+			// --- Destructor ---
             ~StaticArray() {
                 T* ptr = data_ptr();
 
@@ -131,7 +138,6 @@ namespace noyx {
                         traits::destroy(alloc(), ptr + (N - 1 - i));
                     }
                 }
-
                 deallocate_storage();
             }
 
@@ -186,13 +192,13 @@ namespace noyx {
                 }
 
                 if (do_full_reset) reset();
-                else noyx::memory::destroy_range(alloc(), data_ptr(), data_ptr() + N);
+                else noyx::memory::destroy_range(alloc(), data_ptr(), data_ptr() + N);      
 
                 if constexpr (pocma) {
                     alloc() = std::move(other.alloc());
                 }
 
-                if (noyx::memory::try_steal_resources(std::move(other))) {
+                if (try_steal_resources(std::move(other))) {
                     return *this;
                 }
 
@@ -200,11 +206,11 @@ namespace noyx {
 
                 if constexpr (kUseHeap) {
                     AllocationGuard mem_guard(alloc(), storage_.second(), N);
-                    uninitialized_move_n(alloc(), data_ptr(), N, other.data_ptr());
+                    noyx::memory::uninitialized_move_n(alloc(), data_ptr(), N, other.data_ptr());
                     mem_guard.commit();
                 }
                 else {
-                    uninitialized_move_n(alloc(), data_ptr(), N, other.data_ptr());
+                    noyx::memory::uninitialized_move_n(alloc(), data_ptr(), N, other.data_ptr());
                 }
 
                 return *this;
@@ -225,11 +231,11 @@ namespace noyx {
                 }
 
                 if (need_full_reset) {
-                    noyx::reset();
-                    alloc() = other.alloc(); 
+                    reset();
+                    alloc() = other.alloc();
                 }
                 else {
-                    destroy_range(alloc(), data_ptr(), data_ptr() + N);
+                    noyx::memory::destroy_range(alloc(), data_ptr(), data_ptr() + N);
                 }
 
                 prepare_buffer_for_write();
@@ -237,12 +243,12 @@ namespace noyx {
                 if constexpr (kUseHeap) {
                     AllocationGuard mem_guard(alloc(), storage_.second(), N);
 
-                    uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
+                    noyx::memory::uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
 
-                    mem_guard.commit(); 
+                    mem_guard.commit();
                 }
                 else {
-                    uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
+                    noyx::memory::uninitialized_copy_n(alloc(), data_ptr(), N, other.data_ptr());
                 }
 
                 return *this;
@@ -251,7 +257,7 @@ namespace noyx {
 
             // --- Swap ---
             void swap(StaticArray& other) noexcept(
-                (traits::propagate_on_container_swap::value || traits::is_always_equal::value) && 
+                (traits::propagate_on_container_swap::value || traits::is_always_equal::value) &&
                 (kUseHeap || std::is_nothrow_swappable_v<T>)
                 ) {
                 if (this == &other) return;
@@ -261,9 +267,6 @@ namespace noyx {
                 if constexpr (pocs) {
                     using std::swap;
                     swap(alloc(), other.alloc());
-                }
-                else {
-                    static_assert(alloc() == other.alloc());
                 }
 
                 if constexpr (kUseHeap) {
@@ -275,7 +278,7 @@ namespace noyx {
                     T* b = other.data_ptr();
                     for (size_t i = 0; i < N; ++i) {
                         using std::swap;
-                        swap(a[i], b[i]);   
+                        swap(a[i], b[i]);
                     }
                 }
             }
@@ -286,13 +289,14 @@ namespace noyx {
 
 
         public:
+			// --- Element Access ---
             constexpr T& operator[](size_t i) noexcept { return data_ptr()[i]; }
             constexpr const T& operator[](size_t i) const noexcept { return data_ptr()[i]; }
 
             constexpr size_t size() const noexcept { return N; }
 
-            constexpr T* at(size_t i) noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
-            constexpr const T* at(size_t i) const noexcept { return (i < N) ? &data_ptr()[i] : nullptr; }
+            constexpr T& at(size_t i) { return (i < N) ? data_ptr()[i] : throw std::out_of_range("StaticArray::at: index out of bounds"); }
+            constexpr const T& at(size_t i) const { return (i < N) ? data_ptr()[i] : throw std::out_of_range("StaticArray::at: index out of bounds"); }
 
             constexpr T& front() noexcept { return data_ptr()[0]; }
             constexpr const T& front() const noexcept { return data_ptr()[0]; }
@@ -303,13 +307,28 @@ namespace noyx {
             constexpr T* data() noexcept { return data_ptr(); }
             constexpr const T* data() const noexcept { return data_ptr(); }
 
-            constexpr T* begin() noexcept { return data_ptr(); }
-			constexpr const T* begin() const noexcept { return data_ptr(); }
 
-			constexpr T* end() noexcept { return data_ptr() + N; }
-			constexpr const T* end() const noexcept { return data_ptr() + N; }
+			// --- Iterators ---
+            constexpr iterator begin() noexcept { return data_ptr(); }
+            constexpr const_iterator begin() const noexcept { return data_ptr(); }
+            constexpr const_iterator cbegin() const noexcept { return data_ptr(); }
+
+            constexpr iterator end() noexcept { return data_ptr() + N; }
+            constexpr const_iterator end() const noexcept { return data_ptr() + N; }
+            constexpr const_iterator cend() const noexcept { return data_ptr() + N; }
+
+
+			// --- Reverse Iterators ---
+            constexpr reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
+            constexpr const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+            constexpr reverse_iterator rend() noexcept { return reverse_iterator(begin()); }
+            constexpr const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+            constexpr const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+            constexpr const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
+
 
         public:
+            
             void fill(T* first, T* last, const T& value)
             {
                 while (first != last)
@@ -322,23 +341,29 @@ namespace noyx {
             void assign(size_t count, const T& value)
             {
                 if (count > N) {
-                    assert(index > N && "StaticArray::replace_at: index out of bounds");
+                    throw std::length_error("StaticArray::assign: count > N");
                 }
 
                 for (size_t i = 0; i < count; ++i) {
                     data_ptr()[i] = value;
                 }
             }
-             
+
             template <typename... Args>
             T& replace_at(size_t index, Args&&... args)
             {
-                assert(index > N && "StaticArray::replace_at: index out of bounds");
-				T* ptr = data_ptr() + index;
-				traits::destroy(alloc(), ptr);
+                if (index >= N) {
+                    throw std::out_of_range("StaticArray::replace_at: index out of bounds");
+                }
 
-				traits::construct(alloc(), ptr, std::forward<Args>(args)...);
-				return *ptr;
+                T temp(std::forward<Args>(args)...); 
+
+                T* ptr = data_ptr() + index;
+                traits::destroy(alloc(), ptr);
+
+                traits::construct(alloc(), ptr, std::move(temp));
+                return *ptr;
             }
-
+        };
+    }
 }

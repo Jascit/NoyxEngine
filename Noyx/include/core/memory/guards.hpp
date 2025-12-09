@@ -26,26 +26,26 @@ struct ConstructionGuard {
 };
 
 
-template <typename Alloc, typename T>
+template <typename Alloc>
 struct AllocationGuard {
+    using allocator_traits = std::allocator_traits<Alloc>;
+    using pointer = typename allocator_traits::pointer;
+    using size_type = typename allocator_traits::size_type;
     Alloc& alloc;
-    T*& ptr_ref;
-    size_t n;
-    bool committed;
+    pointer ptr;
+    size_type n;
 
-    AllocationGuard(Alloc& a, T*& p, size_t count)
-        : alloc(a), ptr_ref(p), n(count), committed(false) {
+    AllocationGuard(Alloc& a, pointer p, size_t count)
+        : alloc(a), ptr(p), n(count) {
     }
 
     ~AllocationGuard() {
-        if (!committed && ptr_ref != nullptr) {
+        if (ptr != nullptr) {
             using traits = std::allocator_traits<Alloc>;
-            traits::deallocate(alloc, ptr_ref, n);
-            ptr_ref = nullptr;
+            traits::deallocate(alloc, ptr, n);
+            ptr = nullptr;
         }
     }
 
-    void commit() noexcept { committed = true; }
+    void commit() noexcept { ptr = nullptr; }
 };
-
-}
