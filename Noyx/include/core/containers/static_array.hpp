@@ -1,5 +1,4 @@
 #pragma once
-
 #include <platform/typedef.hpp>
 #include <utility/utility.hpp>
 #include <utility/macros.hpp>
@@ -11,9 +10,9 @@
 #include <cstring>
 #include "iterators/iterators.hpp"
 
+
 namespace noyx {
     namespace containers {
-
         template<typename T, size_t N>
         class StaticArray {
 			using _FirstZeroSecondArgs = noyx::utility::_FirstZeroSecondArgs;
@@ -24,8 +23,8 @@ namespace noyx {
             using pointer = typename traits::pointer;
             using const_pointer = typename traits::const_pointer;
             using value_type = T;
-            using iterator = T*;
-            using const_iterator = const T*;
+            using iterator = MyIterator<T, false>;
+            using const_iterator = MyIterator<T, true>;
             using reverse_iterator = std::reverse_iterator<iterator>;
             using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -309,13 +308,13 @@ namespace noyx {
 
 
 			// --- Iterators ---
-            constexpr iterator begin() noexcept { return data_ptr(); }
-            constexpr const_iterator begin() const noexcept { return data_ptr(); }
-            constexpr const_iterator cbegin() const noexcept { return data_ptr(); }
+            constexpr iterator begin() noexcept { return iterator(data_ptr()); }
+            constexpr const_iterator begin() const noexcept { return iterator(data_ptr()); }
+            constexpr const_iterator cbegin() const noexcept { return iterator(data_ptr()); }
 
-            constexpr iterator end() noexcept { return data_ptr() + N; }
-            constexpr const_iterator end() const noexcept { return data_ptr() + N; }
-            constexpr const_iterator cend() const noexcept { return data_ptr() + N; }
+            constexpr iterator end() noexcept { return iterator(data_ptr() + N); }
+            constexpr const_iterator end() const noexcept { return iterator(data_ptr() + N); }
+            constexpr const_iterator cend() const noexcept { return iterator(data_ptr() + N); }
 
 
 			// --- Reverse Iterators ---
@@ -329,12 +328,13 @@ namespace noyx {
 
         public:
             
-            void fill(T* first, T* last, const T& value)
+            template <typename Iterator>
+            void fill(Iterator first, Iterator last, const T& value)
             {
                 while (first != last)
                 {
                     *first = value;
-                    first++;
+                    ++first;
                 }
             }
 

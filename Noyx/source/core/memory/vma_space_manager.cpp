@@ -1,4 +1,4 @@
-#include <memory/VMASpaceManager.hpp>
+#include "memory/vma_space_manager.hpp"
 using noyx::detail::VMASpaceMG;
 
 VMASpaceMG::VMASpaceMG(noyx::size_t size, noyx::size_t pgGranularity, noyx::size_t pgAllocGranuality, noyx::size_t firstCommit = 0) :
