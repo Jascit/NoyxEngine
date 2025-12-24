@@ -6,6 +6,7 @@
 #include <memory>
 #include <algorithm>
 #include <iterator>
+#include <cassert>
 #include "memory/guards.hpp"
 #include "memory/uninitialized.hpp"
 #include <stdexcept>
@@ -51,6 +52,35 @@ namespace noyx {
 				{
 					traits::deallocate(alloc(), data_ptr(), capacity_);
 				}
+			}
+
+
+		private:
+			void reallocate(size_type new_cap)
+			{
+				if (new_cap == capacity_) return;
+				pointer new_ptr = traits::allocate(alloc(), new_cap);
+				pointer old_ptr = data_ptr();
+
+				AllocationGuard<allocator_type> mem_guard(alloc(), new_ptr, new_cap);
+				size_type elements_to_move = (new_cap < size_) ? new_cap : size_;
+				noyx::memory::uninitialized_move_n(alloc(), new_ptr, elements_to_move, old_ptr);
+				if constexpr (!kTrivialDestroy)
+				{
+					for (size_type i = 0; i < size_; ++i)
+					{
+						traits::destroy(alloc(), old_ptr + (size_ - 1 - i));
+					}
+				}
+				if (old_ptr != nullptr)
+				{
+					traits::deallocate(alloc(), old_ptr, capacity_);
+				}
+				mem_guard.commit();
+
+				storage_.second() = new_ptr;
+				capacity_ = new_cap;
+				size_ = elements_to_move;
 			}
 
 		public:
@@ -143,7 +173,8 @@ namespace noyx {
 					
 					size_ = other.size_;
 
-					if constexpr (pocca) {
+					if constexpr (pocca) 
+					{
 						alloc() = other.alloc();
 					}
 				}
@@ -157,8 +188,8 @@ namespace noyx {
 			}
 
 
-			// --- Move Assignment
-			DynamicArray& operator=(DynamicArray&& other) noexcept // додав noexcept (бажано)
+			// --- Move Assignment ---
+			DynamicArray& operator=(DynamicArray&& other) noexcept
 			{
 				if (this == &other) return *this;
 				constexpr bool pocma = POCMA::value;
@@ -167,16 +198,28 @@ namespace noyx {
 					alloc() = std::move(other.alloc());
 				}
 
-				if (alloc() == other.alloc())
+				bool can_steal = traits::is_always_equal::value || alloc() == other.alloc() || pocma;
+				if (can_steal)
 				{
-					std::swap(storage_, other.storage_);
+					std::swap(storage_.second(), other.storage_.second());
 					std::swap(size_, other.size_);
 					std::swap(capacity_, other.capacity_);
 				}
 				else
 				{
-					DynamicArray temp(std::move(other));
-					swap(temp);
+					pointer new_ptr = traits::allocate(alloc(), other.size_);
+					AllocationGuard<allocator_type> mem_guard(alloc(), new_ptr, other.size_);
+					noyx::memory::uninitialized_move_n(alloc(), new_ptr, other.size_, other.data_ptr());
+					mem_guard.commit();
+					
+					noyx::memory::destroy_range(alloc(), data_ptr(), data_ptr() + size_);
+					deallocate_storage();
+
+					storage_.second() = new_ptr;
+					size_ = other.size_;
+					capacity_ = other.size_;
+					other.size_ = 0;
+					other.clear();
 				}
 				return *this;
 			}
@@ -185,7 +228,6 @@ namespace noyx {
 			friend bool operator==(const DynamicArray& lhs, const DynamicArray& rhs)
 			{
 				if (lhs.size() != rhs.size()) return false;
-				// Порівнюємо від begin() до begin() іншого масиву
 				return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 			}
 
@@ -198,12 +240,19 @@ namespace noyx {
 			void swap(DynamicArray& other) noexcept
 			{
 				using std::swap;
-				swap(storage_, other.storage_);
+				swap(storage_.second(), other.storage_.second());
 				swap(size_, other.size_);
 				swap(capacity_, other.capacity_);
 				if constexpr (POCS::value)
 				{
 					swap(alloc(), other.alloc());
+				}
+
+				else if constexpr (!traits::is_always_equal::value)
+				{
+				#ifndef NDEBUG
+					assert(alloc() == other.alloc() && "DynamicArray::swap: undefined behavior (allocators mismatch and POCS=false)");
+				#endif
 				}
 			}
 
@@ -263,20 +312,75 @@ namespace noyx {
 				++size_;
 			}
 
+			void pop_back() noexcept
+			{
+				if (size_ > 0)
+				{
+					traits::destroy(alloc(), data_ptr() + (size_ - 1));
+					--size_;
+				}
+			}
+
+			bool try_pop_back() noexcept
+			{
+				if (size_ == 0) return false;
+				traits::destroy(alloc(), data_ptr() + (size_ - 1));
+				--size_;
+				return true;
+			}
 
 		public:
 			// --- Element Access ---
-			constexpr T& operator[](size_t i) noexcept { return data_ptr()[i]; }
-			constexpr const T& operator[](size_t i) const noexcept { return data_ptr()[i]; }
+			constexpr T& operator[](size_t i) noexcept
+			{
+			#ifndef NDEBUG
+				assert(i < size_ && "DynamicArray::operator[]: index out of bounds");
+			#endif
+				return data_ptr()[i];
+			}
+
+			constexpr const T& operator[](size_t i) const noexcept
+			{
+			#ifndef NDEBUG
+				assert(i < size_ && "DynamicArray::operator[]: index out of bounds");
+			#endif
+				return data_ptr()[i];
+			}
 
 			constexpr T& at(size_t i) { return (i < size_) ? data_ptr()[i] : throw std::out_of_range("StaticArray::at: index out of bounds"); }
 			constexpr const T& at(size_t i) const { return (i < size_) ? data_ptr()[i] : throw std::out_of_range("StaticArray::at: index out of bounds"); }
 
-			constexpr T& front() noexcept { return data_ptr()[0]; }
-			constexpr const T& front() const noexcept { return data_ptr()[0]; }
+			constexpr T& front() noexcept
+			{
+			#ifndef NDEBUG
+				assert(size_ > 0 && "DynamicArray::front: array is empty");
+			#endif
+				return data_ptr()[0];
+			}
 
-			constexpr T& back() noexcept { return data_ptr()[size_ - 1]; }
-			constexpr const T& back() const noexcept { return data_ptr()[size_ - 1]; }
+			constexpr const T& front() const noexcept
+			{
+			#ifndef NDEBUG
+				assert(size_ > 0 && "DynamicArray::front: array is empty");
+			#endif
+				return data_ptr()[0];
+			}
+
+			constexpr T& back() noexcept
+			{
+			#ifndef NDEBUG
+				assert(size_ > 0 && "DynamicArray::back: array is empty");
+			#endif
+				return data_ptr()[size_ - 1];
+			}
+
+			constexpr const T& back() const noexcept
+			{
+			#ifndef NDEBUG
+				assert(size_ > 0 && "DynamicArray::back: array is empty");
+			#endif
+				return data_ptr()[size_ - 1];
+			}
 
 			constexpr T* data() noexcept { return data_ptr(); }
 			constexpr const T* data() const noexcept { return data_ptr(); }
@@ -303,15 +407,6 @@ namespace noyx {
 
 		public:
 			// --- Methods ---
-			void pop_back() noexcept
-			{
-				if (size_ > 0)
-				{
-					traits::destroy(alloc(), data_ptr() + (size_ - 1));
-					--size_;
-				}
-			}
-
 			void clear() noexcept
 			{
 				if (size_ > 0)
@@ -348,6 +443,14 @@ namespace noyx {
 					noyx::memory::destroy_range(alloc(), data_ptr() + new_size, data_ptr() + size_);
 				}
 				size_ = new_size;
+			}
+
+			void shrink_to_fit()
+			{
+				if (capacity_ > size_)
+				{
+					reallocate(size_);
+				}
 			}
 		};
 	}

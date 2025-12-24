@@ -233,5 +233,5 @@ NOYX_TEST(DynamicArrayTest, DestructorCalls) {
         arr.pop_back();
     }
 
-    NOYX_ASSERT_EQ(g_destructor_count, 5);
+    NOYX_ASSERT_EQ(5, g_destructor_count);
 }
