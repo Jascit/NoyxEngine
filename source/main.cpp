@@ -17,7 +17,7 @@
 #define CORE_API_VERSION_MINOR 0
 #define CORE_API_VERSION_PATCH 0
 // test implemantation of core api
-void core_push_outgoing(const void* buf, size_t size) {
+void core_push_outgoing(const void* buf, unsigned long long size) {
   if (!buf || size == 0) {
     std::cout << "push_outgoing: invalid buffer or size 0" << std::endl;
     return;
@@ -34,7 +34,7 @@ void core_free(void* ptr) {
 }
 
 
-uint32_t core_get_generation() {
+unsigned int core_get_generation() {
   std::cout << "core_get_generation" << std::endl;
   return 1;
 }
@@ -44,7 +44,7 @@ void core_log(int level, const char* msg) {
   std::cout << "core_log: level=" << level << " msg=" << msg << std::endl;
 }
 
-void* core_alloc(size_t);
+void* core_alloc(unsigned long long);
 
 static CoreAPI core_api = {
   .size = sizeof(CoreAPI),
@@ -56,7 +56,7 @@ static CoreAPI core_api = {
   .log = core_log,
 };
 
-void* core_alloc(size_t size) {
+void* core_alloc(unsigned long long size) {
   if (size == 0) {
     std::cout << "core_alloc: size 0, returning nullptr" << std::endl;
     return nullptr;
@@ -68,7 +68,7 @@ void* core_alloc(size_t size) {
 int main() {
   ModuleAPI resource_module = { 0 };
 
-  using init_func = uint32_t(*)(const CoreAPI*, ModuleAPI*);
+  using init_func = unsigned int(*)(const CoreAPI*, ModuleAPI*);
   HMODULE hLib = LoadLibraryA("NoyxResource.dll");
   if (!hLib) {
     std::cerr << "Failed to load DLL" << std::endl;
@@ -82,7 +82,7 @@ int main() {
     return 1;
   }
 
-  uint32_t err_code = resource_module_init(&core_api, &resource_module);
+  unsigned int err_code = resource_module_init(&core_api, &resource_module);
   if (err_code != 0) {
     if (err_code == 1) {
       std::cerr << "Core: version mismatch" << std::endl;
@@ -105,7 +105,7 @@ int main() {
 
   safe_invoke(resource_module.on_frame, "on_frame", 14.f);
   safe_invoke(resource_module.on_shutdown, "on_shutdown", 10);
-  safe_invoke(resource_module.process_command_buffer, "process_command_buffer", static_cast<const void*>(nullptr), static_cast<size_t>(52));
+  safe_invoke(resource_module.process_command_buffer, "process_command_buffer", static_cast<const void*>(nullptr), static_cast<unsigned long long>(52));
 
   FreeLibrary(hLib);
   return 0;
