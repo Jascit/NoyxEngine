@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.25) # сучасні можливості CUDA і C++17
+cmake_minimum_required(VERSION 3.25)
 project(NoyxCore C CXX)
-project(NoyxCore VERSION 1.8.2)
+project(NoyxCore VERSION 1.0.0)
 
 # Встановлюємо стандарт C++
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,7 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Collect canonical defs here
 set(PLATFORM_COMPILE_DEFS "")
-add_executable(NoyxCore source/main.cpp)
+add_executable(main source/main.cpp)
 # Basic cross-compile warning
 if (CMAKE_CROSSCOMPILING)
     message(WARNING "CMake is in cross-compiling mode. Detection may reflect host or target depending on toolchain settings.")
@@ -171,10 +171,10 @@ target_compile_features(COMMON_FLAGS INTERFACE cxx_std_23)
 
 set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/include/" "${CMAKE_CURRENT_SOURCE_DIR}/api")
 add_subdirectory(source)
-target_link_libraries(NoyxCore PRIVATE ${DynamicLibraries})
-target_include_directories(NoyxCore PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/api")
-
-set_target_properties(NoyxCore PROPERTIES
+target_link_libraries(main PRIVATE ${DynamicLibraries})
+target_include_directories(main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/api")
+target_link_libraries(main PRIVATE COMMON_FLAGS)
+set_target_properties(main PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/bin/"
     RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/"
 )

@@ -4,9 +4,9 @@
  * \brief  ABI-stable interface
  *
  * Copyright (c) 2026 Jascit
- * \author jascit<https://github.com/jascit>
+ * \author Jascit<https://github.com/Jascit>
  * \date   January 2026
- * \note  Do not break ABI, use pod instead.
+ * \note   Do not break ABI, use pod instead.
  */
 
 #ifndef MODULE_ABI_H
