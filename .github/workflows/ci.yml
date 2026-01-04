@@ -27,7 +27,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           cmake --preset linux-x64-release
-          cmake --build --preset linux-release -- -j
+          cmake --build --preset linux-release --parallel 0
 
       - name: Configure & Build (Windows using presets)
         if: matrix.os == 'windows-latest'
