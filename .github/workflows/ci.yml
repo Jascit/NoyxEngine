@@ -1,0 +1,68 @@
+name: CI - CMake build & tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+        config: [ Release ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python (needed by some toolchains)
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Configure CMake (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+
+      - name: Configure CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cmake -S . -B build -G "Visual Studio 18 2026" -A x64 -D CMAKE_BUILD_TYPE=${{ matrix.config }}
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.config }} -- -j
+
+      - name: Run tests / test executable (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if [ -f build/bin/test_mvp ]; then
+            ./build/test_mvp
+          elif [ -f build/bin/main ]; then
+            ./build/main
+          else
+            echo "No test executable found (build/test_mvp or build/main)."
+            exit 1
+          fi
+
+      - name: Run tests / test executable (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          if (Test-Path build\Release\bin\test.exe) {
+            build\Release\test_mvp.exe
+          } elseif (Test-Path build\Release\bin\main.exe) {
+            build\Release\main.exe
+          } else {
+            Write-Error "No test executable found (build\\Release\\test_mvp.exe or build\\Release\\main.exe)."
+            exit 1
+          }
+
+      - name: Upload build artifacts (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.os }}-${{ matrix.config }}
+          path: |
+            build/**

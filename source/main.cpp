@@ -13,7 +13,7 @@
 #include <Windows.h>
 #include <module_abi.h>
 #include <iostream>
-#define CORE_API_VERSION_MAJOR 2
+#define CORE_API_VERSION_MAJOR 1
 #define CORE_API_VERSION_MINOR 0
 #define CORE_API_VERSION_PATCH 0
 // test implemantation of core api
