@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
-
 project(NoyxTests LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -13,23 +11,13 @@ set(TESTS_ALL_LIBRARIES_DYNAMIC "")
 set(TEST_SUBDIRECTORIES "")
 
 set(CORE_TEST_FLAG ON)
-set(PLATFORM_TEST_FLAG OFF)
-set(AUDIO_TEST_FLAG OFF)
-set(INPUT_TEST_FLAG OFF)
-set(RENDER_TEST_FLAG OFF)
-set(PHYSIC_TEST_FLAG OFF)
-
-foreach(MOD CORE PLATFORM AUDIO INPUT RENDER PHYSIC)
-    if(${MOD}_TEST_FLAG)
+set(AVAILABLE_TEST_MODULES CORE OTHER_MODULE)
+foreach(MOD IN LISTS AVAILABLE_TEST_MODULES)
+    set(FLAG_NAME "${MOD}_TEST_FLAG")
+    if(DEFINED ${FLAG_NAME} AND ${FLAG_NAME})
         list(APPEND TEST_SUBDIRECTORIES ${MOD})
     endif()
 endforeach()
-
-#explicit directories to test from subdirectories (core/platform/audio)
-#if NOT EXISTS, then you'll be testing whole module/modules
-set(EXPLICIT_SUBDIRECTORIES 
-    containers
-)
 
 message(STATUS "------TOP_TEST CMAKE------")
 foreach(SUBDIR ${TEST_SUBDIRECTORIES})
@@ -42,15 +30,25 @@ foreach(SUBDIR ${TEST_SUBDIRECTORIES})
     endif()
 endforeach()
 
-
-add_executable (NoyxTests "${CMAKE_CURRENT_SOURCE_DIR}/test_framework/test_main.cpp") 
-
-target_link_libraries(NoyxTests PRIVATE
-    ${TESTS_ALL_LIBRARIES_DYNAMIC}
+# --- main test executable
+add_executable(tests
+  "${CMAKE_CURRENT_SOURCE_DIR}/test_framework/test_main.cpp"
 )
 
-target_include_directories(NoyxTests PUBLIC
-    ${TEST_DETAILS_PATH}
+target_link_libraries(tests PRIVATE COMMON_FLAGS)
+if(TARGET SANITIZERS)
+  target_link_libraries(tests PRIVATE SANITIZERS)
+endif()
+
+if(TESTS_ALL_LIBRARIES_DYNAMIC)
+  target_link_libraries(tests PRIVATE ${TESTS_ALL_LIBRARIES_DYNAMIC})
+endif()
+
+target_include_directories(tests PUBLIC ${TEST_DETAILS_PATH})
+message(STATUS "TEST: Test's binary dir: ${CMAKE_BINARY_DIR}/bin/tests")
+set_target_properties(tests PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin/
+    RUNTIME_OUTPUT_DIRECTORY_REALEASE ${CMAKE_BINARY_DIR}/bin/
 )
 
-add_test(NAME NoyxTests COMMAND NoyxTests)
+add_test(NAME tests COMMAND tests)
