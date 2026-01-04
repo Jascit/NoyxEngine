@@ -40,10 +40,10 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           echo "Searching for executables under out/build..."
-          BIN=$(find out/build -type f -perm -111 -maxdepth 6 -print -quit || true)
+          BIN=$(find out/build/Linux/x64-Release/bin -type f -perm -111 -maxdepth 6 -print -quit || true)
           if [ -z "$BIN" ]; then
             echo "No executable found under out/build. Listing tree for debug:"
-            find out/build -maxdepth 4 -type f -print
+            find out/build/Linux/x64-Release/bin -maxdepth 4 -type f -print
             exit 1
           fi
           echo "Running: $BIN"
