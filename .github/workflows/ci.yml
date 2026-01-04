@@ -36,32 +36,36 @@ jobs:
           cmake --preset windows-x64-release
           cmake --build --preset windows-release --config Release
 
-      - name: Locate and run test (Linux)
+      - name: Run test executable (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          echo "Searching for executables under out/build..."
-          BIN=$(find out/build/Linux/x64-Release/bin -type f -perm -111 -maxdepth 6 -print -quit || true)
-          if [ -z "$BIN" ]; then
-            echo "No executable found under out/build. Listing tree for debug:"
-            find out/build/Linux/x64-Release/bin -maxdepth 4 -type f -print
+          TEST_BIN="out/build/Linux/x64-Release/bin/tests"
+          if [ -x "$TEST_BIN" ]; then
+            echo "Running: $TEST_BIN"
+            "$TEST_BIN"
+          else
+            echo "Test executable not found: $TEST_BIN"
+            echo "Directory listing for debug:"
+            ls -la out/build/Linux/x64-Release/bin
             exit 1
           fi
-          echo "Running: $BIN"
-          "$BIN"
 
-      - name: Locate and run test (Windows)
+      - name: Run test executable (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          Write-Host "Searching for executables under out\\build..."
-          $bin = Get-ChildItem -Path 'out\build' -Filter *.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($null -eq $bin) {
-            Write-Error "No .exe found under out\\build. Listing files for debug:"
-            Get-ChildItem -Path out\build -Recurse -File | Select-Object -First 200
+          $TEST_BIN = 'out\build\Windows\x64-Release\bin\tests.exe'
+          if (Test-Path $TEST_BIN) {
+            Write-Host "Running: $TEST_BIN"
+            & $TEST_BIN
+            exit $LASTEXITCODE
+          } else {
+            Write-Error "Test executable not found: $TEST_BIN"
+            Write-Host "Listing files under out\build\Windows\x64-Release\bin:"
+            Get-ChildItem -Path 'out\build\Windows\x64-Release\bin' -File
             exit 1
           }
-          Write-Host "Running: $($bin.FullName)"
-          & $bin.FullName
+
 
       - name: Upload build artifacts (optional)
         if: always()
