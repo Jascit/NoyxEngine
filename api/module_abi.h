@@ -35,28 +35,26 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  typedef unsigned int uint32_t;
-  typedef unsigned long long size_t;
 
   typedef struct {
-    uint32_t size;
-    uint32_t version;
-    void (*process_command_buffer)(const void* buf, size_t size);
+    unsigned int size;
+    unsigned int version;
+    void (*process_command_buffer)(const void* buf, unsigned long long size);
     void (*on_frame)(float dt);
-    void (*on_shutdown)(uint32_t generation);
+    void (*on_shutdown)(unsigned int generation);
   } ModuleAPI;
 
   typedef struct {
-    uint32_t size;
-    uint32_t version;
-    void* (*alloc)(size_t);
+    unsigned int size;
+    unsigned int version;
+    void* (*alloc)(unsigned long long);
     void     (*free)(void*);
-    void     (*push_outgoing)(const void* buf, size_t size);
-    uint32_t (*get_generation)();
+    void     (*push_outgoing)(const void* buf, unsigned long long size);
+    unsigned int (*get_generation)();
     void     (*log)(int level, const char* msg);
   } CoreAPI;
 
-  MODULE_API uint32_t noyx_module_init(const CoreAPI* core, ModuleAPI* out);
+  MODULE_API unsigned int noyx_module_init(const CoreAPI* core, ModuleAPI* out);
 
 #ifdef __cplusplus
 }
