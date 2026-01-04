@@ -135,7 +135,7 @@ namespace noyx {
       }
 
       inline constexpr const T1& first() const noexcept {
-        return static_cast<T1&>(*this);
+        return static_cast<const T1&>(*this);
       }
 
       inline constexpr T2& second() noexcept {

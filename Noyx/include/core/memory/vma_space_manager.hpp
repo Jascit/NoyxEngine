@@ -1,6 +1,7 @@
 #pragma once
 #define NOMINMAX
 #include <Windows.h>
+#include <platform/typedef.hpp>
 #include <array>
 #include <memory>
 #include <cstdint>
@@ -10,7 +11,7 @@
 #include <functional>
 #include <unordered_map>
 #include <platform/xmemory.hpp>
-#include <containers/StaticArray.hpp>
+#include "containers/static_array.hpp"
 
 namespace noyx {
   namespace detail {
@@ -57,8 +58,8 @@ namespace noyx {
          * @param idx Index into the sorted virtualBases_ array.
          * @return std::pair<void*, noyx::containers::TStaticArray<noyx::uint64>>
          */
-        [[nodiscard]] std::pair<void*, noyx::containers::TStaticArray<noyx::uint64>> operator[](noyx::size_t idx) noexcept {
-          if (idx >= currentSize_) return { nullptr, noyx::containers::TStaticArray<noyx::uint64>(0) };
+        [[nodiscard]] std::pair<void*, noyx::containers::StaticArray<noyx::uint64>> operator[](noyx::size_t idx) noexcept {
+          if (idx >= currentSize_) return { nullptr, noyx::containers::StaticArray<noyx::uint64>(0) };
           void* base = insertionOrder_[idx];
           return std::make_pair(base, freePagesBitmap_[base]);
         }
@@ -71,7 +72,7 @@ namespace noyx {
          *
          * @param addr Pointer to the start of virtual base region to insert.
          */
-        constexpr void push(void* addr) {
+          void push(void* addr) {
           uintptr_t key = reinterpret_cast<uintptr_t>(addr);
           size_t lo = 0;
           size_t hi = currentSize_;
@@ -88,7 +89,7 @@ namespace noyx {
           size_t words = (pageCount_ + 63) / 64;
           auto& bitmap = freePagesBitmap_[addr];
           if (bitmap.size() == 0) {
-            bitmap = noyx::containers::TStaticArray<noyx::uint64>(words);
+            bitmap = noyx::containers::StaticArray<noyx::uint64>(words);
           }
           insertionOrder_[currentSize_] = addr;
           currentSize_++;
@@ -117,10 +118,13 @@ namespace noyx {
           return virtualBases_[lo - 1];
         }
 
-        [[nodiscard]] noyx::containers::TStaticArray<noyx::uint64>& find_bitmap(void* base) const noexcept {
-          if (currentSize_ == 0) return nullptr;
-          auto a = freePagesBitmap_[base];
-          return freePagesBitmap_[base];
+        [[nodiscard]] noyx::containers::StaticArray<noyx::uint64>*
+            find_bitmap(void* base) noexcept
+        {
+            auto it = freePagesBitmap_.find(base);
+            if (it == freePagesBitmap_.end())
+                return nullptr;
+            return &it->second;
         }
 
       private:
@@ -135,7 +139,7 @@ namespace noyx {
          * Map from base pointer -> bitmap describing free pages (one bit per page).
          * Using unordered_map to associate a TStaticArray for each base.
          */
-        std::unordered_map<void*, noyx::containers::TStaticArray<noyx::uint64>> freePagesBitmap_;
+        std::unordered_map<void*, noyx::containers::StaticArray<noyx::uint64>> freePagesBitmap_;
 
         /// Current number of stored virtual bases (<= Size).
         noyx::size_t currentSize_;

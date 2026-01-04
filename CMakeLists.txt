@@ -25,3 +25,4 @@ option(RENDER_MODULE "Enable rendering module" ON)
 add_subdirectory(Noyx)
 #tests
 add_subdirectory(tests)
+
