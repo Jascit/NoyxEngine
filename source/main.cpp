@@ -24,11 +24,9 @@ constexpr const char* MODULE_NAME = "libNoyxResource.dylib";
 constexpr const char* MODULE_NAME = "libNoyxResource.so";
 #endif
 #define MODULE_ABI_IMPORTS
-#include <module_abi.h>
+#include <ModuleABI.h>
 #include <iostream>
-#define CORE_API_VERSION_MAJOR 1
-#define CORE_API_VERSION_MINOR 0
-#define CORE_API_VERSION_PATCH 0
+
 // test implemantation of core api
 void core_push_outgoing(const void* buf, unsigned long long size) {
   if (!buf || size == 0) {
@@ -59,9 +57,9 @@ void core_log(int level, const char* msg) {
 
 void* core_alloc(unsigned long long);
 
-static CoreAPI core_api = {
-  .size = sizeof(CoreAPI),
-  .version = (CORE_API_VERSION_MAJOR << 16) | (CORE_API_VERSION_MINOR << 8) | (CORE_API_VERSION_PATCH),
+static CoreABI core_api = {
+  .size = sizeof(CoreABI),
+  .version = (CORE_ABI_VERSION_MAJOR << 16) | (CORE_ABI_VERSION_MINOR << 8) | (CORE_ABI_VERSION_PATCH),
   .alloc = core_alloc,
   .free = core_free,
   .push_outgoing = core_push_outgoing,
@@ -103,9 +101,9 @@ void unload_library(LibraryHandle lib) {
 }
 
 int main() {
-  ModuleAPI resource_module = {};
+  ModuleABI resource_module = {};
 
-  using init_func = unsigned int(*)(const CoreAPI*, ModuleAPI*);
+  using init_func = unsigned int(*)(const CoreABI*, ModuleABI*);
 
   LibraryHandle lib = load_library(MODULE_NAME);
   if (!lib) {
