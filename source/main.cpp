@@ -11,14 +11,16 @@
 
 #if defined(_WIN32)
 #include <Windows.h>
+#include <Platform/Arch.hpp>
+#include <Platform/OS.hpp>
 using LibraryHandle = HMODULE;
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(LINUX) || defined(__APPLE__)
 #include <dlfcn.h>
 using LibraryHandle = void*;
 #endif
-#if defined(_WIN32)
+#if defined(NOYX_CORE_WINDOWS)
 constexpr const char* MODULE_NAME = "NoyxResource.dll";
-#elif defined(__APPLE__)
+#elif defined(NOYX_CORE_MACOS) || defined(NOYX_CORE_APPLE) || defined(NOYX_CORE_IOS)
 constexpr const char* MODULE_NAME = "libNoyxResource.dylib";
 #else
 constexpr const char* MODULE_NAME = "libNoyxResource.so";
@@ -33,6 +35,7 @@ void core_push_outgoing(const void* buf, unsigned long long size) {
     std::cout << "push_outgoing: invalid buffer or size 0" << std::endl;
     return;
   }
+ 
   std::cout << "push_outgoing: buf=" << buf << " size=" << size << std::endl;
 }
 

@@ -19,13 +19,13 @@ endif()
 # Detect OS
 if (WIN32)
     message(STATUS "Detected platform: Windows")
-    list(APPEND PLATFORM_COMPILE_DEFS PLATFORM_WINDOWS)
+    list(APPEND PLATFORM_COMPILE_DEFS WINDOWS)
 
     # Optional: detect Windows 10 vs 11 if CMAKE_HOST_SYSTEM_VERSION is set
-    if (DEFINED CMAKE_HOST_SYSTEM_VERSION)
-       set(IS_WIN TRUE CACHE INTERNAL "Is Windows 10")
-       list(APPEND PLATFORM_COMPILE_DEFS WINDOWS)
-    endif()
+    # if (DEFINED CMAKE_HOST_SYSTEM_VERSION)
+    #    set(IS_WIN TRUE CACHE INTERNAL "Is Windows 10")
+    #    list(APPEND PLATFORM_COMPILE_DEFS WINDOWS) 
+    # endif()
 
 elseif (APPLE)
     message(STATUS "Detected platform: Apple (macOS/iOS/etc)")

@@ -5,7 +5,7 @@
  *
  * Copyright (c) 2026 Jascit
  * \author Jascit<https://github.com/Jascit>
- * \date   January 2026
+ * \date   04.01.2026
  * \note   Do not break ABI, use pod instead.
  */
 
