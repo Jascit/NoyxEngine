@@ -11,8 +11,7 @@
 
 #if defined(_WIN32)
 #include <Windows.h>
-#include <Platform/Arch.hpp>
-#include <Platform/OS.hpp>
+#include <containers/TStaticArray.hpp>
 using LibraryHandle = HMODULE;
 #elif defined(LINUX) || defined(__APPLE__)
 #include <dlfcn.h>
