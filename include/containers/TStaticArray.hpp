@@ -59,7 +59,7 @@ namespace noyxcore::containers {
     };
 
     [[nodiscard]] constexpr size_type size() const noexcept {
-      return _last - std::launder(reinterpret_cast<const_pointer>(_data));
+      return last_ - std::launder(reinterpret_cast<const_pointer>(_data));
     };
 
     [[nodiscard]] constexpr bool empty() const noexcept {
@@ -91,7 +91,7 @@ namespace noyxcore::containers {
 
   private:
     constexpr void cleanup() noexcept(std::is_nothrow_destructible_v<value_type>) {
-      if (_last != data()) destroy_range(data(), _last);
+      if (last_ != data()) destroy_range(data(), last_);
     };
 
     constexpr void destroyRange(pointer first, pointer last) noexcept(std::is_nothrow_destructible_v<value_type>) {

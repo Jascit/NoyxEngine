@@ -73,37 +73,48 @@ namespace noyxcore::containers::internal {
   };
 
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill_n(FwdIt first, size_t count, alloc_val_t<Alloc>& val, Alloc& alloc) noexcept(...);
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill_n(FwdIt first, size_t count, alloc_val_t<Alloc>& val, Alloc& alloc) 
+    noexcept((can_use_memset_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc>>);
 
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_copy_n(FwdIt first, size_t count, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) noexcept(...);
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_copy_n(FwdIt first, size_t count, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) 
+    noexcept((can_use_memcpy_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc>>);
 
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_move_n(FwdIt first, size_t count, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) noexcept(...);
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_move_n(FwdIt first, size_t count, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) 
+    noexcept((can_use_memcpy_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_move_constructible_v<alloc_val_t<Alloc>>);
 
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_copy(FwdIt first, FwdIt last, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) noexcept(...);
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_copy(FwdIt first, FwdIt last, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) 
+    noexcept((can_use_memcpy_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc>>);
 
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_move(FwdIt first, FwdIt last, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) noexcept(...);
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_move(FwdIt first, FwdIt last, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) 
+    noexcept((can_use_memcpy_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_move_constructible_v<alloc_val_t<Alloc>>);
 
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill(FwdIt first, FwdIt last, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) noexcept(...);
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill(FwdIt first, FwdIt last, alloc_raw_ptr_t<Alloc> dest, Alloc& alloc) 
+    noexcept((can_use_memset_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc>>);
 
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_default_construct(FwdIt first, FwdIt last, Alloc& alloc) noexcept(...);
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_default_construct(FwdIt first, FwdIt last, Alloc& alloc) 
+    noexcept((can_use_zero_memset_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_default_constructible_v<alloc_val_t<Alloc>>);
 
   template<typename FwdIt>
-  constexpr iter_ptr_t<FwdIt> assign_move_n(FwdIt first, size_t count, iter_ptr_t<FwdIt> dest) noexcept(...);
+  constexpr iter_ptr_t<FwdIt> assign_move_n(FwdIt first, size_t count, iter_ptr_t<FwdIt> dest) 
+    noexcept((can_use_memcpy_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_move_assignable_v<iter_val_t<FwdIt>>);
 
   template<typename FwdIt>
-  constexpr iter_ptr_t<FwdIt> assign_copy_n(FwdIt first, size_t count, iter_ptr_t<FwdIt> dest) noexcept(...);
+  constexpr iter_ptr_t<FwdIt> assign_copy_n(FwdIt first, size_t count, iter_ptr_t<FwdIt> dest) 
+    noexcept((can_use_memcpy_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_copy_assignable_v<iter_val_t<FwdIt>>);
 
   template<typename FwdIt>
-  constexpr iter_ptr_t<FwdIt> assign_move(FwdIt first, FwdIt last, iter_ptr_t<FwdIt> dest) noexcept(...);
+  constexpr iter_ptr_t<FwdIt> assign_move(FwdIt first, FwdIt last, iter_ptr_t<FwdIt> dest) 
+    noexcept((can_use_memcpy_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_move_assignable_v<iter_val_t<FwdIt>>);
 
   template<typename FwdIt>
-  constexpr iter_ptr_t<FwdIt> assign_copy(FwdIt first, FwdIt last, iter_ptr_t<FwdIt> dest) noexcept(...);
+  constexpr iter_ptr_t<FwdIt> assign_copy(FwdIt first, FwdIt last, iter_ptr_t<FwdIt> dest) 
+    noexcept((can_use_memcpy_v<FwdIt> && !std::is_constant_evaluated()) || std::is_nothrow_copy_assignable_v<iter_val_t<FwdIt>>);
 
   template<typename Alloc, typename FwdIt>
   constexpr bool is_nothrow_uninitialized_moveable_v = noexcept(internal::uninitialized_move(
