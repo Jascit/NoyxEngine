@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* 
- * \file   platform/debug.hpp
+ * \file   debug.hpp
  * \brief  Debug/Release detection and common attributes
  * 
  * Copyright (c) 2026 Jascit 
@@ -34,6 +34,3 @@
 #else
 #  define FORCE_INLINE inline
 #endif
-
-#define CONSTEXPR constexpr
-#define NODISCARD [[nodiscard]]

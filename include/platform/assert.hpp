@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* 
- * \file   platform/assert.hpp
+ * \file   assert.hpp
  * \brief  ABORT & ASSERT helpers.
  * 
  * Copyright (c) 2026 NOYX_CORE 

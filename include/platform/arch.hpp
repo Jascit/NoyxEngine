@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* 
- * \file   platform/arch.hpp
+ * \file   arch.hpp
  * \brief  Architecture detection (prefix: NOYX_CORE_ARCH_*)
  * 
  * Copyright (c) 2026 Jascit 

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* 
- * \file   containers/internal/containers_traits.hpp
- * \brief  Internal type traits and utilities for container and memory algorithms.
+ * \file   containers_traits.hpp
+ * \brief  Internal type traits for containers and memory algorithms.
  * 
  * Copyright (c) 2026 Jascit 
  * \author Jascit<https://github.com/Jascit>
@@ -11,35 +11,22 @@
 #pragma once
 #include <type_traits>
 #include <memory/allocators/traits.hpp>
+#include <platform/debug.hpp>
 
 namespace noyxcore::containers::internal {
     template<typename It>
-    using iter_val_t = typename std::iterator_traits<It>::value_type;
+    using iter_val_t = std::iter_value_t<It>;
 
     template<typename It>
-    using iter_ptr_t = typename std::iterator_traits<It>::pointer;
+    using iter_ptr_t = decltype(std::to_address(std::declval<It&>()));;
 
     template<typename It>
-    using iter_ref_t = typename std::iterator_traits<It>::reference;
-
-    template<typename It, typename = void>
-    struct is_contiguous_like : std::false_type {};
+    using iter_ref_t = std::iter_reference_t<It>;
 
     template<typename It>
-    struct is_contiguous_like<It, std::void_t<typename std::iterator_traits<It>::pointer>> {
-    private:
-      using pointer_t = typename std::iterator_traits<It>::pointer;
-      using value_t = typename std::iterator_traits<It>::value_type;
-    public:
-      static constexpr bool value =
-        std::is_pointer_v<It> ||
-        std::is_same_v<pointer_t, value_t*>;
-    };
-
+    using is_contiguous_iterator = std::bool_constant<std::contiguous_iterator<It>>;
     template<typename It>
-    using is_contiguous_iterator = std::bool_constant<is_contiguous_like<It>::value>;
-    template<typename It>
-    inline constexpr bool is_contiguous_iterator_v = is_contiguous_like<It>::value;
+    inline constexpr bool is_contiguous_iterator_v = is_contiguous_iterator<It>::value;
 
     template <typename It>
     constexpr bool can_use_zero_memset_v =
@@ -60,7 +47,7 @@ namespace noyxcore::containers::internal {
     struct is_character<uint8_t> : std::true_type {};
     template<>
     struct is_character<int8_t> : std::true_type {};
-
+    
     template<typename T>
     struct is_boolean : std::false_type {};
 
@@ -95,12 +82,28 @@ namespace noyxcore::containers::internal {
       std::is_trivially_copyable<iter_val_t<It>>,
       std::negation<std::is_volatile<std::remove_reference_t<iter_ref_t<It>>>>
       >;
+
     template<typename Alloc>
     using alloc_val_t = typename memory::allocators::allocator_traits<Alloc>::value_type;
 
     template<typename Alloc>
     using alloc_ptr_t = typename memory::allocators::allocator_traits<Alloc>::pointer;
 
+    template<typename Alloc>
+    using alloc_raw_ptr_t = decltype(std::to_address(alloc_ptr_t<Alloc>));
+
     struct tag_move {};
     struct tag_copy {};
+
+    template<typename T, typename = void>
+    struct has_deref : std::false_type {};
+
+    template<typename T>
+    struct has_deref<T, std::void_t<decltype(*std::declval<T&>())>> : std::true_type {};
+
+    template<typename T>
+    struct is_reference_wrapper : std::false_type {};
+
+    template<typename U>
+    struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
 }

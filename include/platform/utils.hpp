@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* 
- * \file   platform/util.hpp
+ * \file   util.hpp
  * \brief  Small utilities: pause, likely/unlikely, location macro
  *
  * Copyright (c) 2026 Jascit

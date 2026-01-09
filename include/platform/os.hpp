@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* 
- * \file   platform/os.hpp
+ * \file   os.hpp
  * \brief  OS detection and small OS-specific helpers
  *
  * Copyright (c) 2026 Jascit
