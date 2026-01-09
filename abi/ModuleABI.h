@@ -11,10 +11,7 @@
 
 #ifndef MODULE_ABI_H
 #define MODULE_ABI_H
-
-#define MODULE_ABI_VERSION_MAJOR 1
-#define MODULE_ABI_VERSION_MINOR 0
-#define MODULE_ABI_VERSION_PATCH 0
+#include "CoreABI.h" 
 
 #if defined(_WIN32) || defined(__CYGWIN__)
   #if defined(MODULE_ABI_EXPORTS)
@@ -32,32 +29,22 @@
   #endif
 #endif
 
+#define MODULE_ABI_VERSION_MAJOR 1
+#define MODULE_ABI_VERSION_MINOR 0
+#define MODULE_ABI_VERSION_PATCH 0
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-  typedef unsigned int uint32_t;
-  typedef unsigned long long size_t;
-
   typedef struct {
-    uint32_t size;
-    uint32_t version;
-    void (*process_command_buffer)(const void* buf, size_t size);
+    unsigned int size;
+    unsigned int version;
+    void (*process_command_buffer)(const void* buf, unsigned long long size);
     void (*on_frame)(float dt);
-    void (*on_shutdown)(uint32_t generation);
-  } ModuleAPI;
+    void (*on_shutdown)(unsigned int generation);
+  } ModuleABI;
 
-  typedef struct {
-    uint32_t size;
-    uint32_t version;
-    void* (*alloc)(size_t);
-    void     (*free)(void*);
-    void     (*push_outgoing)(const void* buf, size_t size);
-    uint32_t (*get_generation)();
-    void     (*log)(int level, const char* msg);
-  } CoreAPI;
-
-  MODULE_API uint32_t noyx_module_init(const CoreAPI* core, ModuleAPI* out);
-
+  MODULE_API unsigned int noyx_module_init(const CoreABI* core, ModuleABI* out);
 #ifdef __cplusplus
 }
 #endif

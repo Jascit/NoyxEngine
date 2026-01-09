@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 project(NoyxCore C CXX)
 project(NoyxCore VERSION 1.0.0)
 
-# Встановлюємо стандарт C++
+# пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ C++
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -169,10 +169,10 @@ endif()
 # C++ standard
 target_compile_features(COMMON_FLAGS INTERFACE cxx_std_23)
 
-set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/include/" "${CMAKE_CURRENT_SOURCE_DIR}/api")
+set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/include/" "${CMAKE_CURRENT_SOURCE_DIR}/abi")
 add_subdirectory(source)
 target_link_libraries(main PRIVATE ${DynamicLibraries})
-target_include_directories(main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/api")
+target_include_directories(main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/abi")
 target_link_libraries(main PRIVATE COMMON_FLAGS)
 set_target_properties(main PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/bin/"

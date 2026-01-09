@@ -9,15 +9,26 @@
  * \note   Currently without optimizations and dynamic version checks; needs to be implemented
  */
 
-#define MODULE_ABI_IMPORTS
+#if defined(_WIN32)
 #include <Windows.h>
-#include <module_abi.h>
+using LibraryHandle = HMODULE;
+#elif defined(__linux__) || defined(__APPLE__)
+#include <dlfcn.h>
+using LibraryHandle = void*;
+#endif
+#if defined(_WIN32)
+constexpr const char* MODULE_NAME = "NoyxResource.dll";
+#elif defined(__APPLE__)
+constexpr const char* MODULE_NAME = "libNoyxResource.dylib";
+#else
+constexpr const char* MODULE_NAME = "libNoyxResource.so";
+#endif
+#define MODULE_ABI_IMPORTS
+#include <ModuleABI.h>
 #include <iostream>
-#define CORE_API_VERSION_MAJOR 1
-#define CORE_API_VERSION_MINOR 0
-#define CORE_API_VERSION_PATCH 0
+
 // test implemantation of core api
-void core_push_outgoing(const void* buf, size_t size) {
+void core_push_outgoing(const void* buf, unsigned long long size) {
   if (!buf || size == 0) {
     std::cout << "push_outgoing: invalid buffer or size 0" << std::endl;
     return;
@@ -34,7 +45,7 @@ void core_free(void* ptr) {
 }
 
 
-uint32_t core_get_generation() {
+unsigned int core_get_generation() {
   std::cout << "core_get_generation" << std::endl;
   return 1;
 }
@@ -44,11 +55,11 @@ void core_log(int level, const char* msg) {
   std::cout << "core_log: level=" << level << " msg=" << msg << std::endl;
 }
 
-void* core_alloc(size_t);
+void* core_alloc(unsigned long long);
 
-static CoreAPI core_api = {
-  .size = sizeof(CoreAPI),
-  .version = (CORE_API_VERSION_MAJOR << 16) | (CORE_API_VERSION_MINOR << 8) | (CORE_API_VERSION_PATCH),
+static CoreABI core_api = {
+  .size = sizeof(CoreABI),
+  .version = (CORE_ABI_VERSION_MAJOR << 16) | (CORE_ABI_VERSION_MINOR << 8) | (CORE_ABI_VERSION_PATCH),
   .alloc = core_alloc,
   .free = core_free,
   .push_outgoing = core_push_outgoing,
@@ -56,7 +67,7 @@ static CoreAPI core_api = {
   .log = core_log,
 };
 
-void* core_alloc(size_t size) {
+void* core_alloc(unsigned long long size) {
   if (size == 0) {
     std::cout << "core_alloc: size 0, returning nullptr" << std::endl;
     return nullptr;
@@ -65,48 +76,71 @@ void* core_alloc(size_t size) {
   return std::addressof(core_api);
 }
 
+LibraryHandle load_library(const char* path) {
+#if defined(_WIN32)
+  return LoadLibraryA(path);
+#else
+  return dlopen(path, RTLD_NOW);
+#endif
+}
+
+void* load_symbol(LibraryHandle lib, const char* name) {
+#if defined(_WIN32)
+  return reinterpret_cast<void*>(GetProcAddress(lib, name));
+#else
+  return dlsym(lib, name);
+#endif
+}
+
+void unload_library(LibraryHandle lib) {
+#if defined(_WIN32)
+  FreeLibrary(lib);
+#else
+  dlclose(lib);
+#endif
+}
+
 int main() {
-  ModuleAPI resource_module = { 0 };
+  ModuleABI resource_module = {};
 
-  using init_func = uint32_t(*)(const CoreAPI*, ModuleAPI*);
-  HMODULE hLib = LoadLibraryA("NoyxResource.dll");
-  if (!hLib) {
-    std::cerr << "Failed to load DLL" << std::endl;
+  using init_func = unsigned int(*)(const CoreABI*, ModuleABI*);
+
+  LibraryHandle lib = load_library(MODULE_NAME);
+  if (!lib) {
+#if !defined(_WIN32)
+    std::cerr << "dlopen error: " << dlerror() << std::endl;
+#else
+    std::cerr << "Failed to load library" << std::endl;
+#endif
     return 1;
   }
 
-  init_func resource_module_init = (init_func)GetProcAddress(hLib, "noyx_module_init");
+  auto resource_module_init =
+    reinterpret_cast<init_func>(load_symbol(lib, "noyx_module_init"));
+
   if (!resource_module_init) {
-    std::cerr << "Failed to find function noyx_module_init" << std::endl;
-    FreeLibrary(hLib);
+    std::cerr << "Failed to find symbol noyx_module_init" << std::endl;
+    unload_library(lib);
     return 1;
   }
 
-  uint32_t err_code = resource_module_init(&core_api, &resource_module);
-  if (err_code != 0) {
-    if (err_code == 1) {
-      std::cerr << "Core: version mismatch" << std::endl;
-    }
-    else {
-      std::cerr << "Module init failed, code: " << err_code << std::endl;
-    }
-    FreeLibrary(hLib);
-    return static_cast<int>(err_code);
+  unsigned int err = resource_module_init(&core_api, &resource_module);
+  if (err != 0) {
+    std::cerr << "Module init failed: " << err << std::endl;
+    unload_library(lib);
+    return static_cast<int>(err);
   }
 
   auto safe_invoke = [](auto fn, const char* name, auto&&... args) {
-    if (fn) {
-      fn(std::forward<decltype(args)>(args)...);
-    }
-    else {
-      std::cerr << "Cannot call '" << name << "': function pointer is null" << std::endl;
-    }
+    if (fn) fn(std::forward<decltype(args)>(args)...);
+    else std::cerr << "Cannot call " << name << ": null pointer" << std::endl;
     };
 
   safe_invoke(resource_module.on_frame, "on_frame", 14.f);
   safe_invoke(resource_module.on_shutdown, "on_shutdown", 10);
-  safe_invoke(resource_module.process_command_buffer, "process_command_buffer", static_cast<const void*>(nullptr), static_cast<size_t>(52));
+  safe_invoke(resource_module.process_command_buffer,
+    "process_command_buffer", nullptr, 52ull);
 
-  FreeLibrary(hLib);
+  unload_library(lib);
   return 0;
 }

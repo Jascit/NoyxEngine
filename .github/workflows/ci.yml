@@ -13,51 +13,59 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         config: [ Release ]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python (needed by some toolchains)
+      - name: Setup Python (some toolchains want it)
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
 
-      - name: Configure CMake (Linux)
+      - name: Configure & Build (Linux using presets)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          cmake --preset linux-x64-release
+          cmake --build --preset linux-release --parallel 0
 
-      - name: Configure CMake (Windows)
+      - name: Configure & Build (Windows using presets)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          cmake -S . -B build -G "Visual Studio 18 2026" -A x64 -D CMAKE_BUILD_TYPE=${{ matrix.config }}
+          cmake --preset windows-x64-release
+          cmake --build --preset windows-release --config Release
 
-      - name: Build
-        run: cmake --build build --config ${{ matrix.config }} -- -j
-
-      - name: Run tests / test executable (Linux)
+      - name: Run test executable (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          if [ -f build/bin/test_mvp ]; then
-            ./build/test_mvp
-          elif [ -f build/bin/main ]; then
-            ./build/main
+          TEST_BIN="out/build/Linux/x64-Release/bin/tests"
+          if [ -x "$TEST_BIN" ]; then
+            echo "Running: $TEST_BIN"
+            "$TEST_BIN"
           else
-            echo "No test executable found (build/test_mvp or build/main)."
+            echo "Test executable not found: $TEST_BIN"
+            echo "Directory listing for debug:"
+            ls -la out/build/Linux/x64-Release/bin
             exit 1
           fi
 
-      - name: Run tests / test executable (Windows)
+      - name: Run test executable (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          if (Test-Path build\Release\bin\test.exe) {
-            build\Release\test_mvp.exe
-          } elseif (Test-Path build\Release\bin\main.exe) {
-            build\Release\main.exe
+          $TEST_BIN = 'out\build\Windows\x64-Release\bin\tests.exe'
+          if (Test-Path $TEST_BIN) {
+            Write-Host "Running: $TEST_BIN"
+            & $TEST_BIN
+            exit $LASTEXITCODE
           } else {
-            Write-Error "No test executable found (build\\Release\\test_mvp.exe or build\\Release\\main.exe)."
+            Write-Error "Test executable not found: $TEST_BIN"
+            Write-Host "Listing files under out\build\Windows\x64-Release\bin:"
+            Get-ChildItem -Path 'out\build\Windows\x64-Release\bin' -File
             exit 1
           }
+
 
       - name: Upload build artifacts (optional)
         if: always()
@@ -65,4 +73,4 @@ jobs:
         with:
           name: build-artifacts-${{ matrix.os }}-${{ matrix.config }}
           path: |
-            build/**
+            out/build/**
