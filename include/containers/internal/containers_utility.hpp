@@ -34,7 +34,7 @@ namespace noyxcore::containers::internal {
       return std::addressof(*wrap);
     }
     else {
-      static_assert(std::alw, "unwrap: unsupported wrapper type");
+      static_assert(always_false<Wrapper>, "unwrap: unsupported wrapper type");
     }
   }
 

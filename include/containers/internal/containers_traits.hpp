@@ -28,15 +28,6 @@ namespace noyxcore::containers::internal {
     template<typename It>
     inline constexpr bool is_contiguous_iterator_v = is_contiguous_iterator<It>::value;
 
-    template <typename It>
-    constexpr bool can_use_zero_memset_v =
-      std::conjunction_v<
-      is_contiguous_iterator<It>,
-      std::is_scalar<iter_val_t<It>>,
-      std::negation<std::is_volatile<std::remove_reference_t<iter_ref_t<It>>>>,
-      std::negation<std::is_member_pointer<iter_val_t<It>>>
-      >;
-
     template<typename T>
     struct is_character : std::false_type {};
     template<>
@@ -76,12 +67,14 @@ namespace noyxcore::containers::internal {
     constexpr bool can_use_memmove_v = can_use_memcpy_v<It>;
 
     template <typename It>
-    constexpr bool can_use_memset_v =
+    constexpr bool can_use_zero_memset_v =
       std::conjunction_v<
       is_contiguous_iterator<It>,
-      std::is_trivially_copyable<iter_val_t<It>>,
-      std::negation<std::is_volatile<std::remove_reference_t<iter_ref_t<It>>>>
+      std::is_scalar<iter_val_t<It>>,
+      std::negation<std::is_volatile<std::remove_reference_t<iter_ref_t<It>>>>,
+      std::negation<std::is_member_pointer<iter_val_t<It>>>
       >;
+
 
     template<typename Alloc>
     using alloc_val_t = typename memory::allocators::allocator_traits<Alloc>::value_type;
@@ -90,7 +83,7 @@ namespace noyxcore::containers::internal {
     using alloc_ptr_t = typename memory::allocators::allocator_traits<Alloc>::pointer;
 
     template<typename Alloc>
-    using alloc_raw_ptr_t = decltype(std::to_address(alloc_ptr_t<Alloc>));
+    using alloc_raw_ptr_t = decltype(std::to_address(std::declval<alloc_ptr_t<Alloc>>()));
 
     struct tag_move {};
     struct tag_copy {};
@@ -106,4 +99,7 @@ namespace noyxcore::containers::internal {
 
     template<typename U>
     struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
+
+    template<typename...>
+    static constexpr bool always_false = false;
 }

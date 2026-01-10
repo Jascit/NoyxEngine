@@ -16,12 +16,6 @@
 #include <iterator>
 
 namespace noyxcore::containers::internal {
-  template<typename T>
-  struct no_alloc{
-    using value_type = T;
-    using pointer = T*;
-    using reference = T&;
-  };
   /**
    * @brief RAII helper for constructing objects in uninitialized memory.
    *
@@ -124,32 +118,32 @@ namespace noyxcore::containers::internal {
 
 
   template<typename Alloc, typename FwdIt>
-  constexpr bool is_nothrow_uninitialized_copyable_v = noexcept(internal::uninitialized_copy(
+  constexpr bool is_nothrow_uninitialized_copyable_v = noexcept(uninitialized_copy(
     std::declval<FwdIt>(), std::declval<FwdIt>(),
     std::declval<alloc_raw_ptr_t<Alloc>>(), std::declval<Alloc&>()
   ));
 
 
   template<typename Alloc, typename FwdIt>
-  constexpr bool is_nothrow_uninitialized_fillable_v = noexcept(internal::uninitialized_fill(
+  constexpr bool is_nothrow_uninitialized_fillable_v = noexcept(uninitialized_fill(
     std::declval<FwdIt>(), std::declval<FwdIt>(),
     std::declval<alloc_val_t<Alloc>&>(), std::declval<Alloc&>()
   ));
 
 
   template<typename Alloc, typename FwdIt>
-  constexpr bool is_nothrow_uninitialized_default_constructible_v = noexcept(internal::uninitialized_default_construct(
+  constexpr bool is_nothrow_uninitialized_default_constructible_v = noexcept(uninitialized_default_construct(
     std::declval<FwdIt>(), std::declval<FwdIt>(), std::declval<Alloc&>()
   ));
 
   template<typename FwdIt>
-  constexpr bool is_nothrow_copy_n_assignable_v = noexcept(internal::assign_copy_n(
+  constexpr bool is_nothrow_copy_n_assignable_v = noexcept(assign_copy_n(
     std::declval<FwdIt>(), std::declval<size_t>(),
     std::declval<iter_ptr_t<FwdIt>>()
   ));
 
   template<typename FwdIt>
-  constexpr bool is_nothrow_move_n_assignable_v = noexcept(internal::assign_move_n(
+  constexpr bool is_nothrow_move_n_assignable_v = noexcept(assign_move_n(
     std::declval<FwdIt>(), std::declval<size_t>(),
     std::declval<iter_ptr_t<FwdIt>>()
   ));

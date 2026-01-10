@@ -32,12 +32,12 @@ namespace noyxcore::containers {
     using const_reference = const T&;
     using size_type = size_t;
 
-    constexpr TStaticArray() = default;
+    constexpr TStaticArray() : last_(data()) {};
     TStaticArray(const TStaticArray&) = delete;
     TStaticArray(TStaticArray&&) = delete;
 
     constexpr TStaticArray(const T& val) {
-      last_ = internal::uninitialized_fill_n(data(), N, val, );
+      last_ = internal::uninitialized_fill_n(data(), N, val, memory::allocators::no_alloc<T>{});
     };
 
     constexpr ~TStaticArray() {
@@ -59,7 +59,7 @@ namespace noyxcore::containers {
     };
 
     [[nodiscard]] constexpr size_type size() const noexcept {
-      return last_ - std::launder(reinterpret_cast<const_pointer>(_data));
+      return last_ - std::launder(reinterpret_cast<const_pointer>(data_));
     };
 
     [[nodiscard]] constexpr bool empty() const noexcept {
@@ -67,11 +67,11 @@ namespace noyxcore::containers {
     };
 
     constexpr pointer data() noexcept {
-      return std::launder(reinterpret_cast<pointer>(_data));
+      return std::launder(reinterpret_cast<pointer>(data_));
     };
 
     constexpr const_pointer data() const noexcept {
-      return std::launder(reinterpret_cast<const_pointer>(_data));
+      return std::launder(reinterpret_cast<const_pointer>(data_));
     };
 
     constexpr void pushBack(const value_type& val) noexcept(std::is_nothrow_copy_constructible_v<value_type>) {
@@ -83,15 +83,17 @@ namespace noyxcore::containers {
     };
 
     template<typename... Args>
-    constexpr void emplaceBack(Args&& args...) {
+    constexpr reference emplaceBack(Args&&... args) {
       size_type current_size = size();
       NOYX_CORE_ASSERT_ABORT(current_size < N, "TStaticArray::emplaceBack: capacity exceeded");
-      std::construct_at(data() + current_size, std::forward<Args>(args)...);
+      new (static_cast<void*>(last_)) T(std::forward<Args>(args)...);
+      ++last_;
+      return *(last_ - 1);
     };
 
   private:
     constexpr void cleanup() noexcept(std::is_nothrow_destructible_v<value_type>) {
-      if (last_ != data()) destroy_range(data(), last_);
+      if (last_ != data()) destroyRange(data(), last_);
     };
 
     constexpr void destroyRange(pointer first, pointer last) noexcept(std::is_nothrow_destructible_v<value_type>) {
@@ -102,6 +104,7 @@ namespace noyxcore::containers {
         }
       }
     };
+    
 
   private:
     alignas(alignof(value_type)) char data_[sizeof(value_type) * N];

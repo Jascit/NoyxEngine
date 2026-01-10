@@ -11,6 +11,13 @@
 #include <memory>
 
 namespace noyxcore::memory::allocators {
+  template<typename T>
+  struct no_alloc {
+    using value_type = T;
+    using pointer = std::add_pointer_t<T>;
+    using reference = std::add_lvalue_reference_t<T>;
+  };
+
   /* 
    * @brief Alias to std::allocator_traits for now.
    * @note Replace with custom traits once allocator API stabilizes.

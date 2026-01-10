@@ -12,6 +12,8 @@
 #if defined(_WIN32)
 #include <Windows.h>
 #include <containers/TStaticArray.hpp>
+#include <containers/TFlatMap.hpp>
+#include <containers/THeapArray.hpp>
 using LibraryHandle = HMODULE;
 #elif defined(LINUX) || defined(__APPLE__)
 #include <dlfcn.h>

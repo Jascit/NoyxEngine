@@ -33,8 +33,7 @@
 
 // Abort with core when possible
 #if defined(_MSC_VER)
-#include <winnt.h>
-static inline void noyx_core_abort_immediately() { __fastfail(FAST_FAIL_INVALID_ARG); }
+static inline void noyx_core_abort_immediately() { __fastfail(5); }
 #elif defined(NOYX_CORE_LINUX) && !defined(NOYX_CORE_ANDROID)
 #  include <unistd.h>
 #  include <sys/syscall.h>

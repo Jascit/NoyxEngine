@@ -190,8 +190,8 @@ namespace noyxcore::containers::internal {
           iter_ptr_t<FwdIt> raw_last = std::to_address(last);
           size_t count = raw_last - raw_first;
           size_t bytes = count * sizeof(value_type);
-          memset(raw_ptr, 0, bytes);
-          return raw_ptr + count;
+          memset(raw_first, 0, bytes);
+          return raw_first + count;
         }
       }
       iter_ptr_t<FwdIt> raw_first = std::to_address(first);
@@ -217,11 +217,10 @@ namespace noyxcore::containers::internal {
     {
       iter_ptr_t<FwdIt> raw_first = std::to_address(first);
       iter_ptr_t<FwdIt> raw_last = std::to_address(last);
-      auto raw_dest = std::to_address(dest);
       size_t count = raw_last - raw_first;
       size_t bytes = count * sizeof(value_type);
-      memset(raw_dest, 0, bytes);
-      return raw_dest + count;
+      memset(raw_first, 0, bytes);
+      return raw_first + count;
     }
     else
     {
