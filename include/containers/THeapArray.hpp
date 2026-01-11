@@ -18,104 +18,134 @@ namespace noyxcore::containters {
   {
   public:
     using allocator_type = Alloc;
-    using allocator_traits = memory::allocators::allocator_traits<allocator_type>;
-    using size_type = typename allocator_traits::size_type;
     using value_type = T;
+    using size_type = std::size_t;
     using pointer = value_type*;
     using const_pointer = const value_type*;
     using reference = value_type&;
     using const_reference = const value_type&;
 
-    constexpr THeapArray(const allocator_type& alloc = allocator_type()) : alloc_(alloc), size_(0), capacity_(0), data_(nullptr) {};
-
-    constexpr THeapArray(size_type n, const allocator_type& alloc = allocator_type()) : alloc_(alloc), size_(n), capacity_(n), data_(nullptr)
+    struct Storage
     {
-        data_ = allocator_traits::allocate(alloc_, n);
-        uninitialized_fill_n(data(), n, value_type(), alloc_);
+      pointer first_;
+      pointer last_;
+    };
+
+    constexpr THeapArray(const allocator_type& alloc = allocator_type())
+      : storage_{ nullptr, nullptr }
+      , capacity_(0)
+      , alloc_(alloc)
+    {
+    };
+
+    constexpr THeapArray(size_type n, const allocator_type& alloc = allocator_type())
+      : storage_{ nullptr, nullptr }
+      , capacity_(n)
+      , alloc_(alloc)
+    {
+      if (n > 0)
+      {
+        storage_.first_ = alloc_.allocate(n);
+        noyxcore::containers::internal::uninitialized_fill_n(storage_.first_, n, value_type());
+        storage_.last_ = storage_.first_ + n;
+      }
     }
 
-    constexpr THeapArray(const THeapArray& other) : alloc_(other.alloc_), size_(other.size_), capacity_(other.capacity_), data_(nullptr)
+    constexpr THeapArray(const THeapArray& other)
+      : storage_{ nullptr, nullptr }
+      , capacity_(other.capacity_) 
+      , alloc_(other.alloc_)
     {
-        data_ = allocator_traits::allocate(alloc_, capacity_);
-        uninitialized_copy_n(other.data_, other.size_, data(), alloc_);
+      if (capacity_ > 0)
+      {
+        storage_.first_ = alloc_.allocate(capacity_);
+        storage_.last_ = noyxcore::containers::internal::uninitialized_copy(other.begin(), other.end(), storage_.first_);
+      }
     }
 
-
-    constexpr THeapArray(THeapArray&& other) noexcept : alloc_(std::move(other.alloc_)), size_(other.size_), capacity_(other.capacity_), data_(other.data_)
+    constexpr THeapArray(THeapArray&& other) noexcept
+      : storage_{ other.storage_.first_, other.storage_.last_ } 
+      , capacity_(other.capacity_)
+      , alloc_(std::move(other.alloc_))
     {
-        other.size_ = 0;
-        other.capacity_ = 0;
-        other.data_ = nullptr;
+      other.storage_.first_ = nullptr;
+      other.storage_.last_ = nullptr;
+      other.capacity_ = 0;
     }
 
     constexpr ~THeapArray()
     {
-        if (!empty())
-        {
-            destroyRange(data(), data_ + size());
-        }
-        allocator_traits::deallocate(alloc_, data(), capacity_);
+      clear_and_deallocate();
     }
+
+
 
     constexpr THeapArray& operator=(const THeapArray& other)
     {
-        if (&other == this) return *this;
+      if (&other == this) return *this;
 
-        if (!empty())
-        {
-            destroyRange(data(), data_ + size());
-        }
+      THeapArray temp(other);
+      swap(temp);
 
-        if (other.size_ > capacity_)
-        {
-            allocator_traits::deallocate(alloc_, data_, capacity_);
-
-            data_ = allocator_traits::allocate(alloc_, other.size_);
-            capacity_ = other.size_;
-        }
-        size_ = other.size_;
-        uninitialized_copy_n(other.data_, other.size_, data_, alloc_);
-
-        return *this;
+      return *this;
     }
 
-
-    constexpr THeapArray& operator=(THeapArray&& other)
+    constexpr THeapArray& operator=(THeapArray&& other) noexcept
     {
-        if (&other == this) return *this;
+      if (&other == this) return *this;
+      swap(other);
 
-        std::swap(alloc_, other.alloc_);
-        std::swap(size_, other.size_);
-        std::swap(capacity_, other.capacity_);
-        std::swap(data_, other.data_);
-
-        return *this;
+      return *this;
     }
 
-    constexpr reference operator[](size_type index) noexcept { return data_[index]; };
-    constexpr const_reference operator[](size_type index) const noexcept { return data_[index]; };
-    constexpr bool empty() const noexcept { return size() == 0; };
-    constexpr size_type size() const noexcept { return size_; };
-    constexpr size_type capacity() const noexcept { return capacity_; };
-    constexpr pointer data() noexcept { return data_; };
-    constexpr const_pointer data() const noexcept { return data_; };
+    constexpr reference operator[](size_type index) noexcept
+    {
+      assert(index < size() && "Index out of range");
+      return storage_.first_[index];
+    }
 
+    constexpr const_reference operator[](size_type index) const noexcept
+    {
+      assert(index < size() && "Index out of range");
+      return storage_.first_[index];
+    }
+
+    constexpr size_type size() const noexcept
+    {
+      return static_cast<size_type>(storage_.last_ - storage_.first_);
+    }
+
+    constexpr size_type capacity() const noexcept { return capacity_; }
+    constexpr bool empty() const noexcept { return storage_.first_ == storage_.last_; }
+    constexpr pointer data() noexcept { return storage_.first_; }
+    constexpr const_pointer data() const noexcept { return storage_.first_; }
+
+    constexpr void swap(THeapArray& other) noexcept
+    {
+      std::swap(storage_, other.storage_);
+      std::swap(capacity_, other.capacity_);
+      std::swap(alloc_, other.alloc_);
+    }
 
   private:
-      allocator_type alloc_;
-      size_type size_;
-      size_type capacity_;
-      pointer data_;
+    Storage storage_;
+    size_type capacity_;
+    allocator_type alloc_;
 
-      constexpr void destroyRange(pointer first_, pointer last_) noexcept(std::is_nothrow_destructible_v<value_type>)
+    constexpr void clear_and_deallocate()
+    {
+      if (!empty())
       {
-          if constexpr (!std::is_trivially_destructible_v<value_type>)
-          {
-              for (pointer i = first_; i < last_; ++i)
-              {
-                  std::destroy_at(i);
-              }
-          }
+        if constexpr (!std::is_trivially_destructible_v<value_type>)
+        {
+          std::destroy(storage_.first_, storage_.last_);
+        }
       }
+
+      if (capacity_ > 0)
+      {
+        alloc_.deallocate(storage_.first_, capacity_);
+      }
+    }
   };
 }
