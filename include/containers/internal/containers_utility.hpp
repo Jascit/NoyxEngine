@@ -3,7 +3,7 @@
  * \file   containers_utility.hpp
  * \brief  Internal utilities for containers and memory algorithms.
  * 
- * Copyright (c) 2026 Jascit 
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   08.01.2026
  */

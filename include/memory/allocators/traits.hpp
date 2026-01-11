@@ -3,7 +3,7 @@
  * \file   memory/allocators/traits.hpp
  * \brief  Traits for custom allocators and compile time helpers
  * 
- * Copyright (c) 2026 Jascit 
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   07.01.2026
  */

@@ -2,7 +2,7 @@
 /* 
  * \file   TStaticArray_test.cpp
  * 
- * Copyright (c) 2026 Jascit 
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   10.01.2026
  */

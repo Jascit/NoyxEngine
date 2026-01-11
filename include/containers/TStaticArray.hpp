@@ -3,7 +3,7 @@
  * \file   TStaticArray.hpp
  * \brief  Simple fixed-capacity container that stores up to N elements of T
  * 
- * Copyright (c) 2026 Jascit 
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   07.01.2026
  */

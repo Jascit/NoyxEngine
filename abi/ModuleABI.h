@@ -3,7 +3,7 @@
  * \file   module_abi.h
  * \brief  ABI-stable interface
  *
- * Copyright (c) 2026 Jascit
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   04.01.2026
  * \note   Do not break ABI, use pod instead.

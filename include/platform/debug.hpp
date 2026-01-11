@@ -3,7 +3,7 @@
  * \file   debug.hpp
  * \brief  Debug/Release detection and common attributes
  * 
- * Copyright (c) 2026 Jascit 
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   07.01.2026
  */

@@ -3,7 +3,7 @@
  * \file   containers_traits.hpp
  * \brief  Internal type traits for containers and memory algorithms.
  * 
- * Copyright (c) 2026 Jascit 
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   08.01.2026
  */

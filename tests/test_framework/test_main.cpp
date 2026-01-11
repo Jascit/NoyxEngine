@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* 
+ * \file   test_main.cpp
+ * \brief  
+ * 
+ * Copyright (c) 2026 Project Contributors 
+ * \author Jascit<https://github.com/Jascit>
+ * \date   04.01.2026
+ */
 #include <tests_details.h>
 #include <chrono>
 #if defined(__has_feature)

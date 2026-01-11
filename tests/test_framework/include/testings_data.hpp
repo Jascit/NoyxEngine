@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* 
+ * \file   testings_data.hpp
+ * \brief  
+ * 
+ * Copyright (c) 2026 Project Contributors 
+ * \author Jascit<https://github.com/Jascit>
+ * \date   04.01.2026
+ */
 #pragma once
 #include <vector>
 #include <functional>

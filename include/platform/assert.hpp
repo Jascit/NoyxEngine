@@ -3,8 +3,8 @@
  * \file   assert.hpp
  * \brief  ABORT & ASSERT helpers.
  * 
- * Copyright (c) 2026 NOYX_CORE 
- * \author NOYX_CORE<https://github.com/NOYX_CORE>
+ * Copyright (c) 2026 Project Contributors
+ * \author Jascit<https://github.com/NOYX_CORE>
  * \date   07.01.2026
  * \note   
  */

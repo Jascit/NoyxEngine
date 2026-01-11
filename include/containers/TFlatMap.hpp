@@ -3,7 +3,7 @@
  * \file   TFlatMap.hpp
  * \brief  
  * 
- * Copyright (c) 2026 Jascit 
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   09.01.2026
  */

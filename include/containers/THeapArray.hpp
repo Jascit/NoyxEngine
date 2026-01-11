@@ -3,7 +3,7 @@
  * \file   THeapArray.hpp
  * \brief
  *
- * Copyright (c) 2026 MaksymRbkh
+ * Copyright (c) 2026 Project Contributors
  * \author MaksymRbkh <https://github.com/MaksymRbkh>
  * \date   09.01.2026
  */

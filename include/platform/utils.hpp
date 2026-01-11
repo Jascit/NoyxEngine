@@ -3,7 +3,7 @@
  * \file   util.hpp
  * \brief  Small utilities: pause, likely/unlikely, location macro
  *
- * Copyright (c) 2026 Jascit
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   07.01.2026
  */

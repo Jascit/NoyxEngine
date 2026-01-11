@@ -3,7 +3,7 @@
  * \file   CoreABI.h
  * \brief  
  * 
- * Copyright (c) 2026 Jascit 
+ * Copyright (c) 2026 Project Contributors
  * \author Jascit<https://github.com/Jascit>
  * \date   04.01.2026
  * \note   
