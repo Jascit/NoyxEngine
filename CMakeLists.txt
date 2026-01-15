@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.25)
 project(NoyxCore C CXX)
 project(NoyxCore VERSION 1.0.0)
@@ -55,19 +56,6 @@ elseif (UNIX AND NOT APPLE)
     list(APPEND PLATFORM_COMPILE_DEFS LINUX)
 else()
     message(FATAL_ERROR "Undefined platform!")
-endif()
-
-# Ensure 64-bit (or fail)
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    # If not already appended (Apple logic may have done arch) ensure X64 present
-    if (NOT " ${PLATFORM_COMPILE_DEFS} " MATCHES " ARCH_X64 ")
-        # if arm64 already present, keep it; otherwise append X64
-        if (NOT " ${PLATFORM_COMPILE_DEFS} " MATCHES " ARCH_ARM64 ")
-            list(APPEND PLATFORM_COMPILE_DEFS ARCH_X64)
-        endif()
-    endif()
-else()
-    message(FATAL_ERROR "32-bit targets are not supported (CMAKE_SIZEOF_VOID_P != 8)")
 endif()
 
 # Show what we detected

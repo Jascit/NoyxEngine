@@ -8,11 +8,12 @@
  * \date   09.01.2026
  */
 
-#include <memory/allocators/traits.hpp>
 #include <containers/internal/containers_internal.hpp>
+#include <cassert>
+#include <memory/allocators/traits.hpp>
 #include <memory>
 
-namespace noyxcore::containters {
+namespace noyxcore::containers {
   template <typename T, typename Alloc>
   class THeapArray
   {
