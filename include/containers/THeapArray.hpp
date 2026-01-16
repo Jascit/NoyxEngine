@@ -22,9 +22,12 @@ namespace noyxcore::containers {
     using value_type = T;
     using size_type = std::size_t;
     using pointer = value_type*;
+    using traits = std::allocator_traits<allocator_type>;
     using const_pointer = const value_type*;
     using reference = value_type&;
     using const_reference = const value_type&;
+    using iterator = pointer;
+    using const_iterator = const_pointer;
 
     struct Storage
     {
@@ -80,22 +83,75 @@ namespace noyxcore::containers {
     }
 
 
-
+  // Copy Assignment
     constexpr THeapArray& operator=(const THeapArray& other)
     {
-      if (&other == this) return *this;
+      if (this == &other) return *this;
+      auto& my_alloc_ = alloc_;
+      const auto& other_alloc_ = other.alloc_;
 
-      THeapArray temp(other);
-      swap(temp);
+      constexpr bool POCCA = traits::propagate_on_container_copy_assignment::value;
+      if constexpr (POCCA)
+      {
+        if (alloc_ != other_alloc_)
+        {
+          clear_and_deallocate();
+          alloc_ = other_alloc_;
+        }
+      }
 
+      if (capacity_ < other.size())
+      {
+        clear_and_deallocate();
+        storage_.first_ = alloc_.allocate(other.size());
+        capacity_ = other.size();
+      }
+      else
+      {
+        clean_up();
+      }
+
+      storage_.last = noyxcore::containers::internal::uninitialized_copy(other.begin(), other.end(), storage_.first_, alloc_);
       return *this;
     }
 
+    // Move Assignment
     constexpr THeapArray& operator=(THeapArray&& other) noexcept
     {
       if (&other == this) return *this;
-      swap(other);
+      auto& my_alloc_ = alloc_;
+      auto& other_alloc_ = other.alloc_;
+      constexpr bool POCMA = traits::propagate_on_container_move_assignment::value;
 
+      if constexpr (POCMA)
+      {
+        clear_and_deallocate();
+        alloc_ = std::move(other_alloc_);
+        steal_from(&other);
+        return *this;
+      }
+      else if constexpr (traits::is_always_equal::value)
+      {
+        clear_and_deallocate();
+        steal_from((&other));
+        return *this;
+      }
+      else if (my_alloc_ == other_alloc_)
+      {
+        clear_and_deallocate();
+        steal_from((&other));
+        return *this;
+      }
+
+      pointer new_mem_ = alloc_.allocate(other.size());
+      pointer new_last_ = noyxcore::containers::internal::uninitialized_move_n(other.begin(), other.size(), new_mem_, alloc_);
+      clear_and_deallocate();
+
+      storage_.first = new_mem_;
+      storage_.last = new_last_;
+      capacity_ = other.size();
+
+      other.storage_.last_ = other.storage_.first_;
       return *this;
     }
 
@@ -121,17 +177,37 @@ namespace noyxcore::containers {
     constexpr pointer data() noexcept { return storage_.first_; }
     constexpr const_pointer data() const noexcept { return storage_.first_; }
 
-    constexpr void swap(THeapArray& other) noexcept
-    {
-      std::swap(storage_, other.storage_);
-      std::swap(capacity_, other.capacity_);
-      std::swap(alloc_, other.alloc_);
-    }
+    // Iterators
+    constexpr iterator begin() noexcept {return storage_.first_;}
+    constexpr iterator end() noexcept {return storage_.last_;}
+    constexpr const_iterator begin() const noexcept {return storage_.first_;}
+    constexpr const_iterator end() const noexcept {return storage_.last_;}
+    constexpr const_iterator cbegin() const noexcept {return storage_.first_;}
+    constexpr const_iterator cend() const noexcept {return storage_.last_;}
+
 
   private:
     Storage storage_;
     size_type capacity_;
     allocator_type alloc_;
+
+    constexpr void clean_up()
+    {
+      if (!empty())
+      {
+        if constexpr (!std::is_trivially_destructible_v<value_type>)
+        {
+          std::destroy(storage_.first_, storage_.last_);
+        }
+      }
+    }
+
+    constexpr void steal_from(THeapArray& other)
+    {
+      storage_ = other.storage_;
+      capacity_ = std::exchange(other.capacity_, 0);
+      other.storage_ = {nullptr, nullptr};
+    }
 
     constexpr void clear_and_deallocate()
     {
