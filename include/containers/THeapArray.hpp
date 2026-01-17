@@ -102,16 +102,28 @@ namespace noyxcore::containers {
 
       if (capacity_ < other.size())
       {
+        pointer new_mem_ = alloc_.allocate(other.size());
+        //+Guard1k
+        internal::uninitialized_copy_n(other.begin(), other.size(), new_mem_, alloc_);
         clear_and_deallocate();
-        storage_.first_ = alloc_.allocate(other.size());
+        storage_.first_ = new_mem_;
+        storage_.last_ = new_mem_ + other.size();
         capacity_ = other.size();
       }
       else
       {
-        clean_up();
+        if (other.size() > size())
+        {
+          std::copy(other.begin(), other.begin() + size(), storage_.first_);
+          uninitialized_copy_n(other.begin() + size(), other.size() - size(), storage_.last_, alloc_);
+        }
+        else
+        {
+          std::copy(other.begin(), other.begin() + other.size(), storage_.first_);
+          cleanUp(storage_.first_ + other.size(), storage_.last_);
+        }
+        storage_.last_ = storage_.first_ + other.size();
       }
-
-      storage_.last = noyxcore::containers::internal::uninitialized_copy(other.begin(), other.end(), storage_.first_, alloc_);
       return *this;
     }
 
@@ -133,28 +145,48 @@ namespace noyxcore::containers {
       else if constexpr (traits::is_always_equal::value)
       {
         clear_and_deallocate();
-        steal_from((&other));
+        steal_from((other));
         return *this;
       }
       else if (my_alloc_ == other_alloc_)
       {
         clear_and_deallocate();
-        steal_from((&other));
+        steal_from((other));
         return *this;
       }
 
-      pointer new_mem_ = alloc_.allocate(other.size());
-      pointer new_last_ = noyxcore::containers::internal::uninitialized_move_n(other.begin(), other.size(), new_mem_, alloc_);
-      clear_and_deallocate();
+      //POCMA = false && Allocators are not equal.
+      if (capacity_ < other.size())
+      {
+        pointer new_mem_ = alloc_.allocate(other.size());
+        //Добавити гуард777
+        internal::uninitialized_move_n(other.begin(), other.size(), new_mem_, alloc_);
+        clear_and_deallocate();
 
-      storage_.first = new_mem_;
-      storage_.last = new_last_;
-      capacity_ = other.size();
+        storage_.first_ = new_mem_;
+        storage_.last_ = new_mem_ + other.size();
+        capacity_ = other.size();
+      }
+      else
+      {
+        if (other.size() > size())
+        {
+           std::move(other.storage_.first_, other.storage_.first_ + size(), storage_.first_);
+           internal::uninitialized_move_n(other.storage_.first_ + size(), other.size() - size(), storage_.last_, alloc_);
+        }
+        else
+        {
+          std::move(other.storage_.first_, other.storage_.last_, storage_.first_);
+          cleanUp(storage_.first_ + other.size(), storage_.last_);
+        }
+        storage_.last_ = storage_.first_ + other.size();
+      }
 
       other.storage_.last_ = other.storage_.first_;
       return *this;
     }
 
+    // Element access
     constexpr reference operator[](size_type index) noexcept
     {
       assert(index < size() && "Index out of range");
@@ -191,14 +223,11 @@ namespace noyxcore::containers {
     size_type capacity_;
     allocator_type alloc_;
 
-    constexpr void clean_up()
+    constexpr void cleanUp(pointer first, pointer last) noexcept
     {
-      if (!empty())
+      for (; first != last; ++first)
       {
-        if constexpr (!std::is_trivially_destructible_v<value_type>)
-        {
-          std::destroy(storage_.first_, storage_.last_);
-        }
+        traits::destroy(alloc_, first);
       }
     }
 
@@ -213,16 +242,57 @@ namespace noyxcore::containers {
     {
       if (!empty())
       {
-        if constexpr (!std::is_trivially_destructible_v<value_type>)
-        {
-          std::destroy(storage_.first_, storage_.last_);
-        }
-      }
-
-      if (capacity_ > 0)
-      {
+        cleanUp(storage_.first_, storage_.last_);
         alloc_.deallocate(storage_.first_, capacity_);
       }
+      storage_.first_ = nullptr;
+      storage_.last_ = nullptr;
+      capacity_ = 0;
+    }
+
+    constexpr void resize(size_type new_size)
+    {
+      if (new_size < size())
+      {
+        cleanUp(storage_.first + new_size, storage_.last_);
+        storage_.last_ = storage_.first_ + new_size;
+      }
+
+      else if (new_size > size())
+      {
+        size_type count = new_size - size();
+        if (new_size > capacity_)
+        {
+          pointer new_mem_ = alloc_.allocate(new_size);
+          //+Guard1k
+          internal::uninitialized_move_n(storage_.first_, size(), new_mem_, alloc_);
+          internal::uninitialized_default_construct(new_mem_ + size(), new_mem_ + size() + count, alloc_);
+          clear_and_deallocate();
+
+          storage_.first_ = new_mem_;
+          storage_.last_ = new_mem_ + new_size;
+          capacity_ = new_size;
+        }
+        else
+        {
+          internal::uninitialized_default_construct(storage_.first_ + size(), storage_.last_ + count, alloc_);
+          storage_.last_ = storage_.first_ + new_size;
+        }
+      }
+    }
+
+    void reserve(size_type new_capacity)
+    {
+      if (new_capacity <= capacity_) return;
+
+      pointer new_mem_ = alloc_.allocate(new_capacity);
+      size_type my_size_ = size();
+      //Guard1k;
+      internal::uninitialized_move_n(storage_.first_, my_size_, new_mem_, alloc_);
+      clear_and_deallocate();
+      storage_.first_ = new_mem_;
+      storage_.last_ = new_mem_ + my_size_;
+      capacity_ = new_capacity;
     }
   };
 }
