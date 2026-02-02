@@ -12,6 +12,7 @@
 #include <cassert>
 #include <memory/allocators/traits.hpp>
 #include <memory>
+#include <stdexcept>
 
 namespace noyxcore::containers {
   template <typename T, typename Alloc>
@@ -192,22 +193,60 @@ namespace noyxcore::containers {
       assert(index < size() && "Index out of range");
       return storage_.first_[index];
     }
-
     constexpr const_reference operator[](size_type index) const noexcept
     {
       assert(index < size() && "Index out of range");
       return storage_.first_[index];
     }
+    constexpr reference at(size_type index) noexcept
+    {
+      if (index >= size())
+      {
+        throw std::out_of_range("Index out of range");
+      }
+      return storage_.first_[index];
+    }
+    constexpr const_reference at(size_type index) const noexcept
+    {
+      if (index >= size())
+      {
+        throw std::out_of_range("Index out of range");
+      }
+      return storage_.first_[index];
+    }
+    constexpr reference front() noexcept
+    {
+      assert(!empty() && "Array is empty");
+      return *storage_.first_[0];
+    }
+    constexpr const_reference front() const noexcept
+    {
+      assert(!empty() && "Array is empty");
+      return *storage_.first_[0];
+    }
+    constexpr reference back() noexcept
+    {
+      assert(!empty() && "Array is empty");
+      return *storage_.last_[size() - 1];
+    }
+    constexpr const_reference back() const noexcept
+    {
+      assert(!empty() && "Array is empty");
+      return *storage_.last_[size() - 1];
+    }
+
 
     constexpr size_type size() const noexcept
     {
-      return static_cast<size_type>(storage_.last_ - storage_.first_);
+      return static_cast<size_type>(this->end() - this->begin());
     }
-
-    constexpr size_type capacity() const noexcept { return capacity_; }
-    constexpr bool empty() const noexcept { return storage_.first_ == storage_.last_; }
-    constexpr pointer data() noexcept { return storage_.first_; }
-    constexpr const_pointer data() const noexcept { return storage_.first_; }
+    constexpr size_type capacity() const noexcept
+    {
+      return static_cast<size_type>(this->capacity_ - this->begin());
+    }
+    [[nodiscard]] constexpr bool empty() const noexcept { return this->begin() == this->end(); }
+    constexpr pointer data() noexcept { return this->begin(); }
+    constexpr const_pointer data() const noexcept { return this->begin(); }
 
     // Iterators
     constexpr iterator begin() noexcept {return storage_.first_;}
@@ -216,6 +255,65 @@ namespace noyxcore::containers {
     constexpr const_iterator end() const noexcept {return storage_.last_;}
     constexpr const_iterator cbegin() const noexcept {return storage_.first_;}
     constexpr const_iterator cend() const noexcept {return storage_.last_;}
+    constexpr iterator erase(const_iterator pos)
+    {
+      size_type index = pos - cbegin();
+      pointer p = storage_.first_ + index;
+      std::move(p + 1, storage_.last_, p);
+      traits::destroy(alloc_, storage_.last_ - 1);
+      --storage_.last_;
+      return iterator(p);
+    }
+    constexpr iterator insert(const_iterator pos, const_reference value)
+    {
+      size_type index = pos - cbegin();
+      if (size() == capacity_)
+      {
+        reserve(capacity_ == 0 ? 1 : capacity_ * 2);
+      }
+      pointer p = storage_.first_ + index;
+      if (p == storage_.last_)
+      {
+        push_back(value);
+      }
+      else
+      {
+        traits::construct(alloc_, storage_.last_, std::move(*(storage_.last_ - 1)));
+        std::move_backward(p, storage_.last_ - 1, storage_.last_);
+        *p = value;
+        ++storage_.last_;
+      }
+      return iterator(p);
+    }
+
+    // Modifiers
+    constexpr void push_back(const_reference n)
+    {
+      emplace_back(n);
+    }
+
+    constexpr void push_back(value_type&& n)
+    {
+      emplace_back(std::move(n));
+    }
+
+    template <class... Args>
+    constexpr void emplace_back(Args&&... args)
+    {
+      if (size() == capacity_)
+      {
+        reserve(capacity_ == 0 ? 1 : capacity_ * 2);
+      }
+      traits::construct(alloc_, storage_.last_, std::forward<Args>(args)...);
+      ++storage_.last_;
+    }
+
+    constexpr void pop_back()
+    {
+      assert(!empty() && "Array is empty");
+      --storage_.last_;
+      traits::destroy(alloc_, storage_.last_);
+    }
 
 
   private:
