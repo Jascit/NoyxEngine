@@ -85,7 +85,7 @@ namespace noyxcore::containers {
     template<typename... Args>
     constexpr reference emplaceBack(Args&&... args) {
       size_type current_size = size();
-      NOYX_CORE_ASSERT_ABORT(current_size < N, "TStaticArray::emplaceBack: capacity exceeded");
+      NOYX_ASSERT_ABORT(current_size < N, "TStaticArray::emplaceBack: capacity exceeded");
       new (static_cast<void*>(last_)) T(std::forward<Args>(args)...);
       ++last_;
       return *(last_ - 1);

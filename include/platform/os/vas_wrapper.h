@@ -39,7 +39,7 @@ extern "C" {
     VAW_FLAG_PROT_EXEC         = 1u << 3,
 
     /* Verhalten / Hints */
-    VAW_FLAG_FIXED_ADDRESS     = 1u << 8, /* erzwinge preferred_addr */
+    VAW_FLAG_FIXED_ADDRESS     = 1u << 8, /* erzwinge (!) preferred_addr */
     VAW_FLAG_PREFER_ADDRESS    = 1u << 9, /* prefer preferred_addr wenn möglich */
     VAW_FLAG_LARGE_PAGES       = 1u << 16,
     VAW_FLAG_64K_PAGES         = 1u << 17

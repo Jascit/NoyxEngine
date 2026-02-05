@@ -16,6 +16,7 @@
 #    define NOYX_WINDOWS 1
 #  endif
 #elif defined(__APPLE__) && defined(__MACH__)
+#define NOYX_APPLE 1
 #  include <TargetConditionals.h>
 #  if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #    define NOYX_IOS 1

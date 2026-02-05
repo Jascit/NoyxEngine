@@ -15,7 +15,7 @@
 
 namespace noyxcore::containers::internal {
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill_n(FwdIt first, size_t count, alloc_val_t<Alloc> &val,
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill_n(FwdIt first, size_t count, const alloc_val_t<Alloc> &val,
                                                         Alloc &alloc)
     noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc> >) {
     using value_type = alloc_val_t<Alloc>;
@@ -167,7 +167,7 @@ namespace noyxcore::containers::internal {
   }
 
   template<typename Alloc, typename FwdIt>
-  constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill(FwdIt first, FwdIt last, alloc_val_t<Alloc> &val, Alloc &alloc)
+  constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill(FwdIt first, FwdIt last, const alloc_val_t<Alloc> &val, Alloc &alloc)
     noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc> >) {
     using value_type = alloc_val_t<Alloc>;
     static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt> >,

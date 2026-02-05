@@ -17,6 +17,8 @@
 #include <platform/os/os_windows.h>
 #elif defined(NOYX_LINUX)
 #include <platform/os/os_linux.h>
+#elif defined (NOYX_APPLE)
+#include <platform/os/os_apple.h>
 #endif
 
 static FORCE_INLINE uint64_t page_size() noexcept {
@@ -233,7 +235,6 @@ vaw_reserve_resp_t vaw_reserve_memory(const vaw_reserve_req_t* req) {
 }
 
 vaw_release_resp_t vaw_release_memory(const vaw_release_req_t* req) {
-  vaw_release_resp_t out = {VAW_OK};
   if (!req || !req->base || req->size == 0) return {VAW_ERR_INVALID_ARG};
 #ifdef NOYX_WINDOWS
   BOOL success = VirtualFree(req->base, req->size,MEM_RELEASE);

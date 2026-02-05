@@ -10,4 +10,7 @@
  */
 #ifndef NOYX_OS_APPLE_H
 #define NOYX_OS_APPLE_H
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/errno.h>
 #endif
