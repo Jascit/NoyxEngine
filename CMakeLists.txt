@@ -42,22 +42,20 @@ elseif (APPLE)
         endif()
     endif()
 
-    # fallbacks
-    if (NOT PLATFORM_COMPILE_DEFS MATCHES "ARCH_")
-        if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-            list(APPEND PLATFORM_COMPILE_DEFS ARCH_ARM64)
-        else()
-            list(APPEND PLATFORM_COMPILE_DEFS ARCH_X64)
-        endif()
-    endif()
-
 elseif (UNIX AND NOT APPLE)
     message(STATUS "Detected platform: Linux/Unix")
     list(APPEND PLATFORM_COMPILE_DEFS LINUX)
 else()
     message(FATAL_ERROR "Undefined platform!")
 endif()
-
+# fallbacks
+if (NOT PLATFORM_COMPILE_DEFS MATCHES "ARCH_")
+    if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        list(APPEND PLATFORM_COMPILE_DEFS ARCH_ARM64)
+    else()
+        list(APPEND PLATFORM_COMPILE_DEFS ARCH_X64)
+    endif()
+endif()
 # Show what we detected
 message(STATUS "Platform/arch compile definitions: ${PLATFORM_COMPILE_DEFS}")
 

@@ -32,35 +32,32 @@ namespace noyxcore::memory::allocators {
      *        function `construct(pointer, Args...)`.
      *
      * @tparam Alloc  Allocator type to inspect.
-     * @tparam         SFINAE slot (used with std::void_t).
+     * @tparam Pointer  Pointer type to construct.
      * @tparam Args   Argument pack for the candidate construct(...) call.
      *
      * By default inherits from std::false_type. A specialization below
      * inherits from std::true_type when the expression
      * `std::declval<Alloc&>().construct(pointer, Args...)` is well-formed.
      */
-    template<typename Alloc, typename = void, typename... Args>
-    struct has_construct_helper : std::false_type {};
 
-    /**
-     * @brief Specialization selected when Alloc::construct(pointer, Args...) is valid.
-     *
-     * This specialization uses std::void_t on the decltype of the construct call.
-     * The pointer type comes from allocator_traits<Alloc>::pointer.
-     */
-    template<typename Alloc, typename... Args>
-    struct has_construct_helper<
-      Alloc,
-      std::void_t<
-      decltype(
-        std::declval<Alloc&>().construct(
-          std::declval<typename allocator_traits<Alloc>::pointer>(),
+    template<typename Allocator, typename Pointer, typename... Args>
+    struct has_construct_helper {
+    private:
+      template<typename A>
+      static auto test(int) -> decltype(
+        std::declval<A &>().construct(
+          std::declval<Pointer>(),
           std::declval<Args>()...
-        )
-        )
-      >,
-      Args...
-    > : std::true_type{};
+        ),
+        std::true_type{}
+      );
+
+      template<typename>
+      static std::false_type test(...);
+
+    public:
+      using type = decltype(test<Allocator>(0));
+    };
 
   } // namespace detail
 
@@ -68,18 +65,20 @@ namespace noyxcore::memory::allocators {
    * @brief Trait: whether Alloc provides construct(pointer, Args...).
    *
    * @tparam Alloc  Allocator type to inspect.
+   * @tparam Pointer Pointer type to construct
    * @tparam Args   Argument pack for the candidate construct(...) call.
    */
-  template<typename Alloc, typename... Args>
-  struct has_construct : detail::has_construct_helper<Alloc, void, Args...> {};
+  template<typename Allocator, typename Pointer, typename... Args>
+  struct has_construct : detail::has_construct_helper<Allocator, Pointer, Args...>::type {
+  };
 
   /**
    * @brief Bool alias for has_construct.
    *
    * Usage: static_assert(has_construct_v<MyAlloc, T>);
    */
-  template<typename Alloc, typename... Args>
-  inline constexpr bool has_construct_v = has_construct<Alloc, Args...>::value;
+  template<typename Allocator, typename pointer, typename... Args>
+  constexpr bool has_construct_v = has_construct<Allocator, pointer, Args...>::value;
 
   /**
    * @brief Trait: whether Alloc provides destroy(pointer).
@@ -88,28 +87,19 @@ namespace noyxcore::memory::allocators {
    * when `Alloc::destroy(pointer)` is a well-formed expression.
    *
    * @tparam Alloc  Allocator type to inspect.
+   * @tparam Pointer Pointer type to destroy.
    */
-  template<typename Alloc, typename = void>
+  template<typename Allocator, typename Pointer, typename = void>
   struct has_destroy : std::false_type {};
 
-  template<typename Alloc>
-  struct has_destroy<
-    Alloc,
-    std::void_t<
-    decltype(
-      std::declval<Alloc&>().destroy(
-        std::declval<typename allocator_traits<Alloc>::pointer>()
-      )
-      )
-    >
-  > : std::true_type {
-  };
+  template<typename Allocator, typename Pointer>
+  struct has_destroy<Allocator, Pointer, std::void_t<decltype(std::declval<Allocator &>().destroy(std::declval<Pointer>()))>> : std::true_type {};
 
   /**
    * @brief Bool alias for has_destroy.
    *
    * Usage: if constexpr (has_destroy_v<MyAlloc>) { ... }
    */
-  template<typename Alloc>
-  inline constexpr bool has_destroy_v = has_destroy<Alloc>::value;
+  template<typename Alloc, typename Pointer>
+  inline constexpr bool has_destroy_v = has_destroy<Alloc, Pointer>::value;
 } // noyxcore::memory::allocators

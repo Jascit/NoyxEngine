@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* 
- * \file   debug.hpp
+ * \file   debug.h
  * \brief  Debug/Release detection and common attributes
  * 
  * Copyright (c) 2026 Project Contributors
@@ -8,22 +8,22 @@
  * \date   07.01.2026
  */
 
-#pragma once
-
+#ifndef NOYX_DEBUG_H
+#define NOYX_DEBUG_H
 #if defined(FORCE_DISABLE_DEBUG)
 #  undef DEBUG
-#  undef NOYX_CORE_DEBUG
+#  undef NOYX_DEBUG
 #elif defined(FORCE_ENABLE_DEBUG)
 #  ifndef DEBUG
 #    define DEBUG
 #  endif
-#  ifndef NOYX_CORE_DEBUG
-#    define NOYX_CORE_DEBUG 1
+#  ifndef NOYX_DEBUG
+#    define NOYX_DEBUG 1
 #  endif
 #endif
 
 #if !defined(NDEBUG) && !defined(DEBUG) && !defined(FORCE_DISABLE_DEBUG)
-#  define NOYX_CORE_DEBUG 1
+#  define NOYX_DEBUG 1
 #endif
 
 
@@ -33,4 +33,5 @@
 #  define FORCE_INLINE inline __attribute__((always_inline))
 #else
 #  define FORCE_INLINE inline
+#endif
 #endif

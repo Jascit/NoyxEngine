@@ -8,11 +8,11 @@
  * \date   January 2026
  * \note   Currently without optimizations and dynamic version checks; needs to be implemented
  */
-
-#if defined(_WIN32)
+#include <../include/platform/os/os_detect.h>
+#if defined(NOYX_CORE_WINDOWS)
 #include <Windows.h>
 #include <containers/TStaticArray.hpp>
-#include <containers/TFlatMap.hpp>
+#include <containers/TFlatHashMap.hpp>
 #include <containers/THeapArray.hpp>
 using LibraryHandle = HMODULE;
 #elif defined(LINUX) || defined(__APPLE__)

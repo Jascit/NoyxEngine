@@ -16,7 +16,7 @@
 #define CORE_ABI_VERSION_MINOR 0
 #define CORE_ABI_VERSION_PATCH 0
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif // _cplusplus
 
@@ -30,7 +30,7 @@ extern "C" {
     void     (*log)(int level, const char* msg);
   } CoreABI;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif // _cplusplus
 

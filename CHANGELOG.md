@@ -1,4 +1,4 @@
-## 2026-01-04 — MVP
+## 2026-01-04 ï¿½ MVP
 
 **Jascit**  
 - created initial project atchitecture
