@@ -50,8 +50,7 @@ namespace noyxcore::containers {
     constexpr THeapArray(std::initializer_list<value_type> list, const allocator_type& alloc = allocator_type())
       : THeapArray(alloc) {
       size_type n = list.size();
-      if (n > 0)
-      {
+      if (n > 0) {
         pointer new_mem_ = alloc_.allocate(n);
         allocation_guard guard(new_mem_, n, alloc_);
         internal::uninitialized_copy(list.begin(), list.end(), new_mem_, alloc_);
