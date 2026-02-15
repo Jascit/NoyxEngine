@@ -48,7 +48,7 @@ extern "C" {
   /* Reserve */
   typedef struct { uint64_t size; uint64_t alignment; void* preferred_addr; uint32_t alloc_flags; } vaw_reserve_req_t;
   typedef struct { void* base; uint64_t size; vaw_err_t err; } vaw_reserve_resp_t;
-  vaw_reserve_resp_t vaw_reserve_memory(const vaw_reserve_req_t* req);
+  vaw_reserve_resp_t vaw_reserve_memory(const vaw_reserve_req_t* req, uint64_t pg_size);
 
   /* Release */
   typedef struct { void* base; uint64_t size; } vaw_release_req_t;
@@ -58,7 +58,7 @@ extern "C" {
   /* Commit / Decommit */
   typedef struct { void* base; uint64_t offset; uint64_t size; uint32_t prot; uint32_t alloc_flags; } vaw_commit_req_t;
   typedef struct { vaw_err_t err; } vaw_commit_resp_t;
-  vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req);
+  vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req, uint64_t pg_size);
   vaw_commit_resp_t vaw_decommit_pages(const vaw_commit_req_t* req);
 
   /* Map / Unmap */

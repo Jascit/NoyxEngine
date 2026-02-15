@@ -25,7 +25,7 @@ namespace noyxcore::memory::allocators {
   template<typename Alloc>
   using allocator_traits = std::allocator_traits<Alloc>;
 
-  namespace detail {
+  namespace details {
 
     /**
      * @brief SFINAE helper: checks whether Alloc has a member
@@ -59,7 +59,7 @@ namespace noyxcore::memory::allocators {
       using type = decltype(test<Allocator>(0));
     };
 
-  } // namespace detail
+  } // namespace details
 
   /**
    * @brief Trait: whether Alloc provides construct(pointer, Args...).
@@ -69,7 +69,7 @@ namespace noyxcore::memory::allocators {
    * @tparam Args   Argument pack for the candidate construct(...) call.
    */
   template<typename Allocator, typename Pointer, typename... Args>
-  struct has_construct : detail::has_construct_helper<Allocator, Pointer, Args...>::type {
+  struct has_construct : details::has_construct_helper<Allocator, Pointer, Args...>::type {
   };
 
   /**

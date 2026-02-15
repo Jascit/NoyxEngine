@@ -13,6 +13,8 @@
 #include <platform/os/vas_wrapper.h>
 #include <platform/os/os_detect.h>
 #include <platform/debug.h>
+
+#include "platform/utils.hpp"
 #ifdef NOYX_WINDOWS
 #include <platform/os/os_windows.h>
 #elif defined(NOYX_LINUX)
@@ -36,10 +38,10 @@ static FORCE_INLINE uint64_t page_size() noexcept {
 inline uint32_t vaw_to_page_prot(uint32_t vflags) noexcept {
 #ifdef NOYX_WINDOWS
   uint32_t prot;
-  if (vflags & vaw_flag_t::VAW_FLAG_PROT_NONE) return PAGE_NOACCESS;
-  bool r = (vflags & vaw_flag_t::VAW_FLAG_PROT_READ) != 0;
-  bool w = (vflags & vaw_flag_t::VAW_FLAG_PROT_WRITE) != 0;
-  bool x = (vflags & vaw_flag_t::VAW_FLAG_PROT_EXEC) != 0;
+  if (vflags & VAW_FLAG_PROT_NONE) return PAGE_NOACCESS;
+  bool r = (vflags & VAW_FLAG_PROT_READ) != 0;
+  bool w = (vflags & VAW_FLAG_PROT_WRITE) != 0;
+  bool x = (vflags & VAW_FLAG_PROT_EXEC) != 0;
   if (x) {
     if (r && w) return PAGE_EXECUTE_READWRITE;
     if (r) return PAGE_EXECUTE_READ;
@@ -52,11 +54,11 @@ inline uint32_t vaw_to_page_prot(uint32_t vflags) noexcept {
   }
   return PAGE_NOACCESS;
 #else
-  if (vflags & vaw_flag_t::VAW_FLAG_PROT_NONE) return PROT_NONE;
+  if (vflags & VAW_FLAG_PROT_NONE) return PROT_NONE;
   uint32_t p = 0;
-  if (vflags & vaw_flag_t::VAW_FLAG_PROT_READ) p |= PROT_READ;
-  if (vflags & vaw_flag_t::VAW_FLAG_PROT_WRITE) p |= PROT_WRITE;
-  if (vflags & vaw_flag_t::VAW_FLAG_PROT_EXEC) p |= PROT_EXEC;
+  if (vflags & VAW_FLAG_PROT_READ) p |= PROT_READ;
+  if (vflags & VAW_FLAG_PROT_WRITE) p |= PROT_WRITE;
+  if (vflags & VAW_FLAG_PROT_EXEC) p |= PROT_EXEC;
   if (p == 0) p = PROT_NONE;
   return p;
 #endif
@@ -216,13 +218,12 @@ out.err= VAW_OK;
 }
 #endif
 
-vaw_reserve_resp_t vaw_reserve_memory(const vaw_reserve_req_t* req) {
+vaw_reserve_resp_t vaw_reserve_memory(const vaw_reserve_req_t* req, uint64_t pg_size) {
   if (!req) return {nullptr, 0, VAW_ERR_INVALID_ARG};
   vaw_reserve_req_t local = *req;
 
   if (req->size == 0) return {nullptr, 0, VAW_ERR_INVALID_ARG};
 
-  uint64_t pg_size = page_size();
   if (local.alignment == 0) local.alignment = pg_size;
 
   if (local.alignment % pg_size != 0) return {nullptr, 0, VAW_ERR_INVALID_ARG};
@@ -235,6 +236,7 @@ vaw_reserve_resp_t vaw_reserve_memory(const vaw_reserve_req_t* req) {
 }
 
 vaw_release_resp_t vaw_release_memory(const vaw_release_req_t* req) {
+  vaw_release_resp_t out{VAW_OK};
   if (!req || !req->base || req->size == 0) return {VAW_ERR_INVALID_ARG};
 #ifdef NOYX_WINDOWS
   BOOL success = VirtualFree(req->base, req->size,MEM_RELEASE);
@@ -253,7 +255,7 @@ vaw_release_resp_t vaw_release_memory(const vaw_release_req_t* req) {
   return {VAW_OK};
 }
 
-vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req) {
+vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req, uint64_t pg_size) {
   vaw_commit_resp_t out = {VAW_OK};
 
   if (!req || !req->base || req->size == 0) {
@@ -261,12 +263,11 @@ vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req) {
     return out;
   }
 
-  uint64_t pg_size = page_size();
   if ((uintptr_t)req->base % pg_size != 0 || req->size % page_size() != 0) {
     out.err = VAW_ERR_INVALID_ARG;
     return out;
   }
-  
+
   uint32_t prot = vaw_to_page_prot(req->prot);
 
 #ifdef NOYX_WINDOWS
@@ -295,14 +296,119 @@ vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req) {
     else out.err = VAW_ERR_PLATFORM;
     return out;
   }
-#else
-#endif
+
   return out;
+#else
+  int mmap_prot = vaw_to_page_prot(req->prot);
+
+  int flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED;
+
+#ifdef MAP_POPULATE
+  if (req->alloc_flags & VAW_FLAG_PREFAULT)
+    flags |= MAP_POPULATE;
+#endif
+
+  void* res = mmap(req->base,
+                   req->size,
+                   mmap_prot,
+                   flags,
+                   -1,
+                   0);
+
+  if (res == MAP_FAILED) {
+    switch (errno) {
+      case EACCES:
+      case EPERM:
+        out.err = VAW_ERR_PERMISSION;
+        break;
+      case EINVAL:
+        out.err = VAW_ERR_INVALID_ARG;
+        break;
+      case ENOMEM:
+        out.err = VAW_ERR_OOM;
+        break;
+#ifdef ENOTSUP
+      case ENOTSUP:
+#endif
+      default:
+        out.err = VAW_ERR_PLATFORM;
+        break;
+    }
+    return out;
+  }
+
+  if (res != req->base) {
+    munmap(res, req->size);
+    out.err = VAW_ERR_INVALID_ADDRESS;
+    return out;
+  }
+
+  return out;
+#endif
 }
 
-vaw_commit_resp_t vaw_decommit_pages(const vaw_commit_req_t* req) {}
+vaw_commit_resp_t vaw_decommit_pages(const vaw_commit_req_t* req) {
+  vaw_commit_resp_t out{VAW_OK};
+  if (!req || !req->base || req->size == 0) return {VAW_ERR_INVALID_ARG};
 
-vaw_map_resp_t vaw_map(const vaw_map_req_t* req) {}
+#ifdef NOYX_WINDOWS
+  BOOL success = 0;
+  if (req->alloc_flags & VAW_FLAG_LARGE_PAGES) {
+    success = VirtualFree(req->base, 0, MEM_RELEASE);
+  } else {
+    success = VirtualFree(req->base, req->size, MEM_DECOMMIT);
+  }
+
+  if (success == FALSE) {
+    DWORD err = GetLastError();
+    if (err == ERROR_INVALID_ADDRESS) out.err = VAW_ERR_INVALID_ADDRESS;
+    else if (err == ERROR_INVALID_PARAMETER) out.err = VAW_ERR_INVALID_ARG;
+    else if (err == ERROR_ACCESS_DENIED) out.err = VAW_ERR_PERMISSION;
+    else if (err == ERROR_NOT_ENOUGH_MEMORY) out.err = VAW_ERR_OOM;
+    else out.err = VAW_ERR_PLATFORM;
+    return out;
+  }
+
+  return out;
+#else /* POSIX */
+
+  if (req->alloc_flags & VAW_FLAG_LARGE_PAGES) {
+    /* Large pages: munmap == release */
+    if (munmap(req->base, req->size) != 0) {
+      if (errno == EINVAL) out.err = VAW_ERR_INVALID_ADDRESS;
+      else out.err = VAW_ERR_PLATFORM;
+    }
+    return out;
+  }
+
+  if (mprotect(req->base, req->size, PROT_NONE) != 0) {
+    if (errno == EACCES || errno == EPERM) out.err = VAW_ERR_PERMISSION;
+    else if (errno == EINVAL) out.err = VAW_ERR_INVALID_ARG;
+    else out.err = VAW_ERR_PLATFORM;
+    return out;
+  }
+
+#if defined(MADV_FREE)
+  int adv = madvise(req->base, req->size, MADV_FREE);
+#else
+  int adv = madvise(req->base, req->size, MADV_DONTNEED);
+#endif
+
+  if (adv != 0) {
+    if (errno == EINVAL) out.err = VAW_ERR_INVALID_ARG;
+    else if (errno == ENOMEM) out.err = VAW_ERR_OOM;
+    else if (errno == EPERM) out.err = VAW_ERR_PERMISSION;
+    else out.err = VAW_ERR_PLATFORM;
+    return out;
+  }
+
+  return out;
+#endif
+}
+
+vaw_map_resp_t vaw_map(const vaw_map_req_t* req) {
+
+}
 
 vaw_unmap_resp_t vaw_unmap(const vaw_unmap_req_t* req) {}
 
