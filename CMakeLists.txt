@@ -61,7 +61,14 @@ message(STATUS "Platform/arch compile definitions: ${PLATFORM_COMPILE_DEFS}")
 
 # ----------------- COMMON_FLAGS INTERFACE target (single place for all flags) -----------------
 add_library(COMMON_FLAGS INTERFACE
-        include/memory/PhysicalPageManager.hpp)
+        include/memory/Physical/PhysicalBlockManager.hpp
+        include/memory/Physical/block.hpp
+        include/memory/Physical/SizeClass.hpp
+        include/memory/Physical/HandleTable.hpp
+        include/memory/Physical/StartMap.hpp
+        include/memory/Physical/CommitBitmap.hpp
+        include/memory/Physical/AllocationMap.hpp
+        include/memory/Physical/VirtualMemory.hpp)
 
 # Put the platform/arch defines only into COMMON_FLAGS
 if (PLATFORM_COMPILE_DEFS)
