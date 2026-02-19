@@ -23,7 +23,7 @@
 #include <platform/os/os_apple.h>
 #endif
 
-static FORCE_INLINE uint64_t page_size() noexcept {
+static uint64_t page_size() {
 #ifdef NOYX_WINDOWS
   SYSTEM_INFO sys_info;
   GetSystemInfo(&sys_info);
@@ -263,7 +263,7 @@ vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req, uint64_t pg_size
     return out;
   }
 
-  if ((uintptr_t)req->base % pg_size != 0 || req->size % page_size() != 0) {
+  if ((uintptr_t)req->base % pg_size != 0 || req->size % pg_size != 0) {
     out.err = VAW_ERR_INVALID_ARG;
     return out;
   }
@@ -328,13 +328,13 @@ vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req, uint64_t pg_size
         out.err = VAW_ERR_OOM;
         break;
 #ifdef ENOTSUP
-      case ENOTSUP:
+case ENOTSUP:
 #endif
-      default:
-        out.err = VAW_ERR_PLATFORM;
-        break;
+default:
+  out.err = VAW_ERR_PLATFORM;
+  break;
     }
-    return out;
+  return out;
   }
 
   if (res != req->base) {
@@ -406,9 +406,7 @@ vaw_commit_resp_t vaw_decommit_pages(const vaw_commit_req_t* req) {
 #endif
 }
 
-vaw_map_resp_t vaw_map(const vaw_map_req_t* req) {
-
-}
+vaw_map_resp_t vaw_map(const vaw_map_req_t* req) {}
 
 vaw_unmap_resp_t vaw_unmap(const vaw_unmap_req_t* req) {}
 
