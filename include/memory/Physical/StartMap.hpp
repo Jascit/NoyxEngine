@@ -1,8 +1,50 @@
-//
-// Created by Maksym Riabykh on 09.02.2026.
-//
+/* SPDX-License-Identifier: Apache-2.0 /
+/*
+ * \file   StartMap.hpp
+ * \brief
+ *
+ * Copyright (c) 2026 Project Contributors
+ * \author MaksymRbkh <https://github.com/MaksymRbkh>
+ * \date   16.01.2026
+ */
 
-#ifndef NOYXCORE_START_MAP_HPP
-#define NOYXCORE_START_MAP_HPP
+#pragma once
+#include <memory/Physical/Block.hpp>
+#include <map>
+#include <shared_mutex>
 
-#endif //NOYXCORE_START_MAP_HPP
+namespace noyxcore::memory {
+  class StartMap {
+  public:
+    void sign(void* baseAddr, Block* block) {
+      std::unique_lock<std::shared_mutex> lock(mutex_);
+      block_map_.emplace(reinterpret_cast<uintptr_t>(baseAddr), block);
+    }
+
+    void unsign(void* baseAddr) {
+      std::unique_lock<std::shared_mutex> lock(mutex_);
+      block_map_.erase(reinterpret_cast<uintptr_t>(baseAddr));
+    }
+
+    Block* find(void* ptr) {
+      std::shared_lock<std::shared_mutex> lock(mutex_);
+      auto addr = reinterpret_cast<uintptr_t>(ptr);
+      auto it = block_map_.upper_bound(addr);
+      if (it == block_map_.begin()) return nullptr;
+      --it;
+
+      Block* block = it->second;
+      uintptr_t start = it->first;
+      uintptr_t end = start + block->totalSize();
+      if (addr >= start && addr < end) {
+        return block;
+      }
+      return nullptr;
+    }
+
+
+  private:
+    mutable std::shared_mutex mutex_;
+    std::map<uintptr_t, Block*> block_map_;
+  };
+}
