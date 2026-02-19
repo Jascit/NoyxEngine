@@ -1,7 +1,14 @@
-//
-// Created by Maksym Riabykh on 10.02.2026.
-//
+/* SPDX-License-Identifier: Apache-2.0 /
+/*
+ * \file   AllocationMap.hpp
+ * \brief
+ *
+ * Copyright (c) 2026 Project Contributors
+ * \author MaksymRbkh <https://github.com/MaksymRbkh>
+ * \date   14.01.2026
+ */
 
+#pragma once
 #include <map>
 #include <optional>
 
@@ -10,54 +17,58 @@ namespace noyxcore::memory {
   public:
     AllocationMap(std::size_t totalPages) {
       Span initial;
-      initial.start = 0;
-      initial.length = totalPages;
-      initial.free = true;
-      auto it = m_spans.emplace(0, initial).first;
-      InsertFree(it);
+      initial.start_ = 0;
+      initial.length_ = totalPages;
+      initial.free_ = true;
+      auto it = spans_.emplace(0, initial).first;
+      insertFree(it);
     }
 
-    std::optional<size_t> Allocate(size_t pages) {
+    std::optional<size_t> allocate(size_t pages) {
       if (pages == 0) return std::nullopt;
-      auto fit = m_freeBySize.lower_bound(pages);
-      if (fit == m_freeBySize.end()) return std::nullopt;
+      auto fit = free_by_size_.lower_bound(pages);
+      if (fit == free_by_size_.end()) return std::nullopt;
 
       auto spanIt = fit->second;
-      RemoveFree(spanIt);
+      removeFree(spanIt);
 
       Span& span = spanIt->second;
-      std::size_t start = span.start;
-      if (span.length > pages) {
-        Span newSpan{span.start + pages, span.length - pages, true};
-        span.length = pages;
-        span.free = false;
-        auto newIt = m_spans.emplace(newSpan.start, newSpan).first;
-        InsertFree(newIt);
+      std::size_t start_ = span.start_;
+      if (span.length_ > pages) {
+        Span newSpan{span.start_ + pages, span.length_ - pages, true};
+        span.length_ = pages;
+        span.free_ = false;
+        auto newIt = spans_.emplace(newSpan.start_, newSpan).first;
+        insertFree(newIt);
       } else {
-        span.free = false;
+        span.free_ = false;
       }
-      return start;
+      return start_;
     }
 
-    void Free(size_t startPage) {
-      auto it = m_spans.find(startPage);
-      if (it == m_spans.end()) return;
-      if (it->second.free) return;
+    void free(size_t start_Page) {
+      auto it = spans_.find(start_Page);
+      if (it == spans_.end()) return;
+      if (it->second.free_) return;
 
-      it->second.free = true;
+      it->second.free_ = true;
       it = Merge(it);
-      InsertFree(it);
+      insertFree(it);
     }
 
-    bool IsEmpty() const {
-      return (m_spans.size() == 1 && m_spans.begin()->second.free);
+    bool isEmpty() const {
+      return (spans_.size() == 1 && spans_.begin()->second.free_);
+    }
+
+    bool isFull() const {
+      return free_by_size_.empty();
     }
 
   private:
     struct Span {
-      std::size_t start  = 0;
-      std::size_t length = 0;
-      bool free = false;
+      std::size_t start_  = 0;
+      std::size_t length_ = 0;
+      bool free_ = false;
 
       std::multimap<
         std::size_t,
@@ -65,37 +76,38 @@ namespace noyxcore::memory {
       >::iterator freeIt;
     };
 
-    void InsertFree(auto it) {
-      auto freeIt = m_freeBySize.emplace(it->second.length, it);
+    void insertFree(auto it) {
+      auto freeIt = free_by_size_.emplace(it->second.length_, it);
       it->second.freeIt = freeIt;
     }
 
-    void RemoveFree(auto it) {
-      m_freeBySize.erase(it->second.freeIt);
+    void removeFree(auto it) {
+      free_by_size_.erase(it->second.freeIt);
     }
 
     std::map<size_t, Span>::iterator Merge(std::map<size_t, Span>::iterator it) {
-      if (it != m_spans.begin()) {
+      if (it != spans_.begin()) {
         auto prev = std::prev(it);
-        if (prev->second.free) {
-          RemoveFree(prev);
-          prev->second.length += it->second.length;
-          m_spans.erase(it);
+        if (prev->second.free_) {
+          removeFree(prev);
+          prev->second.length_ += it->second.length_;
+          spans_.erase(it);
           it = prev;
         }
       }
 
       auto next = std::next(it);
-      if (next != m_spans.end() && next->second.free) {
-        RemoveFree(next);
-        it->second.length += next->second.length;
-        m_spans.erase(next);
+      if (next != spans_.end() && next->second.free_) {
+        removeFree(next);
+        it->second.length_ += next->second.length_;
+        spans_.erase(next);
       }
+
       return it;
     }
 
   private:
-    std::map<size_t, Span> m_spans;
-    std::multimap<size_t, std::map<size_t, Span>::iterator> m_freeBySize;
+    std::map<size_t, Span> spans_;
+    std::multimap<size_t, std::map<size_t, Span>::iterator> free_by_size_;
   };
 }
