@@ -131,7 +131,7 @@ typedef struct {
 
 vaw_advise_resp_t vaw_advise(const vaw_advise_req_t* req);
 
-static uint64_t page_size();
+uint64_t page_size();
 
 #ifdef __cplusplus
 }

@@ -39,7 +39,7 @@ uint32_t VASManager::reserveBlock(uint64_t size, uint64_t alignment, uint32_t fl
   if (reserve_resp.err != VAW_OK) {}
 
   uint32_t id = handle_table_.allocate_index();
-  auto [block_it, block_insert_succeeded] = blocks_by_id_.insert(
+  auto [block_it, block_insert_succeeded] = blocks_by_id_.emplace(
     std::pair(id, BlockRecord(reserve_resp.base, reserve_resp.size, 0, id)));
   if (!block_insert_succeeded) {
     vaw_release_req_t release_req;
@@ -196,7 +196,7 @@ void* VASManager::allocate(void* block_hint, uint64_t size, uint64_t alignment, 
     }
 
     uint32_t id = handle_table_.allocate_index();
-    auto [block_insert_it, block_insert_succeeded] = blocks_by_id_.insert(
+    auto [block_insert_it, block_insert_succeeded] = blocks_by_id_.emplace(
       std::pair(id, BlockRecord(reserve_resp.base, reserve_resp.size, 0, id)));
     if (!block_insert_succeeded) {
       vaw_release_mem(reserve_resp.base, reserve_resp.size);
@@ -363,15 +363,15 @@ std::optional<std::pair<void*, uint32_t>> StartMap::predecessor(void* addr) {
   return {std::pair(reinterpret_cast<void*>(map_it->first), map_it->second)};
 }
 
-std::optional<std::map<uintptr_t, uint32_t>::iterator> StartMap::insert(void* start, uint32_t id) {
+std::optional<std::map<uintptr_t, uint32_t>::iterator> StartMap::emplace(void* start, uint32_t id) {
   // TODO: mutex
-  auto [lookup_it, lookup_insert_succeeded] = lookup_map_.insert(
+  auto lookup_it = lookup_map_.emplace(
     std::pair<uintptr_t, uint32_t>(reinterpret_cast<uintptr_t>(start), id));
-  if (!lookup_insert_succeeded) {
+  if (lookup_it == lookup_map_.end()) {
     return std::nullopt;
   }
 
-  auto [predecessor_it, predecessor_insert_succeeded] = predecessor_map_.insert(
+  auto [predecessor_it, predecessor_insert_succeeded] = predecessor_map_.emplace(
     std::pair<uintptr_t, uint32_t>(reinterpret_cast<uintptr_t>(start), id));
 
   if (!predecessor_insert_succeeded) {
@@ -382,17 +382,9 @@ std::optional<std::map<uintptr_t, uint32_t>::iterator> StartMap::insert(void* st
   return {predecessor_it};
 }
 
-bool FreeSet::erase(const FreeExtent& extent) {
-
-}
-
-bool FreeSet::erase(const map_type::iterator& it) {
-
-}
-
 std::optional<FreeSet::map_type::iterator> FreeSet::findFit(uint64_t size, uint64_t alignment) {
   if (alignment == 0 || (alignment & (alignment - 1)) != 0) {
-    return std::nullopt; // Alignment muss Power-of-Two sein
+    return std::nullopt; // Alignment muss Power-of-Two
   }
 
   auto it = largest_extents_map_.lower_bound(size);
@@ -407,8 +399,3 @@ std::optional<FreeSet::map_type::iterator> FreeSet::findFit(uint64_t size, uint6
 
   return std::nullopt;
 }
-
-std::optional<FreeSet::map_type::iterator> FreeSet::insert(const FreeExtent& extent) {
-
-}
-

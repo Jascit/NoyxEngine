@@ -17,9 +17,9 @@ namespace noyxcore::containers::internal {
   template<typename Alloc, typename FwdIt>
   constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill_n(FwdIt first, size_t count, const alloc_val_t<Alloc> &val,
                                                         Alloc &alloc)
-    noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc> >) {
+    noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc>>) {
     using value_type = alloc_val_t<Alloc>;
-    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt> >,
+    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt>>,
                   "Allocator pointer type must be the same as iterator pointer type");
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -53,9 +53,9 @@ namespace noyxcore::containers::internal {
   template<typename Alloc, typename FwdIt>
   constexpr alloc_raw_ptr_t<Alloc> uninitialized_copy_n(FwdIt first, size_t count, alloc_raw_ptr_t<Alloc> dest,
                                                         Alloc &alloc)
-    noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc> >) {
+    noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc>>) {
     using value_type = alloc_val_t<Alloc>;
-    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt> >,
+    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt>>,
                   "Allocator pointer type must be the same as iterator pointer type");
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -81,9 +81,9 @@ namespace noyxcore::containers::internal {
   template<typename Alloc, typename FwdIt>
   constexpr alloc_raw_ptr_t<Alloc> uninitialized_move_n(FwdIt first, size_t count, alloc_raw_ptr_t<Alloc> dest,
                                                         Alloc &alloc)
-    noexcept(std::is_nothrow_move_constructible_v<alloc_val_t<Alloc> >) {
+    noexcept(std::is_nothrow_move_constructible_v<alloc_val_t<Alloc>>) {
     using value_type = alloc_val_t<Alloc>;
-    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt> >,
+    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt>>,
                   "Allocator pointer type must be the same as iterator pointer type");
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -109,9 +109,9 @@ namespace noyxcore::containers::internal {
   template<typename Alloc, typename FwdIt>
   constexpr alloc_raw_ptr_t<Alloc> uninitialized_copy(FwdIt first, FwdIt last, alloc_raw_ptr_t<Alloc> dest,
                                                       Alloc &alloc)
-    noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc> >) {
+    noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc>>) {
     using value_type = alloc_val_t<Alloc>;
-    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt> >,
+    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt>>,
                   "Allocator pointer type must be the same as iterator pointer type");
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -139,9 +139,9 @@ namespace noyxcore::containers::internal {
   template<typename Alloc, typename FwdIt>
   constexpr alloc_raw_ptr_t<Alloc> uninitialized_move(FwdIt first, FwdIt last, alloc_raw_ptr_t<Alloc> dest,
                                                       Alloc &alloc)
-    noexcept(std::is_nothrow_move_constructible_v<alloc_val_t<Alloc> >) {
+    noexcept(std::is_nothrow_move_constructible_v<alloc_val_t<Alloc>>) {
     using value_type = alloc_val_t<Alloc>;
-    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt> >,
+    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt>>,
                   "Allocator pointer type must be the same as iterator pointer type");
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -168,9 +168,9 @@ namespace noyxcore::containers::internal {
 
   template<typename Alloc, typename FwdIt>
   constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill(FwdIt first, FwdIt last, const alloc_val_t<Alloc> &val, Alloc &alloc)
-    noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc> >) {
+    noexcept(std::is_nothrow_copy_constructible_v<alloc_val_t<Alloc>>) {
     using value_type = alloc_val_t<Alloc>;
-    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt> >,
+    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt>>,
                   "Allocator pointer type must be the same as iterator pointer type");
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -207,9 +207,9 @@ namespace noyxcore::containers::internal {
 
   template<typename Alloc, typename FwdIt>
   constexpr alloc_raw_ptr_t<Alloc> uninitialized_default_construct(FwdIt first, FwdIt last, Alloc &alloc)
-    noexcept(std::is_nothrow_default_constructible_v<alloc_val_t<Alloc> >) {
+    noexcept(std::is_nothrow_default_constructible_v<alloc_val_t<Alloc>>) {
     using value_type = alloc_val_t<Alloc>;
-    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt> >,
+    static_assert(std::is_same_v<alloc_raw_ptr_t<Alloc>, iter_ptr_t<FwdIt>>,
                   "Allocator pointer type must be the same as iterator pointer type");
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -235,7 +235,7 @@ namespace noyxcore::containers::internal {
 
   template<typename FwdIt>
   constexpr iter_ptr_t<FwdIt> assign_move_n(FwdIt first, size_t count, FwdIt dest)
-    noexcept(std::is_nothrow_move_assignable_v<iter_val_t<FwdIt> >) {
+    noexcept(std::is_nothrow_move_assignable_v<iter_val_t<FwdIt>>) {
     using value_type = iter_val_t<FwdIt>;
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -260,7 +260,7 @@ namespace noyxcore::containers::internal {
 
   template<typename FwdIt>
   constexpr iter_ptr_t<FwdIt> assign_copy_n(FwdIt first, size_t count, FwdIt dest)
-    noexcept(std::is_nothrow_copy_assignable_v<iter_val_t<FwdIt> >) {
+    noexcept(std::is_nothrow_copy_assignable_v<iter_val_t<FwdIt>>) {
     using value_type = iter_val_t<FwdIt>;
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -285,7 +285,7 @@ namespace noyxcore::containers::internal {
 
   template<typename FwdIt>
   constexpr iter_ptr_t<FwdIt> assign_move(FwdIt first, FwdIt last, FwdIt dest)
-    noexcept(std::is_nothrow_move_assignable_v<iter_val_t<FwdIt> >) {
+    noexcept(std::is_nothrow_move_assignable_v<iter_val_t<FwdIt>>) {
     using value_type = iter_val_t<FwdIt>;
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 
@@ -312,7 +312,7 @@ namespace noyxcore::containers::internal {
 
   template<typename FwdIt>
   constexpr iter_ptr_t<FwdIt> assign_copy(FwdIt first, FwdIt last, FwdIt dest)
-    noexcept(std::is_nothrow_copy_assignable_v<iter_val_t<FwdIt> >) {
+    noexcept(std::is_nothrow_copy_assignable_v<iter_val_t<FwdIt>>) {
     using value_type = iter_val_t<FwdIt>;
     static_assert(is_contiguous_iterator_v<FwdIt>, "Iterator must be contiguous like");
 

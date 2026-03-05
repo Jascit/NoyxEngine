@@ -23,7 +23,7 @@
 #include <platform/os/os_apple.h>
 #endif
 
-static uint64_t page_size() {
+uint64_t page_size() {
 #ifdef NOYX_WINDOWS
   SYSTEM_INFO sys_info;
   GetSystemInfo(&sys_info);
@@ -37,7 +37,6 @@ static uint64_t page_size() {
 // from vaw_prot_t
 inline uint32_t vaw_to_page_prot(uint32_t vflags) noexcept {
 #ifdef NOYX_WINDOWS
-  uint32_t prot;
   if (vflags & VAW_FLAG_PROT_NONE) return PAGE_NOACCESS;
   bool r = (vflags & VAW_FLAG_PROT_READ) != 0;
   bool w = (vflags & VAW_FLAG_PROT_WRITE) != 0;
@@ -52,7 +51,6 @@ inline uint32_t vaw_to_page_prot(uint32_t vflags) noexcept {
     if (r) return PAGE_READONLY;
     return PAGE_READWRITE; // Windows doesn't have write-only user page;
   }
-  return PAGE_NOACCESS;
 #else
   if (vflags & VAW_FLAG_PROT_NONE) return PROT_NONE;
   uint32_t p = 0;
@@ -406,8 +404,8 @@ vaw_commit_resp_t vaw_decommit_pages(const vaw_commit_req_t* req) {
 #endif
 }
 
-vaw_map_resp_t vaw_map(const vaw_map_req_t* req) {}
-
-vaw_unmap_resp_t vaw_unmap(const vaw_unmap_req_t* req) {}
-
-vaw_advise_resp_t vaw_advise(const vaw_advise_req_t* req) {}
+//vaw_map_resp_t vaw_map(const vaw_map_req_t* req) {}
+//
+//vaw_unmap_resp_t vaw_unmap(const vaw_unmap_req_t* req) {}
+//
+//vaw_advise_resp_t vaw_advise(const vaw_advise_req_t* req) {}

@@ -86,7 +86,7 @@ namespace noyxcore::memory {
   // Mapping from start-address -> region handle (or block id).
   // Must be thread-safe in implementations.
   class StartMap {
-    using map_type = std::map<uintptr_t, uint32_t>;
+    using map_type = std::multimap<uintptr_t, uint32_t>;
   public:
     ~StartMap() = default;
     // Associate start -> region/block id
