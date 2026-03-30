@@ -1,11 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/* 
- * \file   TStaticArray.hpp
- * \brief  Simple fixed-capacity container that stores up to N elements of T
- * 
- * Copyright (c) 2026 Project Contributors
- * \author Jascit<https://github.com/Jascit>
- * \date   07.01.2026
+
+/**
+ * @file     TStaticArray.hpp
+ * @brief    Simple fixed-capacity container that stores up to N elements of T
+ *
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     07.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #pragma once

@@ -1,13 +1,15 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- * \file   TFlatHashMap-inl.hpp
- * \brief  
+
+/**
+ * @file     TFlatHashMap-inl.hpp
+ * @brief     
  *
- * Copyright (c) 2026 Project Contributors
- * \author Jascit <https://github.com/Jascit>
- * \date   18.01.2026
- * \note   
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     18.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
+
 #pragma once
 
 namespace noyxcore::containers {

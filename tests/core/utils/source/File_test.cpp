@@ -1,12 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- * \file   File_test.cpp
- * \brief  
+
+/**
+ * @file     File_test.cpp
+ * @brief     
  *
- * Copyright (c) 2026 Project Contributors
- * \author Jascit <https://github.com/Jascit>
- * \date   27.03.2026
- * \note   
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     27.03.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #include <utils/File.hpp>

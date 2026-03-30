@@ -1,12 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- * \file   Logger.cpp
- * \brief  
+
+/**
+ * @file     Logger.cpp
+ * @brief     
  *
- * Copyright (c) 2026 Project Contributors
- * \author Jascit <https://github.com/Jascit>
- * \date   25.03.2026
- * \note   
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     25.03.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #include <diagnostics/Logger.hpp>

@@ -1,6 +1,14 @@
-//
-// Created by Maksym Riabykh on 15.02.2026.
-//
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file     VirtualMemory.hpp
+ * @brief
+ *
+ * @author   MaksymRbkh (https://github.com/MaksymRbkh)
+ * @date     15.02.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
+ */
 
 #pragma once
 #include <cstddef>

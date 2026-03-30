@@ -1,11 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/* 
- * \file   containers_interal.hpp
- * \brief  Internal helpers for containers.
- * 
- * Copyright (c) 2026 Project Contributors
- * \author Jasc<https://github.com/Jascit>
- * \date   07.01.2026
+
+/**
+ * @file   containers_internal.hpp
+ * @brief  Internal helpers for containers.
+ *
+ * @author Jascit (https://github.com/Jascit)
+ * @date   07.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #pragma once

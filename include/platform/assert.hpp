@@ -1,12 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/* 
- * \file   assert.hpp
- * \brief  ABORT & ASSERT helpers.
- * 
- * Copyright (c) 2026 Project Contributors
- * \author Jascit<https://github.com/NOYX>
- * \date   07.01.2026
- * \note   
+
+/**
+ * @file     assert.hpp
+ * @brief    ABORT & ASSERT helpers.
+ *
+ * @author   Jascit (https://github.com/NOYX)
+ * @date     07.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #pragma once

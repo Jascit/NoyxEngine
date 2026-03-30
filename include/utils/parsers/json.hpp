@@ -1,13 +1,15 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- * \file   json.hpp
- * \brief  
+
+/**
+ * @file     json.hpp
+ * @brief     
  *
- * Copyright (c) 2026 Project Contributors
- * \author Jascit <https://github.com/Jascit>
- * \date   26.03.2026
- * \note   
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     26.03.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
+
 #pragma once
 #include <string>
 #include <filesystem>

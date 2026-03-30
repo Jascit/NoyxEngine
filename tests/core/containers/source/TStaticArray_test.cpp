@@ -14,7 +14,6 @@
 
 using noyxcore::containers::TStaticArray;
 
-/* базовий int */
 NOYX_TEST(tstaticarray_basic_int, unit_test) {
   TStaticArray<int, 8> a;
   NOYX_ASSERT_TRUE(a.empty());
@@ -36,7 +35,6 @@ NOYX_TEST(tstaticarray_basic_int, unit_test) {
   }
 }
 
-/* move-only тип */
 NOYX_TEST(tstaticarray_move_only, unit_test) {
   using UP = std::unique_ptr<int>;
   TStaticArray<UP, 3> arr;
@@ -57,7 +55,6 @@ struct Count {
   int v = 0;
 };
 
-/* RAII: конструкції/деструкції */
 NOYX_TEST(tstaticarray_raii, unit_test) {
   int& C = Count::constructed;
   int& D = Count::destroyed;
@@ -69,12 +66,11 @@ NOYX_TEST(tstaticarray_raii, unit_test) {
     arr.emplaceBack();
     NOYX_ASSERT_EQ(C, 2);
     NOYX_ASSERT_EQ(arr.size(), (TStaticArray<Count, 5>::size_type)2);
-  } // тут має викликатися деструктор елементів
+  }
 
   NOYX_ASSERT_EQ(D, 2);
 }
 
-/* data() / operator[] узгодженість */
 NOYX_TEST(tstaticarray_data_vs_index, unit_test) {
   TStaticArray<int, 4> a;
   for (int i = 0; i < 4; ++i) a.pushBack(i * 11);

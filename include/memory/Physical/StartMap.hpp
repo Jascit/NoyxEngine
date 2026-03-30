@@ -1,11 +1,13 @@
-/* SPDX-License-Identifier: Apache-2.0 /
-/*
- * \file   StartMap.hpp
- * \brief
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * @file     StartMap.hpp
+ * @brief     
  *
- * Copyright (c) 2026 Project Contributors
- * \author MaksymRbkh <https://github.com/MaksymRbkh>
- * \date   16.01.2026
+ * @author   MaksymRbkh (https://github.com/MaksymRbkh)
+ * @date     16.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #pragma once

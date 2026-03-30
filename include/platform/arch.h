@@ -1,12 +1,15 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/* 
- * \file   arch.h
- * \brief  Architecture detection (prefix: NOYX_ARCH_*)
- * 
- * Copyright (c) 2026 Project Contributors
- * \author Jascit<https://github.com/Jascit>
- * \date   07.01.2026
+
+/**
+ * @file     arch.h
+ * @brief    Architecture detection (prefix: NOYX_ARCH_*)
+ *
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     07.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
+
 #ifndef NOYX_ARCH_H
 #define NOYX_ARCH_H
  

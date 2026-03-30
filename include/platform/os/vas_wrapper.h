@@ -1,13 +1,15 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- * \file   vas_wrapper.h
- * \brief  
+
+/**
+ * @file     vas_wrapper.h
+ * @brief     
  *
- * Copyright (c) 2026 Project Contributors
- * \author Jascit <https://github.com/Jascit>
- * \date   04.02.2026
- * \note   
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     04.02.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
+
 #ifndef NOYX_VAS_WRAPPER_H
 #define NOYX_VAS_WRAPPER_H
 #ifdef __cplusplus
@@ -47,7 +49,6 @@ typedef enum {
   VAW_FLAG_64K_PAGES = 1u << 17
 } vaw_flag_t;
 
-/* Reserve */
 typedef struct {
   uint64_t size;
   uint64_t alignment;
@@ -63,7 +64,6 @@ typedef struct {
 
 vaw_reserve_resp_t vaw_reserve_memory(const vaw_reserve_req_t* req, uint64_t pg_size);
 
-/* Release */
 typedef struct {
   void* base;
   uint64_t size;
@@ -75,7 +75,6 @@ typedef struct {
 
 vaw_release_resp_t vaw_release_memory(const vaw_release_req_t* req);
 
-/* Commit / Decommit */
 typedef struct {
   void* base;
   uint64_t offset;
@@ -91,7 +90,6 @@ typedef struct {
 vaw_commit_resp_t vaw_commit_pages(const vaw_commit_req_t* req, uint64_t pg_size);
 vaw_commit_resp_t vaw_decommit_pages(const vaw_commit_req_t* req);
 
-/* Map / Unmap */
 typedef struct {
   void* base;
   uint64_t offset;
@@ -117,7 +115,6 @@ typedef struct {
 
 vaw_unmap_resp_t vaw_unmap(const vaw_unmap_req_t* req);
 
-/* Advise */
 typedef struct {
   void* base;
   uint64_t offset;

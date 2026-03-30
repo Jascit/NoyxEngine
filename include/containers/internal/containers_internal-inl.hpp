@@ -1,11 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- * \file   containers_internal-inl.hpp
- * \brief  inline implementation
+
+/**
+ * @file   containers_internal-inl.hpp
+ * @brief  inline implementation
  *
- * Copyright (c) 2026 Project Contributors
- * \author Jascit<https://github.com/Jascit>
- * \date   09.01.2026
+ * @author Jascit (https://github.com/Jascit)
+ * @date   09.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #pragma once

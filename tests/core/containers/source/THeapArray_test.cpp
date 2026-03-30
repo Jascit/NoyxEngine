@@ -1,10 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/* 
- * \file   THeapArray_test.cpp
- * 
- * Copyright (c) 2026 Project Contributors
- * \author MaksymRbkh<https://github.com/MaksymRbkh>
- * \date   04.02.2026
+
+/**
+ * @file     THeapArray_test.cpp
+ * @brief
+ *
+ * @author   MaksymRbkh (https://github.com/MaksymRbkh)
+ * @date     04.02.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 // heap_array_tests.cpp
