@@ -11,6 +11,7 @@
  */
 
 #include "containers_traits.hpp"
+#include <cstring>
 
 namespace noyxcore::containers::internal {
   template<typename Ptr>

@@ -12,6 +12,7 @@
 
 #pragma once
 #include <filesystem>
+#include <cstring>
 
 namespace noyxcore::diagnostics {
   enum LogLevel {
@@ -28,7 +29,7 @@ namespace noyxcore::diagnostics {
 
     class LogBuffer {
     public:
-      LogBuffer(uint64_t size) noexcept : size_(size), write_index_(0), log_buffer_(nullptr) {
+      LogBuffer(uint64_t size) noexcept : log_buffer_(nullptr), write_index_(0), size_(size) {
         log_buffer_ = new char[size];
       };
 
