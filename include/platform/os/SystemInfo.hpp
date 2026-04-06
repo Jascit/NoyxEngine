@@ -27,15 +27,26 @@ namespace noyxcore::platform {
                          uint32_t& number_of_processors) noexcept;
   }
 
+  // The data is modified only once per frame and only by the main thread
   class SystemInfo {
   public:
     SystemInfo() = delete;
     SystemInfo(SystemInfo&) = delete;
     SystemInfo(SystemInfo&&) = delete;
 
-    static void initialize() noexcept;
-    static void update_ram_usage() noexcept;
-    static void update_cpu_usage() noexcept;
+    FORCE_INLINE static void initialize() noexcept {
+        details::get_system_info(allocation_granularity, page_size, number_of_processors);
+        details::get_cpu_usage(cpu_usage);
+        details::get_memory_info(used_memory, available_memory, total_swap, free_swap);
+    };
+
+    FORCE_INLINE static void update_ram_usage() noexcept {
+        details::get_memory_info(used_memory, available_memory, total_swap, free_swap);
+    };
+
+    FORCE_INLINE static void update_cpu_usage() noexcept {
+        details::get_cpu_usage(cpu_usage);
+    };
 
   public:
     inline static uint32_t allocation_granularity = 0;
@@ -43,6 +54,8 @@ namespace noyxcore::platform {
 
     inline static uint32_t number_of_processors = 0;
     inline static double cpu_usage = 0;
+
+    inline static uint32_t large_pages_size = 0;
 
     inline static uint64_t used_memory = 0;
     inline static uint64_t available_memory = 0;

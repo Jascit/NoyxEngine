@@ -2,7 +2,7 @@ message(STATUS "\n-- ------COREMODULE TEST CMAKE------")
 set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/include/")
 set(CORE_ALL_LIBRARIES_DYNAMIC "")
 set(CORE_TEST_SUBDIRECTORIES
-  containers, utils, platform
+  containers, utils, platform, memory
 )
 
 foreach(SUBDIR ${CORE_TEST_SUBDIRECTORIES})

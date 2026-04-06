@@ -1,0 +1,35 @@
+# CMakeLists.txt for the Core Module (Platform)
+file(GLOB_RECURSE TESTS_CORE_MEMORY_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp
+)
+
+message(STATUS "\n-- ------CORE_MODULE_MEMORY_TEST_CMAKE------")
+message(STATUS "TEST_DETAILS_PATH='${TEST_DETAILS_PATH}'")
+if(NOT TESTS_CORE_MEMORY_SOURCES)
+    message(WARNING "CORE_MODULE_MEMORY_TEST: no source files found, skipping CORE_MODULE_MEMORY_TESTS")
+else()
+    add_library(CORE_MODULE_MEMORY_TESTS OBJECT ${TESTS_CORE_MEMORY_SOURCES})
+    target_include_directories(CORE_MODULE_MEMORY_TESTS PUBLIC
+        ${CORE_INCLUDES}
+        ${TEST_DETAILS_PATH}
+    )
+    
+    target_compile_features(CORE_MODULE_MEMORY_TESTS PUBLIC cxx_std_23)
+    target_compile_definitions(CORE_MODULE_MEMORY_TESTS PUBLIC
+        $<$<CONFIG:Release>:NDEBUG>
+    )
+    
+    # apply common flags and sanitizer-compile flags
+    target_link_libraries(CORE_MODULE_MEMORY_TESTS PRIVATE COMMON_FLAGS)
+    if(TARGET SANITIZERS)
+      target_link_libraries(CORE_MODULE_MEMORY_TESTS PRIVATE SANITIZERS)
+    endif()
+    target_link_libraries(CORE_MODULE_MEMORY_TESTS PRIVATE ${CORE_MODULE_TEST})
+
+    if(TARGET CORE_MODULE_MEMORY_TESTS)
+        message(STATUS "CORE_MODULE_MEMORY_TEST: [SUCCESS] created CORE_MODULE_MEMORY_TESTS")
+        set(CORE_ALL_LIBRARIES_DYNAMIC ${CORE_ALL_LIBRARIES_DYNAMIC} $<TARGET_OBJECTS:CORE_MODULE_MEMORY_TESTS> PARENT_SCOPE)
+    else()
+        message(WARNING "CORE_MODULE_MEMORY_TEST: [FAILED] CORE_MODULE_MEMORY_TESTS was not created")
+    endif()
+endif()

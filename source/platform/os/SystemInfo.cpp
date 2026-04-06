@@ -13,14 +13,24 @@
 #include <cstdio>
 #include <platform/os/os_detect.h>
 #include <platform/os/SystemInfo.hpp>
-#include OS_DEPENDENCY_HEADER
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <unordered_map>
+
+#ifdef NOYX_WINDOWS
+#include <windows.h>
+#elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
+#include <unistd.h>
+#include <errno.h>
+#endif
+
 // TODO: Linux/MacOS versions
 
 using namespace noyxcore::platform;
 
 void details::get_cpu_usage(double& cpu_usage) noexcept {
-#ifdef NOYX_WINDOWS
+#if defined(NOYX_WINDOWS)
   FILETIME idle_time, kernel_time, user_time;
   static ULARGE_INTEGER prev_idle = {}, prev_kernel = {}, prev_user = {};
   static bool initialized = false;
@@ -65,7 +75,7 @@ void details::get_cpu_usage(double& cpu_usage) noexcept {
   }
 
   cpu_usage = 100.0 * (1.0 - static_cast<double>(idle_diff) / static_cast<double>(total));
-#else
+#elif defined(NOYX_LINUX)
   static uint64_t prev_user = 0, prev_nice = 0, prev_system = 0, prev_idle = 0;
   static bool initialized = false;
 
@@ -109,6 +119,7 @@ void details::get_cpu_usage(double& cpu_usage) noexcept {
   prev_idle = idle;
 
   cpu_usage = 100.0 * (1.0 - static_cast<double>(idle_diff) / static_cast<double>(total));
+#elif defined(NOYX_APPLE)
 #endif
 }
 
@@ -123,13 +134,40 @@ void details::get_memory_info(uint64_t& used_memory,
   GlobalMemoryStatusEx(&memInfo);
 
   DWORDLONG total_phys = memInfo.ullTotalPageFile;
-  DWORDLONG avail_phys = memInfo.ullAvailPhys;
-  available_memory = avail_phys;
-  used_memory = total_phys - avail_phys;
+  available_memory = memInfo.ullAvailPhys;
+  used_memory = total_phys - available_memory;
 
   total_swap = memInfo.ullTotalPageFile;
   free_swap = memInfo.ullAvailPageFile;
-#else
+#elifdef NOYX_LINUX
+  using field_name = std::string;
+  using data = std::uint64_t;
+
+  std::ifstream file("/proc/meminfo");
+  if (!file) return;
+
+  std::unordered_map<field_name, data> meminfo(60);
+  std::string line;
+
+  while (std::getline(file, line)) {
+    std::istringstream iss(line);
+    field_name label;
+    data value;
+    char unit_buffer[2];
+
+    if (iss >> label >> value >> unit_buffer) {
+      if (!label.empty() && label.back() == ':')
+        label.pop_back();
+
+      meminfo[label] = value;
+    }
+  }
+
+  data total_phys = meminfo["MemTotal"];
+  available_memory = meminfo.count("MemAvailable") ? meminfo["MemAvailable"] : meminfo["MemFree"];
+  used_memory = total_phys - available_memory;
+  total_swap = meminfo["SwapTotal"];
+  free_swap = meminfo["SwapFree"];
 #endif
 }
 
@@ -142,22 +180,11 @@ void details::get_system_info(uint32_t& allocation_granularity,
   GetSystemInfo(&system_info);
 
   allocation_granularity = system_info.dwAllocationGranularity;
-  page_size = system_info.dwAllocationGranularity;
+  page_size = system_info.dwPageSize;
   number_of_processors = system_info.dwNumberOfProcessors;
-#else
+#elif defined(NOYX_APPLE) || defined(NOYX_LINUX)
+    page_size = static_cast<uint32_t>(sysconf(_SC_PAGE_SIZE));
+    number_of_processors = static_cast<uint32_t>(sysconf(_SC_NPROCESSORS_CONF));
+    allocation_granularity = page_size;
 #endif
-}
-
-void SystemInfo::initialize() noexcept {
-  details::get_system_info(allocation_granularity, page_size, number_of_processors);
-  details::get_cpu_usage(cpu_usage);
-  details::get_memory_info(used_memory, available_memory, total_swap, free_swap);
-};
-
-void SystemInfo::update_cpu_usage() noexcept {
-  details::get_cpu_usage(cpu_usage);
-}
-
-void SystemInfo::update_ram_usage() noexcept {
-  details::get_memory_info(used_memory, available_memory, total_swap, free_swap);
 }
