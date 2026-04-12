@@ -19,12 +19,18 @@ using namespace noyxcore::memory::vas;
 NOYX_TEST(vas_reserve_memory, smoke_test) {
   uint32_t allocation_granularity, page_size, number_of_processor;
   noyxcore::platform::details::get_system_info(allocation_granularity, page_size, number_of_processor);
-  ReserveRequest request;
-  request.alloc_flags = static_cast<std::uint32_t>(Flag::None);
-  request.alignment = allocation_granularity;
-  request.size = 100*1024*1024;
-  request.preferred_addr = nullptr;
-  ReserveResponse resp = reserve_memory(request, allocation_granularity);
-  NOYX_ASSERT_TRUE_MESSAGE(resp.err == Error::Ok, "reserve_memory failed");
-  NOYX_ASSERT_TRUE_MESSAGE(resp.size == request.size, "reserve_memory returned different size");
+  ReserveRequest reserve_req;
+  reserve_req.alloc_flags = static_cast<std::uint32_t>(Flag::None);
+  reserve_req.alignment = allocation_granularity;
+  reserve_req.size = 100*1024*1024;
+  reserve_req.preferred_addr = nullptr;
+  ReserveResponse reserve_resp = reserve_memory(reserve_req, allocation_granularity);
+  NOYX_ASSERT_TRUE_MESSAGE(reserve_resp.err == Error::Ok, "reserve_memory failed");
+  NOYX_ASSERT_TRUE_MESSAGE(reserve_resp.size == reserve_req.size, "reserve_memory returned different size");
+  ReleaseRequest release_req;
+  release_req.base = reserve_resp.base;
+  release_req.size = reserve_resp.size;
+  ReleaseResponse release_resp = release_memory(release_req);
+  NOYX_ASSERT_TRUE_MESSAGE(release_resp.err == Error::Ok, "release_memory failed");
+
 }

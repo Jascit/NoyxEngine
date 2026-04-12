@@ -2,7 +2,7 @@
 
 /**
  * @file     vas_wrapper.cpp
- * @brief     
+ * @brief
  *
  * @author   Jascit (https://github.com/Jascit)
  * @date     04.02.2026
@@ -18,6 +18,8 @@
 #if defined(NOYX_WINDOWS)
 #include <windows.h>
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
+#include <unistd.h>
+#include <errno.h>
 #include <sys/mman.h>
 #endif
 
@@ -30,7 +32,20 @@ FORCE_INLINE auto round_up(const std::uint64_t value, const std::uint64_t align)
 };
 
 #if defined(NOYX_WINDOWS)
-inline DWORD to_windows_prots_(std::uint32_t flags) noexcept {
+FORCE_INLINE Error from_windows_error_(DWORD err) noexcept {
+  switch (err) {
+  case ERROR_ACCESS_DENIED:
+    return Error::Permission;
+  case ERROR_NOT_ENOUGH_MEMORY:
+    return Error::OOM;
+  case ERROR_INVALID_PARAMETER:
+    return Error::InvalidArg;
+  default:
+    return Error::Internal;
+  }
+}
+
+FORCE_INLINE DWORD to_windows_prots_(std::uint32_t flags) noexcept {
   const bool read = (flags & Flag::ProtRead) != 0;
   const bool write = (flags & Flag::ProtWrite) != 0;
   const bool execute = (flags & Flag::ProtExec) != 0;
@@ -52,7 +67,7 @@ inline DWORD to_windows_prots_(std::uint32_t flags) noexcept {
 }
 
 
-inline DWORD to_windows_flags_(std::uint32_t flags) noexcept {
+FORCE_INLINE DWORD to_windows_flags_(std::uint32_t flags) noexcept {
   DWORD result = 0;
   if (flags & Flag::LargePages) result |= MEM_LARGE_PAGES;
   if (flags & Flag::Page64K) result |= MEM_64K_PAGES;
@@ -64,25 +79,14 @@ ReserveResponse reserve_memory_windows_(std::uint64_t size, void* preferred_addr
   DWORD flags = MEM_RESERVE | alloc_flags;
 
   void* virtual_address = VirtualAlloc(preferred_addr,
-                                        size,
-                                        flags,
-                                        PAGE_NOACCESS);
+    size,
+    flags,
+    PAGE_NOACCESS);
 
   if (virtual_address == nullptr) {
     DWORD error = GetLastError();
-    switch (error) {
-      case ERROR_ACCESS_DENIED:
-        resp.err = Error::Permission;
-        return resp;
-      case ERROR_NOT_ENOUGH_MEMORY:
-        resp.err = Error::OOM;
-        return resp;
-      case ERROR_INVALID_PARAMETER:
-        resp.err = Error::InvalidArg;
-        return resp;
-      default:
-        return resp;
-    }
+    resp.err = from_windows_error_(error);
+    return resp;
   }
 
   resp.size = size;
@@ -92,42 +96,122 @@ ReserveResponse reserve_memory_windows_(std::uint64_t size, void* preferred_addr
 }
 
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
-inline int to_unix_prots_(std::uint32_t flags) noexcept {}
+FORCE_INLINE Error from_unix_error_(int err/*errno*/) noexcept {
+  switch (err) {
+  case EEXIST: return Error::InvalidAddress;
+  case EACCES: return Error::Permission;
+  case ENOMEM: return Error::OOM;
+  case EINVAL: return Error::InvalidArg;
+  default: return Error::Internal;
+  }
+}
 
-inline int to_unix_flags_(std::uint32_t flags) noexcept {}
+FORCE_INLINE int to_unix_prots_(std::uint32_t flags) noexcept {
+  const bool read = (flags & Flag::ProtRead) != 0;
+  const bool write = (flags & Flag::ProtWrite) != 0;
+  const bool execute = (flags & Flag::ProtExec) != 0;
 
-ReserveResponse& reserve_memory_unix_(std::uint64_t size, void* preferred_addr, int flags) noexcept {}
+  if (!read && !write && !execute)
+    return PROT_NONE;
+
+  int prot = 0;
+
+  if (write) {
+    prot |= PROT_WRITE;
+    prot |= PROT_READ; // ensure Windows-like behavior
+  }
+  else if (read) {
+    prot |= PROT_READ;
+  }
+
+  if (execute) {
+    prot |= PROT_EXEC;
+  }
+
+  return prot;
+}
+
+FORCE_INLINE int to_unix_flags_(std::uint32_t flags) noexcept {
+  int result = 0;
+  if (flags & Flag::FixedAddress && flags & Flag::PreferAddress) {
+    result = -1;
+    return result;
+  }
+  if (flags & Flag::FixedAddress) result |= MAP_FIXED;
+  if (flags & Flag::LargePages) result |= MAP_HUGETLB;
+  return result;
+}
+
+ReserveResponse reserve_memory_unix_(std::uint64_t size, void* preferred_addr, int flags) noexcept {
+  ReserveResponse resp(nullptr, 0, Error::Internal);
+
+  int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE;
+
+  if (flags & MAP_FIXED) {
+#if defined(MAP_FIXED_NOREPLACE)
+    int mmap_flags = mmap_flags | MAP_FIXED_NOREPLACE;
+#else
+    int mmap_flags = mmap_flags | MAP_FIXED;
+#endif
+  }
+  
+  void* virtual_address = mmap(preferred_addr, size, PROT_NONE, mmap_flags, -1, 0);
+  if (!virtual_address) {
+    resp.err = from_unix_error_(errno);
+    return resp;
+  }
+  resp.size = size;
+  resp.base = virtual_address;
+  resp.err = Error::Ok;
+  return resp;
+}
 #endif
 
-[[nodiscard]] ReserveResponse noyxcore::memory::vas::reserve_memory(const ReserveRequest& req, std::uint64_t allocation_granularity) noexcept {
+[[nodiscard]] ReserveResponse noyxcore::memory::vas::reserve_memory(const ReserveRequest& req,
+  std::uint64_t allocation_granularity) noexcept {
   // Large pages and non-pageable memory cannot be reserved; they must be committed immediately.
-  if (req.alloc_flags & Flag::LargePages) return {nullptr, 0, Error::InvalidArg};
-  if (req.alloc_flags & Flag::NonPaged) return {nullptr, 0, Error::InvalidArg};
+  if (req.alloc_flags & Flag::LargePages) return { nullptr, 0, Error::InvalidArg };
+  if (req.alloc_flags & Flag::NonPaged) return { nullptr, 0, Error::InvalidArg };
+  if (req.size == 0) return { nullptr, 0, Error::InvalidArg };
+  if (req.alloc_flags & Flag::FixedAddress && req.preferred_addr) return { nullptr, 0, Error::InvalidArg };
 
   std::uint64_t alignment = (req.alignment == 0) ? allocation_granularity : req.alignment;
   // TODO: false, new idea: uintptr_t aligned = ((uintptr_t)addr + alignment - 1) & ~(alignment - 1); or with params
   // windows garantiert 64KB alignment; also muss ich das nicht ueberpruefen; Flag::FixedAddr
-  if (alignment < allocation_granularity) return {nullptr, 0, Error::InvalidArg};
-  if (alignment % allocation_granularity != 0) return {nullptr, 0, Error::InvalidArg};
+  if (alignment < allocation_granularity) return { nullptr, 0, Error::InvalidArg };
+  if (alignment % allocation_granularity != 0) return { nullptr, 0, Error::InvalidArg };
 
   if (req.preferred_addr != nullptr) {
     auto addr = reinterpret_cast<std::uintptr_t>(req.preferred_addr);
     if (addr % alignment != 0)
-      return {nullptr, 0, Error::InvalidArg};
+      return { nullptr, 0, Error::InvalidArg };
   }
-  std::uint64_t aligned_size = (req.size + alignment - 1) & ~(alignment - 1);
+  std::uint64_t aligned_size = round_up(req.size, alignment);
 
 #if defined(NOYX_WINDOWS)
   const DWORD req_flags = to_windows_flags_(req.alloc_flags);
   return reserve_memory_windows_(aligned_size, req.preferred_addr, req_flags);
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
-  int req_flags = to_unix_flags_(req.alloc_flags);
+  const int req_flags = to_unix_flags_(req.alloc_flags);
   return reserve_memory_unix_(req.size, req.preferred_addr, req_flags);
 #endif
 }
 
-//[[nodiscard]] ReleaseResponse release_memory(const ReleaseRequest& req) noexcept {}
-//
+[[nodiscard]] ReleaseResponse noyxcore::memory::vas::release_memory(const ReleaseRequest& req) noexcept {
+#if defined(NOYX_WINDOWS)
+  if (!VirtualFree(req.base, req.size, MEM_RELEASE)) {
+    DWORD error = GetLastError();
+    return { from_windows_error_(error) };
+  }
+  return { Error::Ok };
+#elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
+  if (munmap(req.base, req.size) != 0) {
+    return { from_unix_error_(errno) };
+  }
+  return { Error::Ok };
+#endif
+}
+
 //[[nodiscard]] CommitResponse commit_pages(const CommitRequest& req, std::uint64_t page_size) noexcept {}
 //
 //[[nodiscard]] CommitResponse decommit_pages(const CommitRequest& req) noexcept {}

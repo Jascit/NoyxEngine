@@ -28,7 +28,7 @@ target_compile_definitions(CoreModule PUBLIC
 
 set_target_properties(CoreModule PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(CoreModule PRIVATE COMMON_FLAGS)
-target_link_libraries(CoreModule PRIVATE kernel32.lib)
+# target_link_libraries(CoreModule PRIVATE kernel32.lib)
 if(ENABLE_SANITIZERS)
     add_library(CoreModule_SANITIZED_OBJECTS OBJECT ${CORE_SRC})
 
