@@ -374,6 +374,7 @@ Saved/
 .vs/
 *.VC.db
 *.VC.opendb
+.idea/
 
 # ���� �� ����� ������� Visual Studio sln
 # *.sln
