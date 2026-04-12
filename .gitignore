@@ -374,10 +374,11 @@ Saved/
 .vs/
 *.VC.db
 *.VC.opendb
-.idea/
 
 # ���� �� ����� ������� Visual Studio sln
 # *.sln
 
 /dependencies/whisper/models/ggml-medium.bin
 /dependencies/whisper/models/ggml-small.bin
+
+.idea/
