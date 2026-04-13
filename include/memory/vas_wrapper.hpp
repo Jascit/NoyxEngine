@@ -100,12 +100,14 @@ namespace noyxcore::memory::vas {
     std::uint32_t alloc_flags{};
   };
 
+  using DecommitRequest = CommitRequest;
+
   struct CommitResponse {
     Error err{Error::Internal};
   };
 
   [[nodiscard]] CommitResponse commit_pages(const CommitRequest& req, std::uint64_t page_size) noexcept;
-  [[nodiscard]] CommitResponse decommit_pages(const CommitRequest& req) noexcept;
+  [[nodiscard]] CommitResponse decommit_pages(const DecommitRequest& req) noexcept;
 
   struct MapRequest {
     void* base{};
