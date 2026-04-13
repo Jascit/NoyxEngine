@@ -1,17 +1,11 @@
 message(STATUS "\n-- ------COREMODULE TEST CMAKE------")
 set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/include/")
 set(CORE_ALL_LIBRARIES_DYNAMIC "")
-set(CORE_TEST_SUBDIRECTORIES
-  containers, utils, platform, memory
-)
 
-foreach(SUBDIR ${CORE_TEST_SUBDIRECTORIES})
-    set(SUBDIR_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIR}")
-    if(EXISTS "${SUBDIR_PATH}" AND IS_DIRECTORY "${SUBDIR_PATH}")
-        message(STATUS "COREMODULE_TEST: Adding subdirectory: ${SUBDIR_PATH}")
-        add_subdirectory("${SUBDIR_PATH}")
-    endif()
-endforeach()
+add_subdirectory(containers)
+add_subdirectory(utils)
+add_subdirectory(platform)
+add_subdirectory(memory)
 message(STATUS "COREMODULE_TEST: creating library CORE_ALL_LIBRARIES...")
 add_library(CORE_ALL_LIBRARIES INTERFACE)
 
