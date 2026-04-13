@@ -212,7 +212,23 @@ ReserveResponse reserve_memory_unix_(std::uint64_t size, void* preferred_addr, i
 #endif
 }
 
-//[[nodiscard]] CommitResponse commit_pages(const CommitRequest& req, std::uint64_t page_size) noexcept {}
+[[nodiscard]] CommitResponse noyxcore::memory::vas::commit_pages(const CommitRequest& req, std::uint64_t page_size) noexcept {
+  if (req.base == nullptr) return  {Error::InvalidArg};
+  if (req.size == 0) return  {Error::InvalidArg};
+  if (req.alloc_flags & Flag::LargePages) {
+    if (/*TODO: Process info mb, check for Permission)*/false) {
+
+    }
+  }
+  void* addr_to_commit = static_cast<char*>(req.base) + req.offset;
+  DWORD alloc_flags =  MEM_COMMIT | to_windows_flags_(req.alloc_flags);
+  DWORD prosr = to_windows_prots_(req.prot);
+  void* addr = VirtualAlloc(addr_to_commit, req.size, alloc_flags, prosr);
+  if (addr == nullptr) {
+    return { from_windows_error_(GetLastError()) };
+  }
+  return { Error::Ok };
+}
 //
 //[[nodiscard]] CommitResponse decommit_pages(const CommitRequest& req) noexcept {}
 //
