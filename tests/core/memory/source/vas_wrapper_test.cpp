@@ -48,7 +48,7 @@ NOYX_TEST(vas_commit_memory_test, smoke_test) {
   commit_req.base = reserve_resp.base;
   commit_req.size = reserve_resp.size;
   commit_req.offset = 0;
-  commit_req.prot = static_cast<std::uint32_t>(Flag::ProtWrite | Flag::ProtRead);
+  commit_req.prot = Flag::ProtWrite | Flag::ProtRead;
   commit_req.alloc_flags = static_cast<std::uint32_t>(Flag::Page64K);
   CommitResponse commit_resp = commit_pages(commit_req, page_size);
   NOYX_ASSERT_TRUE_MESSAGE(commit_resp.err == Error::Ok, "commit_pages failed");

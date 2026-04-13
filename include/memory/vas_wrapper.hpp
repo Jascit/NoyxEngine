@@ -96,24 +96,37 @@ namespace noyxcore::memory::vas {
     void* base{};
     std::uint64_t offset{};
     std::uint64_t size{};
-    std::uint32_t prot{};
+    std::uint32_t protection{};
     std::uint32_t alloc_flags{};
   };
-
-  using DecommitRequest = CommitRequest;
 
   struct CommitResponse {
     Error err{Error::Internal};
   };
 
+  using DecommitRequest = CommitRequest;
+  using DecommitResponse = CommitResponse;
+
   [[nodiscard]] CommitResponse commit_pages(const CommitRequest& req, std::uint64_t page_size) noexcept;
-  [[nodiscard]] CommitResponse decommit_pages(const DecommitRequest& req) noexcept;
+  [[nodiscard]] DecommitResponse decommit_pages(const DecommitRequest& req) noexcept;
+
+  struct LargePageAllocationRequest {
+    std::uint64_t size{};
+    std::uint32_t protection{};
+    std::uint32_t flags{};
+  };
+
+  using LargePageAllocationResult = CommitResponse;
+
+  [[nodiscard]] LargePageAllocationResult allocate_large_pages(const LargePageAllocationRequest& request) noexcept;
+
+  [[nodiscard]] LargePageAllocationResult free_large_pages(const LargePageAllocationRequest& request) noexcept;
 
   struct MapRequest {
     void* base{};
     std::uint64_t offset{};
     std::uint64_t size{};
-    std::uint32_t prot{};
+    std::uint32_t protection{};
   };
 
   struct MapResponse {
