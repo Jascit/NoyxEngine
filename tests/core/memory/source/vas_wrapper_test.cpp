@@ -41,19 +41,19 @@ NOYX_TEST(vas_commit_memory_test, smoke_test) {
   ReserveRequest reserve_req;
   reserve_req.alloc_flags = static_cast<std::uint32_t>(Flag::None);
   reserve_req.alignment = allocation_granularity;
-  reserve_req.size = 100*1024*1024;
+  reserve_req.size = 10*1024*1024;
   reserve_req.preferred_addr = nullptr;
   ReserveResponse reserve_resp = reserve_memory(reserve_req, allocation_granularity);
   CommitRequest commit_req;
   commit_req.base = reserve_resp.base;
   commit_req.size = reserve_resp.size;
   commit_req.offset = 0;
-  commit_req.prot = Flag::ProtWrite | Flag::ProtRead;
+  commit_req.protection = Flag::ProtWrite | Flag::ProtRead;
   commit_req.alloc_flags = static_cast<std::uint32_t>(Flag::Page64K);
   CommitResponse commit_resp = commit_pages(commit_req, page_size);
   NOYX_ASSERT_TRUE_MESSAGE(commit_resp.err == Error::Ok, "commit_pages failed");
-  auto ptr = static_cast<uint8_t*>(reserve_resp.base);
-  for (size_t i = 0; i < reserve_resp.size; i += page_size) {
-    ptr[i] = 0xAA;  // write forces page commit
+  auto ptr = static_cast<uint64_t*>(reserve_resp.base);
+  for (size_t i = 0; i < reserve_req.size / 8; i++) {
+    ptr[i] = 0xFFFFFFFFFFFFFFFF;  // write forces page commit
   }
 }

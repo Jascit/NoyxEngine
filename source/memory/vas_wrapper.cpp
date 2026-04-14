@@ -146,7 +146,9 @@ FORCE_INLINE int to_unix_flags_(std::uint32_t flags) noexcept {
     return result;
   }
   if (flags & Flag::FixedAddress) result |= MAP_FIXED;
+#if defined (NOYX_LINUX)
   if (flags & Flag::LargePages) result |= MAP_HUGETLB;
+#endif
   return result;
 }
 
@@ -157,20 +159,20 @@ ReserveResponse reserve_memory_unix_(std::uint64_t size, void* preferred_addr, i
 
   if (flags & MAP_FIXED) {
 #if defined(MAP_FIXED_NOREPLACE)
-int mmap_flags = mmap_flags | MAP_FIXED_NOREPLACE;
+    mmap_flags = mmap_flags | MAP_FIXED_NOREPLACE;
 #else
-int mmap_flags = mmap_flags | MAP_FIXED;
+    mmap_flags = mmap_flags | MAP_FIXED;
 #endif
-}
+  }
 
-void* virtual_address = mmap(preferred_addr, size, PROT_NONE, mmap_flags, -1, 0);
+  void* virtual_address = mmap(preferred_addr, size, PROT_NONE, mmap_flags, -1, 0);
   if (!virtual_address) {
     resp.err = from_unix_error_(errno);
     return resp;
   }
-resp.size= size;
-resp.base= virtual_address;
-resp.err= Error::Ok;
+  resp.size = size;
+  resp.base = virtual_address;
+  resp.err = Error::Ok;
   return resp;
 }
 #endif
@@ -232,6 +234,12 @@ resp.err= Error::Ok;
   DWORD prots = to_windows_prots_(req.protection);
   return commit_pages_windows_(req.size, addr, flags, prots);
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
+  int prots = to_unix_prots_(req.protection);
+  mprotect(addr, req.size, prots);
+  char* end = static_cast<char*>(addr) + req.size;
+  for (char* ptr = static_cast<char*>(addr); ptr < end; ptr += page_size) {
+    ptr[0] = 0;
+  }//TODO: addr and size must to be aligned to page_size
 #if !defined(NOYX_APPLE)
   if (req.alloc_flags & Flag::LargePages) {
     if (/*TODO: Process info mb, check for Permission)*/false) {
@@ -256,6 +264,7 @@ resp.err= Error::Ok;
 
 #endif
 }
+
 //
 //[[nodiscard]] MapResponse map(const MapRequest& req) noexcept {}
 //
