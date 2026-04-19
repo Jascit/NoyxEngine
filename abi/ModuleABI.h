@@ -1,12 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- * \file   module_abi.h
- * \brief  ABI-stable interface
+
+/**
+ * @file     module_abi.h
+ * @brief    ABI-stable interface
  *
- * Copyright (c) 2026 Jascit
- * \author Jascit<https://github.com/Jascit>
- * \date   January 2026
- * \note   Do not break ABI, use pod instead.
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     04.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #ifndef MODULE_ABI_H

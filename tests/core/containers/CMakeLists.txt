@@ -1,5 +1,4 @@
 # CMakeLists.txt for the Core Module (Containers)
-set(CORE_INCLUDES "${CMAKE_SOURCE_DIR}/include/")
 file(GLOB_RECURSE TESTS_CORE_CONTAINERS_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp
 )

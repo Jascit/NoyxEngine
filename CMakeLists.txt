@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.25)
 project(NoyxCore C CXX)
 project(NoyxCore VERSION 1.0.0)
@@ -19,13 +20,13 @@ endif()
 # Detect OS
 if (WIN32)
     message(STATUS "Detected platform: Windows")
-    list(APPEND PLATFORM_COMPILE_DEFS PLATFORM_WINDOWS)
+    list(APPEND PLATFORM_COMPILE_DEFS WINDOWS)
 
     # Optional: detect Windows 10 vs 11 if CMAKE_HOST_SYSTEM_VERSION is set
-    if (DEFINED CMAKE_HOST_SYSTEM_VERSION)
-       set(IS_WIN TRUE CACHE INTERNAL "Is Windows 10")
-       list(APPEND PLATFORM_COMPILE_DEFS WINDOWS)
-    endif()
+    # if (DEFINED CMAKE_HOST_SYSTEM_VERSION)
+    #    set(IS_WIN TRUE CACHE INTERNAL "Is Windows 10")
+    #    list(APPEND PLATFORM_COMPILE_DEFS WINDOWS) 
+    # endif()
 
 elseif (APPLE)
     message(STATUS "Detected platform: Apple (macOS/iOS/etc)")
@@ -41,35 +42,20 @@ elseif (APPLE)
         endif()
     endif()
 
-    # fallbacks
-    if (NOT PLATFORM_COMPILE_DEFS MATCHES "ARCH_")
-        if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-            list(APPEND PLATFORM_COMPILE_DEFS ARCH_ARM64)
-        else()
-            list(APPEND PLATFORM_COMPILE_DEFS ARCH_X64)
-        endif()
-    endif()
-
 elseif (UNIX AND NOT APPLE)
     message(STATUS "Detected platform: Linux/Unix")
     list(APPEND PLATFORM_COMPILE_DEFS LINUX)
 else()
     message(FATAL_ERROR "Undefined platform!")
 endif()
-
-# Ensure 64-bit (or fail)
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    # If not already appended (Apple logic may have done arch) ensure X64 present
-    if (NOT " ${PLATFORM_COMPILE_DEFS} " MATCHES " ARCH_X64 ")
-        # if arm64 already present, keep it; otherwise append X64
-        if (NOT " ${PLATFORM_COMPILE_DEFS} " MATCHES " ARCH_ARM64 ")
-            list(APPEND PLATFORM_COMPILE_DEFS ARCH_X64)
-        endif()
+# fallbacks
+if (NOT PLATFORM_COMPILE_DEFS MATCHES "ARCH_")
+    if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        list(APPEND PLATFORM_COMPILE_DEFS ARCH_ARM64)
+    else()
+        list(APPEND PLATFORM_COMPILE_DEFS ARCH_X64)
     endif()
-else()
-    message(FATAL_ERROR "32-bit targets are not supported (CMAKE_SIZEOF_VOID_P != 8)")
 endif()
-
 # Show what we detected
 message(STATUS "Platform/arch compile definitions: ${PLATFORM_COMPILE_DEFS}")
 

@@ -1,12 +1,13 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-/* 
- * \file   CoreABI.h
- * \brief  
- * 
- * Copyright (c) 2026 Jascit 
- * \author Jascit<https://github.com/Jascit>
- * \date   January 2026
- * \note   
+
+/**
+ * @file     CoreABI.h
+ * @brief      
+ *
+ * @author   Jascit (https://github.com/Jascit)
+ * @date     04.01.2026
+ *
+ * @copyright Copyright (c) 2026 The Project Contributors
  */
 
 #ifndef CORE_API_H
@@ -16,7 +17,7 @@
 #define CORE_ABI_VERSION_MINOR 0
 #define CORE_ABI_VERSION_PATCH 0
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif // _cplusplus
 
@@ -30,7 +31,7 @@ extern "C" {
     void     (*log)(int level, const char* msg);
   } CoreABI;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif // _cplusplus
 
