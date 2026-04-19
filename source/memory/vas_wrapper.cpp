@@ -257,11 +257,18 @@ ReserveResponse reserve_memory_unix_(std::uint64_t size, void* preferred_addr, i
   if (req.base == nullptr) return {Error::InvalidArg};
   if (req.size == 0) return {Error::InvalidArg};
   if (req.alloc_flags & Flag::LargePages) return {Error::InvalidArg};
+  void* addr = static_cast<char*>(req.base) + req.offset;
 
 #if defined(NOYX_WINDOWS)
 
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
-
+  if (madvise(addr, req.size, MADV_DONTNEED) != 0) {
+    return {Error::InvalidAddress};
+  }
+  if (mprotect(addr, req.size, PROT_NONE) != 0) {
+    return {Error::InvalidAddress};
+  }
+  return {Error::Ok};
 #endif
 }
 
