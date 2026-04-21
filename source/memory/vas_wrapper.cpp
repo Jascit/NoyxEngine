@@ -264,6 +264,12 @@ ReserveResponse reserve_memory_unix_(std::uint64_t size, void* preferred_addr, i
     page_size
   );
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
+  int prots = to_unix_prots_(req.protection);
+  mprotect(addr, req.size, prots);
+  char* end = static_cast<char*>(addr) + req.size;
+  for (char* ptr = static_cast<char*>(addr); ptr < end; ptr += page_size) {
+    ptr[0] = 0;
+  }//TODO: addr and size must to be aligned to page_size
 #if !defined(NOYX_APPLE)
   if (req.alloc_flags & Flag::LargePages) {
     if (/*TODO: Process info mb, check for Permission)*/false) {
@@ -271,21 +277,17 @@ ReserveResponse reserve_memory_unix_(std::uint64_t size, void* preferred_addr, i
     }
   }
 #endif
-  int prots = to_unix_prots_(req.protection);
-  mprotect(addr, req.size, prots);
-  char* end = static_cast<char*>(addr) + req.size;
-  for (char* ptr = static_cast<char*>(addr); ptr < end; ptr += page_size) {
-    ptr[0] = 0;
-  }
-  return { Error::Ok };
+
 #endif
+  //TODO: lazy/sobald commit flag?
 }
 
 
 [[nodiscard]] DecommitResponse noyxcore::memory::vas::decommit_pages(const DecommitRequest& req) noexcept {
-  if (req.base == nullptr) return { Error::InvalidArg };
-  if (req.size == 0) return { Error::InvalidArg };
-  if (req.alloc_flags & Flag::LargePages) return { Error::InvalidArg };
+  if (req.base == nullptr) return {Error::InvalidArg};
+  if (req.size == 0) return {Error::InvalidArg};
+  if (req.alloc_flags & Flag::LargePages) return {Error::InvalidArg};
+  void* addr = static_cast<char*>(req.base) + req.offset;
 
 #if defined(NOYX_WINDOWS)
   LPVOID result = VirtualAlloc(req.base, req.size, MEM_DECOMMIT, PAGE_READWRITE);
@@ -295,7 +297,13 @@ ReserveResponse reserve_memory_unix_(std::uint64_t size, void* preferred_addr, i
   }
   return { Error::Ok };
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
-
+  if (madvise(addr, req.size, MADV_DONTNEED) != 0) {
+    return {Error::InvalidAddress};
+  }
+  if (mprotect(addr, req.size, PROT_NONE) != 0) {
+    return {Error::InvalidAddress};
+  }
+  return {Error::Ok};
 #endif
 }
 
