@@ -35,7 +35,7 @@ NOYX_TEST(vas_reserve_memory, smoke_test) {
 
 }
 
-NOYX_TEST(vas_commit_memory_test, smoke_test) {
+NOYX_TEST(vas_commit_decommit_memory_test, smoke_test) {
   uint32_t allocation_granularity, page_size, number_of_processor;
   noyxcore::platform::details::get_system_info(allocation_granularity, page_size, number_of_processor);
   ReserveRequest reserve_req;
@@ -56,4 +56,12 @@ NOYX_TEST(vas_commit_memory_test, smoke_test) {
   for (size_t i = 0; i < reserve_req.size / 8; i++) {
     ptr[i] = 0xFFFFFFFFFFFFFFFF;  // write forces page commit
   }
+  DecommitRequest decommit_req;
+  decommit_req.base = commit_req.base;
+  decommit_req.size = commit_req.size;
+  decommit_req.offset = commit_req.offset;
+  decommit_req.protection = Flag::ProtWrite | Flag::ProtRead;
+  decommit_req.alloc_flags = static_cast<std::uint32_t>(Flag::None);
+  DecommitResponse decommit_resp = decommit_pages(decommit_req);
+  NOYX_ASSERT_TRUE_MESSAGE(commit_resp.err == Error::Ok, "decommit_pages failed");
 }

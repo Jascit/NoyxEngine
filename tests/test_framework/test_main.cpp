@@ -26,27 +26,37 @@
 
 std::string format_time(long long nanoseconds) {
   double time = static_cast<double>(nanoseconds);
-  const char* units[] = { "ns", "us", "ms", "s", "min", "h" };
-  int idx = 0;
 
-  while (time > 10000 && idx < 4) { // якщо > 10000, переходимо до наступної одиниці
-    if (idx == 0)      time /= 1000;     // ns -> us
-    else if (idx == 1) time /= 1000;     // us -> ms
-    else if (idx == 2) time /= 1000;     // ms -> s
-    else if (idx == 3) time /= 60;       // s -> min
-    else if (idx == 4) time /= 60;       // min -> h
+  struct Unit {
+    const char* name;
+    double factor;
+  };
+
+  static constexpr Unit units[] = {
+      Unit{"ns", 1000.0},
+      Unit{"us", 1000.0},
+      Unit{"ms", 1000.0},
+      Unit{"s", 60.0},
+      Unit{"min", 60.0},
+      Unit{"h", 0.0}
+  };
+
+  size_t idx = 0;
+
+  while (idx < 6 - 1 && time >= units[idx].factor) {
+    time /= units[idx].factor;
     ++idx;
   }
 
   char buffer[32];
   if (time < 10)
-    std::snprintf(buffer, sizeof(buffer), "%.3f %s", time, units[idx]);
+    std::snprintf(buffer, sizeof(buffer), "%.3f %s", time, units[idx].name);
   else if (time < 100)
-    std::snprintf(buffer, sizeof(buffer), "%.2f %s", time, units[idx]);
+    std::snprintf(buffer, sizeof(buffer), "%.2f %s", time, units[idx].name);
   else
-    std::snprintf(buffer, sizeof(buffer), "%.0f %s", time, units[idx]);
+    std::snprintf(buffer, sizeof(buffer), "%.0f %s", time, units[idx].name);
 
-  return std::string(buffer);
+  return buffer;
 }
 
 int main() {
@@ -67,8 +77,7 @@ int main() {
     if (!(info.flag & FAILED)) {
       std::cout << "OK (" << timeStr << ")\n";
       TestingSystem::instance()->success();
-    }
-    else {
+    } else {
       std::cout << "FAILED\n";
     }
 
