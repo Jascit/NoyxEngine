@@ -170,7 +170,7 @@ mmap_flags= mmap_flags| MAP_FIXED;
 }
 
 void* virtual_address = mmap(preferred_addr, size, PROT_NONE, mmap_flags, -1, 0);
-  if (!virtual_address) {
+  if (virtual_address == MAP_FAILED) {
     resp.err = from_unix_error_(errno);
     return resp;
   }
@@ -213,7 +213,7 @@ resp.err= Error::Ok;
 
 [[nodiscard]] ReleaseResponse noyxcore::memory::vas::release_memory(const ReleaseRequest& req) noexcept {
 #if defined(NOYX_WINDOWS)
-  if (!VirtualFree(req.base, req.size, MEM_RELEASE)) {
+  if (!VirtualFree(req.base, 0, MEM_RELEASE)) {
     DWORD error = GetLastError();
     return {from_windows_error_(error)};
   }
@@ -257,7 +257,7 @@ resp.err= Error::Ok;
 
   return commit_pages_windows_(
     req.size,
-    const_cast<void*>(raw_addr),
+    raw_addr,
     windows_flags,
     windows_prots,
     page_size
@@ -270,12 +270,24 @@ resp.err= Error::Ok;
     }
   }
 #endif
+  if (mprotect(raw_addr, req.size, PROT_READ | PROT_WRITE) != 0) {
+    return { from_unix_error_(errno) };
+  }
+
+  char* begin = static_cast<char*>(raw_addr);
+  char* end = begin + req.size;
+
+  for (char* ptr = begin; ptr < end; ptr += page_size) {
+    volatile char* p = ptr;
+    *p = 0;
+  }
+
   int prots = to_unix_prots_(req.protection);
-  mprotect(raw_addr, req.size, prots);
-  char* end = static_cast<char*>(raw_addr) + req.size;
-  for (char* ptr = static_cast<char*>(raw_addr); ptr < end; ptr += page_size) {
-    ptr[0] = 0;
-  } //TODO: addr and size must to be aligned to page_size
+  if (mprotect(raw_addr, req.size, prots) != 0) {
+    return { from_unix_error_(errno) };
+  }
+
+  return { Error::Ok };
 
 #endif
   //TODO: lazy/sobald commit flag?
@@ -289,8 +301,8 @@ resp.err= Error::Ok;
   void* addr = static_cast<char*>(req.base) + req.offset;
 
 #if defined(NOYX_WINDOWS)
-  LPVOID result = VirtualAlloc(req.base, req.size, MEM_DECOMMIT, PAGE_READWRITE);
-  if (result == nullptr) {
+  BOOL result = VirtualFree(addr, req.size, MEM_DECOMMIT);
+  if (result == false) {
     DWORD error = GetLastError();
     return {from_windows_error_(error)};
   }
