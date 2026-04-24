@@ -237,7 +237,7 @@ resp.err= Error::Ok;
     return {Error::InvalidArg};
   }
 
-  const void* raw_addr = (req.base == nullptr)
+  void* raw_addr = (req.base == nullptr)
                            ? nullptr
                            : static_cast<char*>(req.base) + req.offset;
 
@@ -271,9 +271,9 @@ resp.err= Error::Ok;
   }
 #endif
   int prots = to_unix_prots_(req.protection);
-  mprotect(addr, req.size, prots);
-  char* end = static_cast<char*>(addr) + req.size;
-  for (char* ptr = static_cast<char*>(addr); ptr < end; ptr += page_size) {
+  mprotect(raw_addr, req.size, prots);
+  char* end = static_cast<char*>(raw_addr) + req.size;
+  for (char* ptr = static_cast<char*>(raw_addr); ptr < end; ptr += page_size) {
     ptr[0] = 0;
   } //TODO: addr and size must to be aligned to page_size
 
@@ -297,10 +297,10 @@ resp.err= Error::Ok;
   return {Error::Ok};
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
   if (madvise(addr, req.size, MADV_DONTNEED) != 0) {
-    return {Error::InvalidAddress};
+    return {from_unix_error_(errno)};
   }
   if (mprotect(addr, req.size, PROT_NONE) != 0) {
-    return {Error::InvalidAddress};
+    return {from_unix_error_(errno)};
   }
   return {Error::Ok};
 #endif
