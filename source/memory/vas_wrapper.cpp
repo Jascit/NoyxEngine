@@ -25,6 +25,8 @@
 
 using namespace noyxcore::memory::vas;
 
+// TODO: windows version of functions
+// TODO: reserve_memory: Large Pages check
 FORCE_INLINE auto round_up(const std::uint64_t value, const std::uint64_t align) noexcept -> std::uint64_t {
   return ((value + align - 1) / align) * align;
 };
@@ -168,7 +170,7 @@ mmap_flags= mmap_flags| MAP_FIXED;
 }
 
 void* virtual_address = mmap(preferred_addr, size, PROT_NONE, mmap_flags, -1, 0);
-  if (virtual_address== MAP_FAILED) {
+  if (virtual_address == MAP_FAILED) {
     resp.err = from_unix_error_(errno);
     return resp;
   }
@@ -187,11 +189,11 @@ resp.err= Error::Ok;
   if (req.size == 0) return {nullptr, 0, Error::InvalidArg};
   if (req.alloc_flags & Flag::FixedAddress && req.preferred_addr) return {nullptr, 0, Error::InvalidArg};
 
-  std::uint64_t alignment = allocation_granularity;
-  if (req.alignment != 0) {
-    if (req.alignment % allocation_granularity != 0) return {nullptr, 0, Error::InvalidArg};
-    alignment = req.alignment;
-  }
+  std::uint64_t alignment = (req.alignment == 0) ? allocation_granularity : req.alignment;
+  // TODO: false, new idea: uintptr_t aligned = ((uintptr_t)addr + alignment - 1) & ~(alignment - 1); or with params
+  // windows garantiert 64KB alignment; also muss ich das nicht ueberpruefen; Flag::FixedAddr
+  if (alignment < allocation_granularity) return {nullptr, 0, Error::InvalidArg};
+  if (alignment % allocation_granularity != 0) return {nullptr, 0, Error::InvalidArg};
 
   if (req.preferred_addr != nullptr) {
     auto addr = reinterpret_cast<std::uintptr_t>(req.preferred_addr);
@@ -211,7 +213,7 @@ resp.err= Error::Ok;
 
 [[nodiscard]] ReleaseResponse noyxcore::memory::vas::release_memory(const ReleaseRequest& req) noexcept {
 #if defined(NOYX_WINDOWS)
-  if (!VirtualFree(req.base, 0, MEM_RELEASE)) {
+  if (!VirtualFree(req.base, req.size, MEM_RELEASE)) {
     DWORD error = GetLastError();
     return {from_windows_error_(error)};
   }
@@ -236,12 +238,9 @@ resp.err= Error::Ok;
   }
 
   void* raw_addr = (req.base == nullptr)
-                     ? nullptr
-                     : static_cast<char*>(req.base) + req.offset;
+                           ? nullptr
+                           : static_cast<char*>(req.base) + req.offset;
 
-  if (reinterpret_cast<std::uintptr_t>(raw_addr) % page_size != 0 || req.size % page_size != 0) {
-    return {Error::InvalidArg};
-  }
 #if defined(NOYX_WINDOWS)
   // try to allocate large pages
   if (large_pages) {
@@ -249,13 +248,16 @@ resp.err= Error::Ok;
       /*TODO: spec func for HugePages*/
     }
   }
+  //TODO: addr and size must to be aligned to page_size
+  //TODO: error handling
+  //TODO: lazy/sobald commit flag?
 
   DWORD windows_flags = to_windows_flags_(req.alloc_flags);
   DWORD windows_prots = to_windows_prots_(req.protection);
 
   return commit_pages_windows_(
     req.size,
-    raw_addr,
+    const_cast<void*>(raw_addr),
     windows_flags,
     windows_prots,
     page_size
@@ -269,7 +271,7 @@ resp.err= Error::Ok;
   }
 #endif
   if (mprotect(raw_addr, req.size, PROT_READ | PROT_WRITE) != 0) {
-    return {from_unix_error_(errno)};
+    return { from_unix_error_(errno) };
   }
 
   char* begin = static_cast<char*>(raw_addr);
@@ -282,10 +284,10 @@ resp.err= Error::Ok;
 
   int prots = to_unix_prots_(req.protection);
   if (mprotect(raw_addr, req.size, prots) != 0) {
-    return {from_unix_error_(errno)};
+    return { from_unix_error_(errno) };
   }
 
-  return {Error::Ok};
+  return { Error::Ok };
 
 #endif
   //TODO: lazy/sobald commit flag?
@@ -299,8 +301,8 @@ resp.err= Error::Ok;
   void* addr = static_cast<char*>(req.base) + req.offset;
 
 #if defined(NOYX_WINDOWS)
-  BOOL result = VirtualFree(addr, req.size, MEM_DECOMMIT);
-  if (result == false) {
+  LPVOID result = VirtualAlloc(req.base, req.size, MEM_DECOMMIT, PAGE_READWRITE);
+  if (result == nullptr) {
     DWORD error = GetLastError();
     return {from_windows_error_(error)};
   }
