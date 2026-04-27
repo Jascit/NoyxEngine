@@ -4,7 +4,6 @@
  * @file     Logger.cpp
  * @brief     
  *
- * @author   Jascit (https://github.com/Jascit)
  * @date     25.03.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

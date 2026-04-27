@@ -4,7 +4,6 @@
  * @file     debug.h
  * @brief    Debug/Release detection and common attributes
  *
- * @author   Jascit (https://github.com/Jascit)
  * @date     07.01.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

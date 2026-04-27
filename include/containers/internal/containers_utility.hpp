@@ -4,7 +4,6 @@
  * @file     containers_utility.hpp
  * @brief    Internal utilities for containers and memory algorithms.
  *
- * @author   Jascit (https://github.com/Jascit)
  * @date     08.01.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

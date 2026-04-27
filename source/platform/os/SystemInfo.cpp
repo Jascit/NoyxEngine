@@ -4,7 +4,6 @@
  * @file    SystemInfo.cpp
  * @brief   
  *
- * @author  Jascit (https://github.com/Jascit)
  * @date    30.03.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

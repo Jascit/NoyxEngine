@@ -4,7 +4,6 @@
  * @file     StartMap.hpp
  * @brief     
  *
- * @author   MaksymRbkh (https://github.com/MaksymRbkh)
  * @date     16.01.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

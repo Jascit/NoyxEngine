@@ -4,7 +4,6 @@
  * @file     memory/allocators/traits.hpp
  * @brief    Traits for custom allocators and compile time helpers
  *
- * @author   Jascit (https://github.com/Jascit)
  * @date     07.01.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

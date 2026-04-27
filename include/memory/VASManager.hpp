@@ -4,7 +4,6 @@
  * @file    VASManager.hpp
  * @brief   Virtual Address Space Manager
  *
- * @author  Jascit (https://github.com/Jascit)
  * @date    2026-02-13
  *
  * @copyright
@@ -14,7 +13,8 @@
 #pragma once
 #include <cinttypes>
 #include <unordered_map>
-#include <hash_map>
+#include <map>
+#include <vector>
 
 #include "platform/debug.h"
 
@@ -59,8 +59,8 @@ namespace noyxcore::memory {
 
   private:
     //data
-    std::unordered_map<void*, region_handle> map_;
-    std::hash_map<region_handle, Region> free_map_;
+    std::map<void*, region_handle> map_;
+    std::unordered_map<region_handle, Region> free_map_;
 
     std::vector<region_handle> free_regions_;
     uint64_t current_region_;

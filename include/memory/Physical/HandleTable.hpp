@@ -4,7 +4,6 @@
  * @file     HandleTable.hpp
  * @brief     
  *
- * @author   MaksymRbkh (https://github.com/MaksymRbkh)
  * @date     17.02.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

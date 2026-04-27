@@ -4,7 +4,6 @@
  * @file     TFlatHashMap.hpp
  * @brief     
  *
- * @author   Jascit (https://github.com/Jascit)
  * @date     09.01.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

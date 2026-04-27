@@ -4,7 +4,6 @@
  * @file     containers_traits.hpp
  * @brief    Internal type traits for containers and memory algorithms.
  *
- * @author   Jascit (https://github.com/Jascit)
  * @date     08.01.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

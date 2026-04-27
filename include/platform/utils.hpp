@@ -4,7 +4,6 @@
  * @file     util.hpp
  * @brief    Small utilities: pause, likely/unlikely, location macro
  *
- * @author   Jascit (https://github.com/Jascit)
  * @date     07.01.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors

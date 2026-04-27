@@ -4,7 +4,6 @@
  * @file     XXH64.hpp
  * @brief     
  *
- * @author   Jascit (https://github.com/Jascit)
  * @date     03.02.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors
