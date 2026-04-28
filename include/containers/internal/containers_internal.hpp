@@ -31,13 +31,13 @@ namespace noyxcore::containers::internal {
     using pointer = typename allocator_traits::pointer;
     using raw_pointer = decltype(std::to_address(std::declval<pointer>()));
     static_assert(std::is_same_v<pointer, raw_pointer>, "ConstructionHelper doesn't support fancy pointers");
-    constexpr ConstructionHelper(Alloc& alloc, pointer dest) noexcept : alloc_(alloc), current_(dest), first_(dest) {};
+    constexpr ConstructionHelper(Alloc& alloc, pointer dest) noexcept : m_alloc(alloc), m_current(dest), m_first(dest) {};
 
     constexpr ~ConstructionHelper() {
       if constexpr (!std::is_trivially_destructible_v<value_type>) {
-        for (raw_pointer it = first_; it < current_; ++it) {
+        for (raw_pointer it = m_first; it < m_current; ++it) {
           if constexpr (memory::allocators::has_destroy_v<Alloc, pointer>) {
-            alloc_.get().destroy(it);
+            m_alloc.get().destroy(it);
           } else {
             std::destroy_at(it);
           }
@@ -46,42 +46,42 @@ namespace noyxcore::containers::internal {
     };
 
     template<typename... Args>
-    constexpr void constructOne(Args&&... args) noexcept(std::is_nothrow_constructible_v<value_type, Args...>) {
+    constexpr void construct_one(Args&&... args) noexcept(std::is_nothrow_constructible_v<value_type, Args...>) {
       if constexpr (memory::allocators::has_construct_v<Alloc, pointer>) {
-        alloc_.get().construct(current_, std::forward<Args>(args)...);
+        m_alloc.get().construct(m_current, std::forward<Args>(args)...);
       } else {
-        std::construct_at(current_, std::forward<Args>(args)...);
+        std::construct_at(m_current, std::forward<Args>(args)...);
       }
-      ++current_;
+      ++m_current;
     };
 
-    constexpr void release() noexcept { first_ = current_; };
+    constexpr void release() noexcept { m_first = m_current; };
 
-    constexpr pointer current() const noexcept { return current_; };
+    constexpr pointer current() const noexcept { return m_current; };
 
   private:
-    std::reference_wrapper<Alloc> alloc_;
-    pointer first_;
-    pointer current_;
+    std::reference_wrapper<Alloc> m_alloc;
+    pointer m_first;
+    pointer m_current;
   };
 
   template<typename T>
     class CleanupGuard {
   public:
-    CleanupGuard(T* obj) : obj_(obj) {};
+    CleanupGuard(T* obj) : m_obj(obj) {};
 
     ~CleanupGuard() {
-      if (obj_) {
-        obj_->cleanup_();
+      if (m_obj) {
+        m_obj->cleanup_();
       }
     };
 
     void release() {
-      obj_ = nullptr;
+      m_obj = nullptr;
     };
 
   private:
-    T* obj_;
+    T* m_obj;
   };
 
   template<typename T, typename Alloc>
@@ -90,19 +90,19 @@ namespace noyxcore::containers::internal {
     using pointer = typename traits::pointer;
     using size_type = typename traits::size_type;
 
-    pointer ptr_;
-    size_type n_;
-    Alloc& alloc_;
+    pointer m_ptr;
+    size_type m_n;
+    Alloc& m_alloc;
 
     constexpr AllocationGuard(pointer p, size_type n, Alloc& a)
-      : ptr_(p), n_(n), alloc_(a) {}
+      : m_ptr(p), m_n(n), m_alloc(a) {}
 
     ~AllocationGuard() {
-      if (ptr_) {
-        traits::deallocate(alloc_, ptr_, n_);
+      if (m_ptr) {
+        traits::deallocate(m_alloc, m_ptr, m_n);
       }
     }
-    void release() { ptr_ = nullptr; }
+    void release() { m_ptr = nullptr; }
   };
 
 

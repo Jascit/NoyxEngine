@@ -19,12 +19,12 @@ NOYX_TEST(tstaticarray_basic_int, unit_test) {
   NOYX_ASSERT_TRUE(a.empty());
   NOYX_ASSERT_EQ(a.size(), (TStaticArray<int, 8>::size_type)0);
 
-  a.pushBack(10);
-  a.pushBack(20);
+  a.push_back(10);
+  a.push_back(20);
 
   NOYX_ASSERT_EQ(a.size(), (TStaticArray<int, 8>::size_type)2);
 
-  auto p = a.data();
+  auto *p = a.data();
   NOYX_ASSERT_TRUE(p != nullptr);
 
   NOYX_ASSERT_EQ(a[(TStaticArray<int, 8>::size_type)0], 10);
@@ -38,8 +38,8 @@ NOYX_TEST(tstaticarray_basic_int, unit_test) {
 NOYX_TEST(tstaticarray_move_only, unit_test) {
   using UP = std::unique_ptr<int>;
   TStaticArray<UP, 3> arr;
-  arr.pushBack(std::make_unique<int>(5));
-  arr.pushBack(std::make_unique<int>(7));
+  arr.push_back(std::make_unique<int>(5));
+  arr.push_back(std::make_unique<int>(7));
 
   NOYX_ASSERT_EQ(arr.size(), (TStaticArray<UP, 3>::size_type)2);
   NOYX_ASSERT_TRUE(arr[(TStaticArray<UP, 3>::size_type)0] && *arr[(TStaticArray<UP, 3>::size_type)0] == 5);
@@ -52,28 +52,28 @@ struct Count {
   Count(const Count&) { ++constructed; }
   Count(Count&&) noexcept { ++constructed; }
   ~Count() { ++destroyed; }
-  int v = 0;
+  int m_v = 0;
 };
 
 NOYX_TEST(tstaticarray_raii, unit_test) {
-  int& C = Count::constructed;
-  int& D = Count::destroyed;
-  C = 0; D = 0;
+  int& c = Count::constructed;
+  int& d = Count::destroyed;
+  c = 0; d = 0;
 
   {
     TStaticArray<Count, 5> arr;
-    arr.emplaceBack();
-    arr.emplaceBack();
-    NOYX_ASSERT_EQ(C, 2);
+    arr.emplace_back();
+    arr.emplace_back();
+    NOYX_ASSERT_EQ(c, 2);
     NOYX_ASSERT_EQ(arr.size(), (TStaticArray<Count, 5>::size_type)2);
   }
 
-  NOYX_ASSERT_EQ(D, 2);
+  NOYX_ASSERT_EQ(d, 2);
 }
 
 NOYX_TEST(tstaticarray_data_vs_index, unit_test) {
   TStaticArray<int, 4> a;
-  for (int i = 0; i < 4; ++i) a.pushBack(i * 11);
+  for (int i = 0; i < 4; ++i) a.push_back(i * 11);
   NOYX_ASSERT_EQ(a.size(), (TStaticArray<int, 4>::size_type)4);
 
   int* d = a.data();
@@ -84,16 +84,16 @@ NOYX_TEST(tstaticarray_data_vs_index, unit_test) {
 }
 
 NOYX_TEST(tstaticarray_heavy_compute, perf_test) {
-  constexpr size_t Iterations = 5'000'000;
+  constexpr size_t ITERATIONS = 5'000'000;
 
   TStaticArray<int, 64> arr;
   for (int i = 0; i < 64; ++i) {
-    arr.pushBack(i + 1);
+    arr.push_back(i + 1);
   }
 
   volatile long long sink = 0;
 
-  for (size_t it = 0; it < Iterations; ++it) {
+  for (size_t it = 0; it < ITERATIONS; ++it) {
     for (size_t i = 0; i < arr.size(); ++i) {
       sink += arr[i] * (int)(i + 1);
     }

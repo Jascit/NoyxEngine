@@ -18,6 +18,9 @@
 #include <algorithm>
 #include <stdexcept>
 
+#pragma warning(push)
+#pragma warning(disable:4702)
+
 namespace noyxcore::containers {
   template<typename T, typename Alloc = std::allocator<T>>
   class THeapArray {
@@ -38,90 +41,90 @@ namespace noyxcore::containers {
     friend allocation_guard;
 
     struct Storage {
-      pointer first_;
-      pointer last_;
+      pointer m_first;
+      pointer m_last;
     };
 
     constexpr THeapArray(const allocator_type& alloc = allocator_type())
-      : storage_{nullptr, nullptr}
-        , capacity_(0)
-        , alloc_(alloc) {};
+      : m_storage{nullptr, nullptr}
+        , m_capacity(0)
+        , m_alloc(alloc) {};
 
     constexpr THeapArray(std::initializer_list<value_type> list, const allocator_type& alloc = allocator_type())
       : THeapArray(alloc) {
       size_type n = list.size();
       if (n > 0) {
-        pointer new_mem_ = alloc_.allocate(n);
-        allocation_guard guard(new_mem_, n, alloc_);
-        internal::uninitialized_copy(list.begin(), list.end(), new_mem_, alloc_);
+        pointer new_mem = m_alloc.allocate(n);
+        allocation_guard guard(new_mem, n, m_alloc);
+        internal::uninitialized_copy(list.begin(), list.end(), new_mem, m_alloc);
         guard.release();
 
-        storage_.first_ = new_mem_;
-        storage_.last_ = new_mem_ + n;
-        capacity_ = n;
+        m_storage.m_first = new_mem;
+        m_storage.m_last = new_mem + n;
+        m_capacity = n;
       }
     }
 
     explicit THeapArray(size_type n, const allocator_type& alloc = allocator_type())
-      : storage_{nullptr, nullptr}
-        , capacity_(n)
-        , alloc_(alloc) {
+      : m_storage{nullptr, nullptr}
+        , m_capacity(n)
+        , m_alloc(alloc) {
       if (n > 0) {
-        pointer new_mem_ = alloc_.allocate(n);
-        allocation_guard guard(new_mem_, n, alloc_);
-        internal::uninitialized_default_construct(new_mem_, new_mem_ + n, alloc_);
+        pointer new_mem = m_alloc.allocate(n);
+        allocation_guard guard(new_mem, n, m_alloc);
+        internal::uninitialized_default_construct(new_mem, new_mem + n, m_alloc);
         guard.release();
 
-        storage_.first_ = new_mem_;
-        storage_.last_ = new_mem_ + n;
+        m_storage.m_first = new_mem;
+        m_storage.m_last = new_mem + n;
       }
     }
 
     explicit THeapArray(size_type n, const_reference value, const allocator_type& alloc = allocator_type())
-      : storage_{nullptr, nullptr}
-        , capacity_(n)
-        , alloc_(alloc) {
+      : m_storage{nullptr, nullptr}
+        , m_capacity(n)
+        , m_alloc(alloc) {
       if (n > 0) {
-        pointer new_mem_ = alloc_.allocate(n);
-        allocation_guard guard(new_mem_, n, alloc_);
-        internal::uninitialized_fill_n(new_mem_, n, value, alloc_);
+        pointer new_mem = m_alloc.allocate(n);
+        allocation_guard guard(new_mem, n, m_alloc);
+        internal::uninitialized_fill_n(new_mem, n, value, m_alloc);
         guard.release();
 
-        storage_.first_ = new_mem_;
-        storage_.last_ = new_mem_ + n;
+        m_storage.m_first = new_mem;
+        m_storage.m_last = new_mem + n;
       }
     }
 
     constexpr THeapArray(const THeapArray& other)
-      : storage_{nullptr, nullptr}
-        , capacity_(other.capacity_)
-        , alloc_(traits::select_on_container_copy_construction(other.alloc_)) {
-      if (capacity_ > 0) {
-        pointer new_mem_ = alloc_.allocate(capacity_);
-        allocation_guard guard(new_mem_, capacity_, alloc_);
-        auto new_end_ = internal::uninitialized_copy(other.storage_.first_, other.storage_.last_, new_mem_, alloc_);
+      : m_storage{nullptr, nullptr}
+        , m_capacity(other.m_capacity)
+        , m_alloc(traits::select_on_container_copy_construction(other.m_alloc)) {
+      if (m_capacity > 0) {
+        pointer new_mem = m_alloc.allocate(m_capacity);
+        allocation_guard guard(new_mem, m_capacity, m_alloc);
+        auto new_end = internal::uninitialized_copy(other.m_storage.m_first, other.m_storage.m_last, new_mem, m_alloc);
         guard.release();
 
-        storage_.first_ = new_mem_;
-        storage_.last_ = new_end_;
+        m_storage.m_first = new_mem;
+        m_storage.m_last = new_end;
       }
     }
 
     constexpr THeapArray(THeapArray&& other) noexcept
-      : storage_{other.storage_.first_, other.storage_.last_}
-        , capacity_(other.capacity_)
-        , alloc_(std::move(other.alloc_)) {
-      other.storage_.first_ = nullptr;
-      other.storage_.last_ = nullptr;
-      other.capacity_ = 0;
+      : m_storage{other.m_storage.m_first, other.m_storage.m_last}
+        , m_capacity(other.m_capacity)
+        , m_alloc(std::move(other.m_alloc)) {
+      other.m_storage.m_first = nullptr;
+      other.m_storage.m_last = nullptr;
+      other.m_capacity = 0;
     }
 
     constexpr ~THeapArray() {
-      cleanup_();
+      cleanup();
     }
 
     constexpr THeapArray& operator=(std::initializer_list<value_type> list) {
-      THeapArray tmp(list, alloc_);
+      THeapArray tmp(list, m_alloc);
       *this = std::move(tmp);
       return *this;
     }
@@ -138,37 +141,37 @@ namespace noyxcore::containers {
     // Copy Assignment
     constexpr THeapArray& operator=(const THeapArray& other) {
       if (this == &other) return *this;
-      auto& my_alloc_ = alloc_;
-      const auto& other_alloc_ = other.alloc_;
+      auto& my_alloc = m_alloc;
+      const auto& other_alloc = other.m_alloc;
 
       constexpr bool POCCA = traits::propagate_on_container_copy_assignment::value;
       if constexpr (POCCA) {
-        if (alloc_ != other_alloc_) {
-          cleanup_();
-          alloc_ = other_alloc_;
+        if (m_alloc != other_alloc) {
+          cleanup();
+          m_alloc = other_alloc;
         }
       }
 
-      if (capacity_ < other.size()) {
-        pointer new_mem_ = alloc_.allocate(other.size());
+      if (m_capacity < other.size()) {
+        pointer new_mem = m_alloc.allocate(other.size());
 
-        allocation_guard guard(new_mem_, other.size(), alloc_);
-        internal::uninitialized_copy_n(other.storage_.first_, other.size(), new_mem_, alloc_);
+        allocation_guard guard(new_mem, other.size(), m_alloc);
+        internal::uninitialized_copy_n(other.m_storage.m_first, other.size(), new_mem, m_alloc);
         guard.release();
-        cleanup_();
+        cleanup();
 
-        storage_.first_ = new_mem_;
-        storage_.last_ = new_mem_ + other.size();
-        capacity_ = other.size();
+        m_storage.m_first = new_mem;
+        m_storage.m_last = new_mem + other.size();
+        m_capacity = other.size();
       } else {
         if (other.size() > size()) {
-          std::copy(other.storage_.first_, other.storage_.first_ + size(), storage_.first_);
-          internal::uninitialized_copy_n(other.storage_.first_ + size(), other.size() - size(), storage_.last_, alloc_);
+          std::copy(other.m_storage.m_first, other.m_storage.m_first + size(), m_storage.m_first);
+          internal::uninitialized_copy_n(other.m_storage.m_first + size(), other.size() - size(), m_storage.m_last, m_alloc);
         } else {
-          std::copy(other.storage_.first_, other.storage_.first_ + other.size(), storage_.first_);
-          destroy_range_(storage_.first_ + other.size(), storage_.last_);
+          std::copy(other.m_storage.m_first, other.m_storage.m_first + other.size(), m_storage.m_first);
+          destroy_range(m_storage.m_first + other.size(), m_storage.m_last);
         }
-        storage_.last_ = storage_.first_ + other.size();
+        m_storage.m_last = m_storage.m_first + other.size();
       }
       return *this;
     }
@@ -176,59 +179,59 @@ namespace noyxcore::containers {
     // Move Assignment
     constexpr THeapArray& operator=(THeapArray&& other) noexcept {
       if (&other == this) return *this;
-      auto& my_alloc_ = alloc_;
-      auto& other_alloc_ = other.alloc_;
+      auto& my_alloc = m_alloc;
+      auto& other_alloc = other.m_alloc;
       constexpr bool POCMA = traits::propagate_on_container_move_assignment::value;
 
       if constexpr (POCMA) {
-        cleanup_();
-        alloc_ = std::move(other_alloc_);
-        steal_from_(other);
+        cleanup();
+        m_alloc = std::move(other_alloc);
+        steal_from(other);
         return *this;
       } else if constexpr (traits::is_always_equal::value) {
-        cleanup_();
-        steal_from_(other);
+        cleanup();
+        steal_from(other);
         return *this;
-      } else if (my_alloc_ == other_alloc_) {
-        cleanup_();
-        steal_from_(other);
+      } else if (my_alloc == other_alloc) {
+        cleanup();
+        steal_from(other);
         return *this;
       }
       //POCMA = false && Allocators are not equal.
-      if (capacity_ < other.size()) {
-        pointer new_mem_ = alloc_.allocate(other.size());
-        allocation_guard guard(new_mem_, other.size(), alloc_);
-        internal::uninitialized_move_n(other.storage_.first_, other.size(), new_mem_, alloc_);
+      if (m_capacity < other.size()) {
+        pointer new_mem = m_alloc.allocate(other.size());
+        allocation_guard guard(new_mem, other.size(), m_alloc);
+        internal::uninitialized_move_n(other.m_storage.m_first, other.size(), new_mem, m_alloc);
         guard.release();
-        cleanup_();
+        cleanup();
 
-        storage_.first_ = new_mem_;
-        storage_.last_ = new_mem_ + other.size();
-        capacity_ = other.size();
+        m_storage.m_first = new_mem;
+        m_storage.m_last = new_mem + other.size();
+        m_capacity = other.size();
       } else {
         if (other.size() > size()) {
-          std::move(other.storage_.first_, other.storage_.first_ + size(), storage_.first_);
-          internal::uninitialized_move_n(other.storage_.first_ + size(), other.size() - size(), storage_.last_, alloc_);
+          std::move(other.m_storage.m_first, other.m_storage.m_first + size(), m_storage.m_first);
+          internal::uninitialized_move_n(other.m_storage.m_first + size(), other.size() - size(), m_storage.m_last, m_alloc);
         } else {
-          std::move(other.storage_.first_, other.storage_.last_, storage_.first_);
-          destroy_range_(storage_.first_ + other.size(), storage_.last_);
+          std::move(other.m_storage.m_first, other.m_storage.m_last, m_storage.m_first);
+          destroy_range(m_storage.m_first + other.size(), m_storage.m_last);
         }
-        storage_.last_ = storage_.first_ + other.size();
+        m_storage.m_last = m_storage.m_first + other.size();
       }
 
-      other.storage_.last_ = other.storage_.first_;
+      other.m_storage.m_last = other.m_storage.m_first;
       return *this;
     }
 
     constexpr void swap(THeapArray& other) noexcept {
       constexpr bool POCS = traits::propagate_on_container_swap::value;
       if constexpr (POCS) {
-        std::swap(alloc_, other.alloc_);
+        std::swap(m_alloc, other.m_alloc);
       } else {
-        NOYX_ASSERT_ABORT(alloc_ == other.alloc_, "Cannot swap containers with different allocators if POCS is false");
+        NOYX_ASSERT_ABORT(m_alloc == other.m_alloc, "Cannot swap containers with different allocators if POCS is false");
       }
-      std::swap(storage_, other.storage_);
-      std::swap(capacity_, other.capacity_);
+      std::swap(m_storage, other.m_storage);
+      std::swap(m_capacity, other.m_capacity);
     }
 
     friend constexpr void swap(THeapArray& lhs, THeapArray& rhs) noexcept {
@@ -238,73 +241,73 @@ namespace noyxcore::containers {
     // Element access
     constexpr reference operator[](size_type index) noexcept {
       NOYX_ASSERT_ABORT(index < size(), "Index out of range");
-      return storage_.first_[index];
+      return m_storage.m_first[index];
     }
 
     constexpr const_reference operator[](size_type index) const noexcept {
       NOYX_ASSERT_ABORT(index < size(), "Index out of range");
-      return storage_.first_[index];
+      return m_storage.m_first[index];
     }
 
     constexpr reference at(size_type index) {
       if (index >= size()) {
         throw std::out_of_range("Index out of range");
       }
-      return storage_.first_[index];
+      return m_storage.m_first[index];
     }
 
     constexpr const_reference at(size_type index) const {
       if (index >= size()) {
         throw std::out_of_range("Index out of range");
       }
-      return storage_.first_[index];
+      return m_storage.m_first[index];
     }
 
     constexpr reference front() noexcept {
       NOYX_ASSERT_ABORT(!empty(), "Array is empty");
-      return *storage_.first_;
+      return *m_storage.m_first;
     }
 
     constexpr const_reference front() const noexcept {
       NOYX_ASSERT_ABORT(!empty(), "Array is empty");
-      return *storage_.first_;
+      return *m_storage.m_first;
     }
 
     constexpr reference back() noexcept {
       NOYX_ASSERT_ABORT(!empty(), "Array is empty");
-      return *(storage_.last_ - 1);
+      return *(m_storage.m_last - 1);
     }
 
     constexpr const_reference back() const noexcept {
       NOYX_ASSERT_ABORT(!empty(), "Array is empty");
-      return *(storage_.last_ - 1);
+      return *(m_storage.m_last - 1);
     }
 
     constexpr size_type size() const noexcept {
-      return static_cast<size_type>(storage_.last_ - storage_.first_);
+      return static_cast<size_type>(m_storage.m_last - m_storage.m_first);
     }
 
     constexpr size_type capacity() const noexcept {
-      return capacity_;
+      return m_capacity;
     }
 
     [[nodiscard]] constexpr bool empty() const noexcept { return this->begin() == this->end(); }
     constexpr pointer data() noexcept { return this->begin(); }
     constexpr const_pointer data() const noexcept { return this->begin(); }
-    constexpr allocator_type get_allocator() const noexcept { return this->alloc_; }
+    constexpr allocator_type get_allocator() const noexcept { return this->m_alloc; }
 
 
     // Iterators
-    constexpr iterator begin() noexcept { return storage_.first_; }
-    constexpr const_iterator begin() const noexcept { return storage_.first_; }
-    constexpr iterator end() noexcept { return storage_.last_; }
-    constexpr const_iterator end() const noexcept { return storage_.last_; }
+    constexpr iterator begin() noexcept { return m_storage.m_first; }
+    constexpr const_iterator begin() const noexcept { return m_storage.m_first; }
+    constexpr iterator end() noexcept { return m_storage.m_last; }
+    constexpr const_iterator end() const noexcept { return m_storage.m_last; }
     constexpr reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
     constexpr const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
     constexpr reverse_iterator rend() noexcept { return reverse_iterator(begin()); }
     constexpr const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
-    constexpr const_iterator cbegin() const noexcept { return storage_.first_; }
-    constexpr const_iterator cend() const noexcept { return storage_.last_; }
+    constexpr const_iterator cbegin() const noexcept { return m_storage.m_first; }
+    constexpr const_iterator cend() const noexcept { return m_storage.m_last; }
     constexpr const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(rbegin()); }
     constexpr const_reverse_iterator crend() const noexcept { return const_reverse_iterator(rend()); }
 
@@ -312,67 +315,67 @@ namespace noyxcore::containers {
     // Modifiers
     constexpr iterator erase(const_iterator pos) {
       size_type index = pos - cbegin();
-      pointer p = storage_.first_ + index;
-      std::move(p + 1, storage_.last_, p);
-      traits::destroy(alloc_, storage_.last_ - 1);
-      --storage_.last_;
+      pointer p = m_storage.m_first + index;
+      std::move(p + 1, m_storage.m_last, p);
+      traits::destroy(m_alloc, m_storage.m_last - 1);
+      --m_storage.m_last;
       return make_iter(p);
     }
 
     constexpr iterator erase(const_iterator first, const_iterator last) {
       NOYX_ASSERT_ABORT(first <= last, "vector::erase(first, last) called with invalid range");
       if (first == last) {
-        return iterator(storage_.first_ + (first - cbegin()));
+        return iterator(m_storage.m_first + (first - cbegin()));
       }
       size_type index_first = first - cbegin();
-      pointer p_first = storage_.first_ + index_first;
+      pointer p_first = m_storage.m_first + index_first;
       size_type index_last = last - cbegin();
-      pointer p_last = storage_.first_ + index_last;
+      pointer p_last = m_storage.m_first + index_last;
 
-      pointer new_end = std::move(p_last, storage_.last_, p_first);
-      destroy_range_(new_end, storage_.last_);
-      storage_.last_ = new_end;
+      pointer new_end = std::move(p_last, m_storage.m_last, p_first);
+      destroy_range(new_end, m_storage.m_last);
+      m_storage.m_last = new_end;
       return make_iter(p_first);
     }
 
     constexpr iterator insert(const_iterator pos, const_reference value) {
       size_type index = pos - cbegin();
-      if (size() == capacity_) {
-        reserve(capacity_ == 0 ? 1 : capacity_ * 2);
+      if (size() == m_capacity) {
+        reserve(m_capacity == 0 ? 1 : m_capacity * 2);
       }
-      pointer p = storage_.first_ + index;
-      if (p == storage_.last_) {
+      pointer p = m_storage.m_first + index;
+      if (p == m_storage.m_last) {
         push_back(value);
       } else {
-        traits::construct(alloc_, storage_.last_, std::move(*(storage_.last_ - 1)));
-        std::move_backward(p, storage_.last_ - 1, storage_.last_);
+        traits::construct(m_alloc, m_storage.m_last, std::move(*(m_storage.m_last - 1)));
+        std::move_backward(p, m_storage.m_last - 1, m_storage.m_last);
         *p = value;
-        ++storage_.last_;
+        ++m_storage.m_last;
       }
       return make_iter(p);
     }
 
     constexpr void assign(size_type n, const_reference value) {
-      if (n <= capacity_) {
+      if (n <= m_capacity) {
         if (n <= size()) {
           std::fill_n(begin(), n, value);
-          destroy_range_(storage_.first_ + n, storage_.last_);
+          destroy_range(m_storage.m_first + n, m_storage.m_last);
         } else {
           std::fill(begin(), end(), value);
-          internal::uninitialized_fill_n(storage_.last_, n - size(), value, alloc_);
+          internal::uninitialized_fill_n(m_storage.m_last, n - size(), value, m_alloc);
         }
-        storage_.last_ = storage_.first_ + n;
+        m_storage.m_last = m_storage.m_first + n;
       } else {
-        pointer new_mem_ = alloc_.allocate(n);
+        pointer new_mem = m_alloc.allocate(n);
 
-        allocation_guard guard(new_mem_, n, alloc_);
-        internal::uninitialized_fill_n(new_mem_, n, value, alloc_);
+        allocation_guard guard(new_mem, n, m_alloc);
+        internal::uninitialized_fill_n(new_mem, n, value, m_alloc);
         guard.release();
-        cleanup_();
+        cleanup();
 
-        storage_.first_ = new_mem_;
-        storage_.last_ = new_mem_ + n;
-        capacity_ = n;
+        m_storage.m_first = new_mem;
+        m_storage.m_last = new_mem + n;
+        m_capacity = n;
       }
     }
 
@@ -387,121 +390,123 @@ namespace noyxcore::containers {
     template<class... Args>
     constexpr iterator emplace(const_iterator pos, Args&&... args) {
       size_type index = pos - cbegin();
-      if (size() == capacity_) {
-        reserve(capacity_ == 0 ? 1 : capacity_ * 2);
+      if (size() == m_capacity) {
+        reserve(m_capacity == 0 ? 1 : m_capacity * 2);
       }
-      pointer p = storage_.first_ + index;
-      if (p == storage_.last_) {
+      pointer p = m_storage.m_first + index;
+      if (p == m_storage.m_last) {
         emplace_back(std::forward<Args>(args)...);
       } else {
-        traits::construct(alloc_, storage_.last_, std::move(*(storage_.last_ - 1)));
-        std::move_backward(p, storage_.last_ - 1, storage_.last_);
-        traits::destroy(alloc_, p);
-        traits::construct(alloc_, p, std::forward<Args>(args)...);
-        ++storage_.last_;
+        traits::construct(m_alloc, m_storage.m_last, std::move(*(m_storage.m_last - 1)));
+        std::move_backward(p, m_storage.m_last - 1, m_storage.m_last);
+        traits::destroy(m_alloc, p);
+        traits::construct(m_alloc, p, std::forward<Args>(args)...);
+        ++m_storage.m_last;
       }
       return make_iter(p);
     }
 
     template<class... Args>
     constexpr void emplace_back(Args&&... args) {
-      if (size() == capacity_) {
-        reserve(capacity_ == 0 ? 1 : capacity_ * 2);
+      if (size() == m_capacity) {
+        reserve(m_capacity == 0 ? 1 : m_capacity * 2);
       }
-      traits::construct(alloc_, storage_.last_, std::forward<Args>(args)...);
-      ++storage_.last_;
+      traits::construct(m_alloc, m_storage.m_last, std::forward<Args>(args)...);
+      ++m_storage.m_last;
     }
 
     constexpr void pop_back() {
       NOYX_ASSERT_ABORT(!empty(), "Array is empty");
-      --storage_.last_;
-      traits::destroy(alloc_, storage_.last_);
+      --m_storage.m_last;
+      traits::destroy(m_alloc, m_storage.m_last);
     }
 
     constexpr void resize(size_type new_size) {
       if (new_size < size()) {
-        destroy_range_(storage_.first_ + new_size, storage_.last_);
-        storage_.last_ = storage_.first_ + new_size;
+        destroy_range(m_storage.m_first + new_size, m_storage.m_last);
+        m_storage.m_last = m_storage.m_first + new_size;
       } else if (new_size > size()) {
         size_type count = new_size - size();
-        if (new_size > capacity_) {
-          pointer new_mem_ = alloc_.allocate(new_size);
-          allocation_guard guard(new_mem_, new_size, alloc_);
+        if (new_size > m_capacity) {
+          pointer new_mem = m_alloc.allocate(new_size);
+          allocation_guard guard(new_mem, new_size, m_alloc);
 
-          internal::uninitialized_move_n(storage_.first_, size(), new_mem_, alloc_);
-          internal::uninitialized_default_construct(new_mem_ + size(), new_mem_ + size() + count, alloc_);
+          internal::uninitialized_move_n(m_storage.m_first, size(), new_mem, m_alloc);
+          internal::uninitialized_default_construct(new_mem + size(), new_mem + size() + count, m_alloc);
           guard.release();
-          cleanup_();
+          cleanup();
 
-          storage_.first_ = new_mem_;
-          storage_.last_ = new_mem_ + new_size;
-          capacity_ = new_size;
+          m_storage.m_first = new_mem;
+          m_storage.m_last = new_mem + new_size;
+          m_capacity = new_size;
         } else {
-          internal::uninitialized_default_construct(storage_.first_ + size(), storage_.last_ + count, alloc_);
-          storage_.last_ = storage_.first_ + new_size;
+          internal::uninitialized_default_construct(m_storage.m_first + size(), m_storage.m_last + count, m_alloc);
+          m_storage.m_last = m_storage.m_first + new_size;
         }
       }
     }
 
-    void reserve(size_type new_capacity_) {
-      if (new_capacity_ <= capacity_) return;
+    void reserve(size_type new_capacity) {
+      if (new_capacity <= m_capacity) return;
 
-      pointer new_mem_ = alloc_.allocate(new_capacity_);
-      size_type my_size_ = size();
+      pointer new_mem = m_alloc.allocate(new_capacity);
+      size_type my_size = size();
 
-      allocation_guard guard(new_mem_, new_capacity_, alloc_);
-      internal::uninitialized_move_n(storage_.first_, my_size_, new_mem_, alloc_);
+      allocation_guard guard(new_mem, new_capacity, m_alloc);
+      internal::uninitialized_move_n(m_storage.m_first, my_size, new_mem, m_alloc);
       guard.release();
-      cleanup_();
+      cleanup();
 
-      storage_.first_ = new_mem_;
-      storage_.last_ = new_mem_ + my_size_;
-      capacity_ = new_capacity_;
+      m_storage.m_first = new_mem;
+      m_storage.m_last = new_mem + my_size;
+      m_capacity = new_capacity;
     }
 
     constexpr void shrink_to_fit() {
-      if (capacity_ > size()) {
+      if (m_capacity > size()) {
         THeapArray temp(*this);
         swap(temp);
       }
     }
 
     constexpr void clear() {
-      destroy_range_(storage_.first_, storage_.last_);
-      storage_.last_ = storage_.first_;
+      destroy_range(m_storage.m_first, m_storage.m_last);
+      m_storage.m_last = m_storage.m_first;
     }
 
   private:
-    constexpr void destroy_range_(pointer first, pointer last) noexcept {
+    constexpr void destroy_range(pointer first, pointer last) noexcept {
       for (; first != last; ++first) {
-        traits::destroy(alloc_, first);
+        traits::destroy(m_alloc, first);
       }
     }
 
-    constexpr void steal_from_(THeapArray& other) {
-      storage_ = other.storage_;
-      capacity_ = std::exchange(other.capacity_, 0);
-      other.storage_ = {nullptr, nullptr};
+    constexpr void steal_from(THeapArray& other) {
+      m_storage = other.m_storage;
+      m_capacity = std::exchange(other.m_capacity, 0);
+      other.m_storage = {nullptr, nullptr};
     }
 
-    constexpr void cleanup_() {
+    constexpr void cleanup() {
       if (!empty()) {
-        destroy_range_(storage_.first_, storage_.last_);
+        destroy_range(m_storage.m_first, m_storage.m_last);
       }
-      if (storage_.first_ != nullptr) {
-        alloc_.deallocate(storage_.first_, capacity_);
+      if (m_storage.m_first != nullptr) {
+        m_alloc.deallocate(m_storage.m_first, m_capacity);
       }
-      storage_.first_ = nullptr;
-      storage_.last_ = nullptr;
-      capacity_ = 0;
+      m_storage.m_first = nullptr;
+      m_storage.m_last = nullptr;
+      m_capacity = 0;
     }
 
     constexpr iterator make_iter(pointer p) noexcept { return iterator(p); }
     constexpr const_iterator make_iter(const_pointer p) noexcept { return const_iterator(p); }
 
   private:
-    Storage storage_;
-    size_type capacity_;
-    allocator_type alloc_;
+    Storage m_storage;
+    size_type m_capacity;
+    allocator_type m_alloc;
   };
-}
+} // namespace noyxcore::containers
+
+#pragma warning(pop)

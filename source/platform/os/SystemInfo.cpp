@@ -127,17 +127,17 @@ void details::get_memory_info(uint64_t& used_memory,
                               uint64_t& total_swap,
                               uint64_t& free_swap) noexcept {
 #ifdef NOYX_WINDOWS
-  MEMORYSTATUSEX memInfo;
-  memInfo.dwLength = sizeof(memInfo);
+  MEMORYSTATUSEX mem_info;
+  mem_info.dwLength = sizeof(mem_info);
 
-  GlobalMemoryStatusEx(&memInfo);
+  GlobalMemoryStatusEx(&mem_info);
 
-  DWORDLONG total_phys = memInfo.ullTotalPageFile;
-  available_memory = memInfo.ullAvailPhys;
+  DWORDLONG total_phys = mem_info.ullTotalPageFile;
+  available_memory = mem_info.ullAvailPhys;
   used_memory = total_phys - available_memory;
 
-  total_swap = memInfo.ullTotalPageFile;
-  free_swap = memInfo.ullAvailPageFile;
+  total_swap = mem_info.ullTotalPageFile;
+  free_swap = mem_info.ullAvailPageFile;
 #elifdef NOYX_LINUX
   using field_name = std::string;
   using data = std::uint64_t;

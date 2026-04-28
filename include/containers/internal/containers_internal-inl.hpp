@@ -14,6 +14,9 @@
 
 #include "containers_utility.hpp"
 
+#pragma warning(push)
+#pragma warning(disable:4702)
+
 namespace noyxcore::containers::internal {
   template<typename Alloc, typename FwdIt>
   constexpr alloc_raw_ptr_t<Alloc> uninitialized_fill_n(FwdIt first, size_t count, const alloc_val_t<Alloc> &val,
@@ -45,7 +48,7 @@ namespace noyxcore::containers::internal {
     iter_ptr_t<FwdIt> raw_end = raw_first + count;
     ConstructionHelper<Alloc> constructor(alloc, raw_first);
     for (iter_ptr_t<FwdIt> it = raw_first; it < raw_end; ++it) {
-      constructor.constructOne(val);
+      constructor.construct_one(val);
     }
     constructor.release();
     return constructor.current();
@@ -73,7 +76,7 @@ namespace noyxcore::containers::internal {
     iter_ptr_t<FwdIt> raw_end = raw_first + count;
     ConstructionHelper<Alloc> constructor(alloc, dest);
     for (iter_ptr_t<FwdIt> it = raw_first; it < raw_end; ++it) {
-      constructor.constructOne(*it);
+      constructor.construct_one(*it);
     }
     constructor.release();
     return constructor.current();
@@ -101,7 +104,7 @@ namespace noyxcore::containers::internal {
     iter_ptr_t<FwdIt> raw_end = raw_first + count;
     ConstructionHelper<Alloc> constructor(alloc, dest);
     for (iter_ptr_t<FwdIt> it = raw_first; it < raw_end; ++it) {
-      constructor.constructOne(std::move(*it));
+      constructor.construct_one(std::move(*it));
     }
     constructor.release();
     return constructor.current();
@@ -131,7 +134,7 @@ namespace noyxcore::containers::internal {
     iter_ptr_t<FwdIt> raw_end = std::to_address(last);
     ConstructionHelper<Alloc> constructor(alloc, dest);
     for (iter_ptr_t<FwdIt> it = raw_first; it < raw_end; ++it) {
-      constructor.constructOne(*it);
+      constructor.construct_one(*it);
     }
     constructor.release();
     return constructor.current();
@@ -161,7 +164,7 @@ namespace noyxcore::containers::internal {
     iter_ptr_t<FwdIt> raw_end = std::to_address(last);
     ConstructionHelper<Alloc> constructor(alloc, dest);
     for (iter_ptr_t<FwdIt> it = raw_first; it < raw_end; ++it) {
-      constructor.constructOne(std::move(*it));
+      constructor.construct_one(std::move(*it));
     }
     constructor.release();
     return constructor.current();
@@ -200,7 +203,7 @@ namespace noyxcore::containers::internal {
     iter_ptr_t<FwdIt> raw_last = std::to_address(last);
     ConstructionHelper<Alloc> constructor(alloc, raw_first);
     for (iter_ptr_t<FwdIt> it = raw_first; it < raw_last; ++it) {
-      constructor.constructOne(val);
+      constructor.construct_one(val);
     }
     constructor.release();
     return constructor.current();
@@ -228,7 +231,7 @@ namespace noyxcore::containers::internal {
     iter_ptr_t<FwdIt> raw_end = std::to_address(last);
     ConstructionHelper<Alloc> constructor(alloc, raw_first);
     for (iter_ptr_t<FwdIt> it = raw_first; it < raw_end; ++it) {
-      constructor.constructOne();
+      constructor.construct_one();
     }
     constructor.release();
     return constructor.current();
@@ -337,4 +340,6 @@ namespace noyxcore::containers::internal {
     }
     return raw_dest;
   }
-}
+} // namespace noyxcore::containers::internal
+
+#pragma warning(pop)

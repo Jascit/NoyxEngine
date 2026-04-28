@@ -24,7 +24,7 @@
 #  pragma message("ASAN: NOT enabled")
 #endif
 
-std::string format_time(long long nanoseconds) {
+static std::string format_time(long long nanoseconds) {
   double time = static_cast<double>(nanoseconds);
 
   struct Unit {
@@ -32,7 +32,7 @@ std::string format_time(long long nanoseconds) {
     double factor;
   };
 
-  static constexpr Unit units[] = {
+  static constexpr Unit UNITS[] = {
       Unit{"ns", 1000.0},
       Unit{"us", 1000.0},
       Unit{"ms", 1000.0},
@@ -43,39 +43,39 @@ std::string format_time(long long nanoseconds) {
 
   size_t idx = 0;
 
-  while (idx < 6 - 1 && time >= units[idx].factor) {
-    time /= units[idx].factor;
+  while (idx < 6 - 1 && time >= UNITS[idx].factor) {
+    time /= UNITS[idx].factor;
     ++idx;
   }
 
   char buffer[32];
   if (time < 10)
-    std::snprintf(buffer, sizeof(buffer), "%.3f %s", time, units[idx].name);
+    std::snprintf(buffer, sizeof(buffer), "%.3f %s", time, UNITS[idx].name);
   else if (time < 100)
-    std::snprintf(buffer, sizeof(buffer), "%.2f %s", time, units[idx].name);
+    std::snprintf(buffer, sizeof(buffer), "%.2f %s", time, UNITS[idx].name);
   else
-    std::snprintf(buffer, sizeof(buffer), "%.0f %s", time, units[idx].name);
+    std::snprintf(buffer, sizeof(buffer), "%.0f %s", time, UNITS[idx].name);
 
   return buffer;
 }
 
 int main() {
-  auto& registry = TestRegistry::instance().getRegistry();
+  auto& registry = TestRegistry::instance().get_registry();
 
   std::cout << "Running " << registry.size() << " tests:\n";
 
   for (auto& info : registry) {
-    std::cout << info.suiteName << "." << info.testName << " ... ";
+    std::cout << info.suite_name << "." << info.test_name << " ... ";
     auto start = std::chrono::steady_clock::now();
-    info.testFunc();
+    info.test_func();
     auto end = std::chrono::steady_clock::now();
 
     auto duration = end - start;
     double us = std::chrono::duration<double, std::nano>(duration).count();
-    std::string timeStr = format_time(us);
+    std::string time_str = format_time(us);
 
     if (!(info.flag & FAILED)) {
-      std::cout << "OK (" << timeStr << ")\n";
+      std::cout << "OK (" << time_str << ")\n";
       TestingSystem::instance()->success();
     } else {
       std::cout << "FAILED\n";
@@ -84,5 +84,5 @@ int main() {
     ++TestRegistry::instance();
   }
 
-  return (TestingSystem::instance()->GetFailedCount() == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+  return (TestingSystem::instance()->get_failed_count() == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }

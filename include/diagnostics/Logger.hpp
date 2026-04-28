@@ -15,59 +15,59 @@
 
 namespace noyxcore::diagnostics {
   enum LogLevel {
-    Info = 0,
-    Warning,
-    Error,
-    Fatal,
-    Trace,
-    Debug
+    INFO = 0,
+    WARNING,
+    ERROR,
+    FATAL,
+    TRACE,
+    DEBUG
   };
   namespace details {
-    constexpr const char* lookup_level_message[6] = {"[INFO] ", "[WARNING] ", "[ERROR] ", "[FATAL] ", "[TRACE] ", "[DEBUG] "};
-    constexpr uint32_t lookup_level_length[6] = {7, 10, 8, 8, 8, 8};
+    constexpr const char* LOOKUP_LEVEL_MESSAGE[6] = {"[INFO] ", "[WARNING] ", "[ERROR] ", "[FATAL] ", "[TRACE] ", "[DEBUG] "};
+    constexpr uint32_t LOOKUP_LEVEL_LENGTH[6] = {7, 10, 8, 8, 8, 8};
 
     class LogBuffer {
     public:
-      LogBuffer(uint64_t size) noexcept : log_buffer_(nullptr), write_index_(0), size_(size) {
-        log_buffer_ = new char[size];
+      LogBuffer(uint64_t size) noexcept : m_log_buffer(nullptr), m_write_index(0), m_size(size) {
+        m_log_buffer = new char[size];
       };
 
       ~LogBuffer() {
-        if (log_buffer_ != nullptr) {
-          delete[] log_buffer_;
+        if (m_log_buffer != nullptr) {
+          delete[] m_log_buffer;
         }
       }
 
       bool append(const char* msg, LogLevel level) {
         uint32_t msg_length = std::strlen(msg);
-        if (write_index_ + msg_length + lookup_level_length[level] > size_) {
+        if (m_write_index + msg_length + LOOKUP_LEVEL_LENGTH[level] > m_size) {
           return false;
         }
         append_loglevel_(level);
-        memcpy(&log_buffer_[write_index_], msg, msg_length);
-        write_index_ += msg_length;
-        log_buffer_[write_index_] = '\n';
-        log_buffer_[write_index_ + 1] = '\0';
-        write_index_++;
+        memcpy(&m_log_buffer[m_write_index], msg, msg_length);
+        m_write_index += msg_length;
+        m_log_buffer[m_write_index] = '\n';
+        m_log_buffer[m_write_index + 1] = '\0';
+        m_write_index++;
         return true;
       };
 
-      const char* cstr() const { return log_buffer_; };
+      const char* cstr() const { return m_log_buffer; };
 
     private:
       void append_loglevel_(LogLevel level) noexcept {
         uint32_t level_index = static_cast<uint32_t>(level);
-        uint32_t length = lookup_level_length[level_index];
-        memcpy(&log_buffer_[write_index_], lookup_level_message[level_index], length);
-        write_index_ += length;
+        uint32_t length = LOOKUP_LEVEL_LENGTH[level_index];
+        memcpy(&m_log_buffer[m_write_index], LOOKUP_LEVEL_MESSAGE[level_index], length);
+        m_write_index += length;
       };
 
     private:
-      char* log_buffer_;
-      uint64_t write_index_;
-      uint64_t size_;
+      char* m_log_buffer;
+      uint64_t m_write_index;
+      uint64_t m_size;
     };
-  }
+  } // namespace details
 
   class Logger {
   public:
@@ -76,7 +76,7 @@ namespace noyxcore::diagnostics {
     void flush() const;
 
   private:
-    std::filesystem::path log_file_path_;
-    details::LogBuffer log_buffer_;
+    std::filesystem::path m_log_file_path;
+    details::LogBuffer m_log_buffer;
   };
-}
+} // namespace noyxcore::diagnostics

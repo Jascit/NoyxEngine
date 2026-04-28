@@ -17,9 +17,9 @@ using namespace noyxcore::diagnostics;
 
 NOYX_TEST(logger_test, smoke_test) {
   Logger logger("log.txt");
-  NOYX_ASSERT_TRUE(logger.log("Error1", Info));
-  NOYX_ASSERT_TRUE(logger.log("Error2öä", Error));
-  NOYX_ASSERT_TRUE(logger.log("ssss", Warning));
-  NOYX_ASSERT_TRUE(logger.log("Message", Debug));
+  NOYX_ASSERT_TRUE(logger.log("Error1", INFO));
+  NOYX_ASSERT_TRUE(logger.log("Error2öä", ERROR));
+  NOYX_ASSERT_TRUE(logger.log("ssss", WARNING));
+  NOYX_ASSERT_TRUE(logger.log("Message", DEBUG));
   logger.flush();
 }

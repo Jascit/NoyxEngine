@@ -19,16 +19,16 @@
 #include <iostream>
 
 enum TEST_FLAG : bool {
-  SUCCESSED = 0,
+  SUCCEEDED = 0,
   FAILED = 1
 };
 
 using TestFunc = std::function<void()>;
 
 struct TestInfo {
-  const char* suiteName;
-  const char* testName;
-  TestFunc testFunc;
+  const char* suite_name;
+  const char* test_name;
+  TestFunc test_func;
   TEST_FLAG flag;
   const char* file;
   int line;

@@ -14,7 +14,7 @@
 
 namespace noyxcore::memory::allocators {
   template<typename T>
-  struct no_alloc {
+  struct NoAlloc {
     using value_type = T;
     using pointer = std::add_pointer_t<T>;
     using reference = std::add_lvalue_reference_t<T>;
@@ -33,7 +33,7 @@ namespace noyxcore::memory::allocators {
      * @brief SFINAE helper: checks whether Alloc has a member
      *        function `construct(pointer, Args...)`.
      *
-     * @tparam Alloc  Allocator type to inspect.
+     * @tparam Allocator  Allocator type to inspect.
      * @tparam Pointer  Pointer type to construct.
      * @tparam Args   Argument pack for the candidate construct(...) call.
      *
@@ -43,7 +43,7 @@ namespace noyxcore::memory::allocators {
      */
 
     template<typename Allocator, typename Pointer, typename... Args>
-    struct has_construct_helper {
+    struct HasConstructHelper {
     private:
       template<typename A>
       static auto test(int) -> decltype(
@@ -66,12 +66,12 @@ namespace noyxcore::memory::allocators {
   /**
    * @brief Trait: whether Alloc provides construct(pointer, Args...).
    *
-   * @tparam Alloc  Allocator type to inspect.
+   * @tparam Allocator  Allocator type to inspect.
    * @tparam Pointer Pointer type to construct
    * @tparam Args   Argument pack for the candidate construct(...) call.
    */
   template<typename Allocator, typename Pointer, typename... Args>
-  struct has_construct : details::has_construct_helper<Allocator, Pointer, Args...>::type {
+  struct HasConstruct : details::HasConstructHelper<Allocator, Pointer, Args...>::type {
   };
 
   /**
@@ -80,7 +80,7 @@ namespace noyxcore::memory::allocators {
    * Usage: static_assert(has_construct_v<MyAlloc, T>);
    */
   template<typename Allocator, typename pointer, typename... Args>
-  constexpr bool has_construct_v = has_construct<Allocator, pointer, Args...>::value;
+  constexpr bool has_construct_v = HasConstruct<Allocator, pointer, Args...>::value;
 
   /**
    * @brief Trait: whether Alloc provides destroy(pointer).
@@ -88,14 +88,14 @@ namespace noyxcore::memory::allocators {
    * Defaults to false; a specialization using std::void_t selects true
    * when `Alloc::destroy(pointer)` is a well-formed expression.
    *
-   * @tparam Alloc  Allocator type to inspect.
+   * @tparam Allocator  Allocator type to inspect.
    * @tparam Pointer Pointer type to destroy.
    */
   template<typename Allocator, typename Pointer, typename = void>
-  struct has_destroy : std::false_type {};
+  struct HasDestroy : std::false_type {};
 
   template<typename Allocator, typename Pointer>
-  struct has_destroy<Allocator, Pointer, std::void_t<decltype(std::declval<Allocator &>().destroy(std::declval<Pointer>()))>> : std::true_type {};
+  struct HasDestroy<Allocator, Pointer, std::void_t<decltype(std::declval<Allocator &>().destroy(std::declval<Pointer>()))>> : std::true_type {};
 
   /**
    * @brief Bool alias for has_destroy.
@@ -103,5 +103,5 @@ namespace noyxcore::memory::allocators {
    * Usage: if constexpr (has_destroy_v<MyAlloc>) { ... }
    */
   template<typename Alloc, typename Pointer>
-  inline constexpr bool has_destroy_v = has_destroy<Alloc, Pointer>::value;
-} // noyxcore::memory::allocators
+  inline constexpr bool has_destroy_v = HasDestroy<Alloc, Pointer>::value;
+} // namespace noyxcore::memory::allocators

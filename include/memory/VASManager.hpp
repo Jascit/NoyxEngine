@@ -31,9 +31,9 @@ namespace noyxcore::memory {
     FORCE_INLINE void* free_bytes() noexcept;
 
   private:
-    void* base_;
-    uint64_t size_;
-    uint64_t offset_;
+    void* m_base;
+    uint64_t m_size;
+    uint64_t m_offset;
   };
 
   class VASManager {
@@ -55,18 +55,18 @@ namespace noyxcore::memory {
     }
 
   private:
-    VASManager() = default;
+    VASManager();
 
   private:
     //data
-    std::map<void*, region_handle> map_;
-    std::unordered_map<region_handle, Region> free_map_;
+    std::map<void*, region_handle> m_map;
+    std::unordered_map<region_handle, Region> m_free_map;
+    std::vector<region_handle> m_free_regions;
 
-    std::vector<region_handle> free_regions_;
-    uint64_t current_region_;
+    uint64_t m_current_region;
 
     //metrics
-    uint64_t total_reserved;
-    uint64_t total_allocated;
+    uint64_t m_total_reserved;
+    uint64_t m_total_allocated;
   };
 }

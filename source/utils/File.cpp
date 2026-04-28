@@ -51,13 +51,13 @@ std::string_view File::get_line() {
   auto meta_delimiter = char_traits::to_char_type('\n');
 
   std::string_view line(buffer_.c_str() + current_position_, file_size_ - current_position_);
-  const int64_t ff = file_size_ - current_position_;
+  const int64_t FF = file_size_ - current_position_;
   uint64_t length = 0;
 
   for (;;) {
-    if (length >= ff) break;
-    const char meta = line[length];
-    if (meta == meta_delimiter) break;
+    if (length >= FF) break;
+    const char META = line[length];
+    if (META == meta_delimiter) break;
     length++;
   }
 

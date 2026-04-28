@@ -14,7 +14,7 @@
 #include <testings_data.hpp>
 class TestRegistry {
 public:
-  inline std::vector<TestInfo>& getRegistry() {
+  inline std::vector<TestInfo>& get_registry() {
     return m_registry;
   }
 
@@ -27,29 +27,29 @@ public:
   }
   
   TestRegistry& operator++() {
-    m_currentRegistry++;
+    m_current_registry++;
     return *(this);
   }   
 
-  size_t GetCurrentRegistry() {
-    return m_currentRegistry;
+  size_t get_current_registry() const {
+    return m_current_registry;
   }
   
-  TestInfo& GetCurrentTestInfo() {
-    return m_registry[m_currentRegistry];
+  TestInfo& get_current_test_info() {
+    return m_registry[m_current_registry];
   }
 
 private:
   std::vector<TestInfo> m_registry;
-  size_t m_currentRegistry;
+  size_t m_current_registry;
 
 public:
   TestRegistry operator=(const TestRegistry&) = delete;
   static inline TestRegistry& instance() {
-    static TestRegistry registryInstance;
-    return registryInstance;
+    static TestRegistry registry_instance;
+    return registry_instance;
   }
 
 private:
-  TestRegistry() : m_currentRegistry(0) {};
+  TestRegistry() : m_current_registry(0) {};
 };

@@ -11,25 +11,25 @@
  */
 
 #pragma once
-#include <testings_data.hpp>
-#include <test_registry.hpp>
 #include <iostream>
-#include <vector>
 #include <string>
+#include <test_registry.hpp>
+#include <testings_data.hpp>
+#include <vector>
 
 class TestingSystem {
 public:
   void fail(std::string message) {
-    auto& info = TestRegistry::instance().GetCurrentTestInfo();
+    auto& info = TestRegistry::instance().get_current_test_info();
     if (!(info.flag & FAILED)) {
       info.flag = FAILED;
-      m_failedFunctionsMessages.push_back(std::vector<std::string>{});
-      m_failedMakrosCount.push_back(0);
-      m_failedFunctionsNames.push_back(info.suiteName);
+      m_failed_functions_messages.push_back(std::vector<std::string>{});
+      m_failed_makros_count.push_back(0);
+      m_failed_functions_names.push_back(info.suite_name);
       ++m_failed;
     }
-    m_failedFunctionsMessages[m_failed-1].push_back(message);
-    m_failedMakrosCount[m_failed-1]++;
+    m_failed_functions_messages[m_failed-1].push_back(message);
+    m_failed_makros_count[m_failed-1]++;
   }
 
   void success() {
@@ -40,19 +40,19 @@ public:
     report();
   }
 
-  size_t GetFailedCount() const {
+  size_t get_failed_count() const {
     return m_failed;
   }
 
-  size_t GetPassedCount() const {
+  size_t get_passed_count() const {
     return m_passed;
   }
 
   TestingSystem(const TestingSystem&) = delete;
   TestingSystem& operator=(const TestingSystem&) = delete;
   static TestingSystem* instance() {
-    static TestingSystem systemInstance;
-    return &systemInstance;
+    static TestingSystem system_instance;
+    return &system_instance;
   }
 
 private:
@@ -63,13 +63,13 @@ private:
     std::cout << "Passed: " << m_passed << "\n";
     std::cout << "Failed: " << m_failed << "\n";
 
-    if (!m_failedFunctionsNames.empty()) {
+    if (!m_failed_functions_names.empty()) {
       std::cout << "\nFailed Tests:\n";
-      for (int i = 0; i < m_failedFunctionsMessages.size(); i++) {
-        std::cout << "-----" << m_failedFunctionsNames[i] << "-----" << "\n";
-        std::cout << "Failed NOYX_MAKROS: " << std::to_string(m_failedMakrosCount[i]) << "\n";
-        for (auto& message : m_failedFunctionsMessages[i]) {
-            std::cout << "  - " << m_failedFunctionsNames[i] << ": " << message << "\n";
+      for (int i = 0; i < m_failed_functions_messages.size(); i++) {
+        std::cout << "-----" << m_failed_functions_names[i] << "-----" << "\n";
+        std::cout << "Failed NOYX_MAKROS: " << std::to_string(m_failed_makros_count[i]) << "\n";
+        for (auto& message : m_failed_functions_messages[i]) {
+            std::cout << "  - " << m_failed_functions_names[i] << ": " << message << "\n";
         }
       }
     }
@@ -80,7 +80,7 @@ private:
 private:
   size_t m_passed;
   size_t m_failed;
-  std::vector<std::string> m_failedFunctionsNames;
-  std::vector<std::vector<std::string>> m_failedFunctionsMessages;
-  std::vector<size_t> m_failedMakrosCount;
+  std::vector<std::string> m_failed_functions_names;
+  std::vector<std::vector<std::string>> m_failed_functions_messages;
+  std::vector<size_t> m_failed_makros_count;
 };

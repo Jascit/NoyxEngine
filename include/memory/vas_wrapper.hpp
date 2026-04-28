@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * @file     vas_wrapper.h
+ * @file     vas_wrapper.hpp
  * @brief
  *
  * @date     04.02.2026
@@ -16,30 +16,30 @@
 
 namespace noyxcore::memory::vas {
   enum class Error : std::uint8_t {
-    Ok = 0,
-    InvalidArg,
-    InvalidAddress,
+    OK = 0,
+    INVALID_ARG,
+    INVALID_ADDRESS,
     OOM,
-    NotCommitted,
-    AlreadyCommitted,
-    NoMapping,
-    Permission,
-    Unsupported,
-    Platform,
-    Internal
+    NOT_COMMITTED,
+    ALREADY_COMMITTED,
+    NO_MAPPING,
+    PERMISSION,
+    UNSUPPORTED,
+    PLATFORM,
+    INTERNAL
   };
 
   enum class Flag : std::uint32_t {
-    None = 0u,
-    ProtNone = 1u << 0,
-    ProtRead = 1u << 1,
-    ProtWrite = 1u << 2,
-    ProtExec = 1u << 3,
-    FixedAddress = 1u << 8,
-    PreferAddress = 1u << 9,
-    LargePages = 1u << 16,
-    Page64K = 1u << 17,
-    NonPaged = 1u << 18
+    NONE = 0u,
+    PROT_NONE = 1u << 0,
+    PROT_READ = 1u << 1,
+    PROT_WRITE = 1u << 2,
+    PROT_EXEC = 1u << 3,
+    FIXED_ADDRESS = 1u << 8,
+    PREFER_ADDRESS = 1u << 9,
+    LARGE_PAGES = 1u << 16,
+    PAGE_64KB = 1u << 17,
+    NON_PAGED = 1u << 18
   };
 
   template<std::unsigned_integral T>
@@ -75,7 +75,7 @@ namespace noyxcore::memory::vas {
   struct ReserveResponse {
     void* base{};
     std::uint64_t size{};
-    Error err{Error::Internal};
+    Error err{Error::INTERNAL};
   };
 
   [[nodiscard]] ReserveResponse reserve_memory(const ReserveRequest& req, std::uint64_t allocation_granularity) noexcept;
@@ -86,7 +86,7 @@ namespace noyxcore::memory::vas {
   };
 
   struct ReleaseResponse {
-    Error err{Error::Internal};
+    Error err{Error::INTERNAL};
   };
 
   [[nodiscard]] ReleaseResponse release_memory(const ReleaseRequest& req) noexcept;
@@ -100,7 +100,7 @@ namespace noyxcore::memory::vas {
   };
 
   struct CommitResponse {
-    Error err{Error::Internal};
+    Error err{Error::INTERNAL};
   };
 
   using DecommitRequest = CommitRequest;
@@ -129,7 +129,7 @@ namespace noyxcore::memory::vas {
   };
 
   struct MapResponse {
-    Error err{Error::Internal};
+    Error err{Error::INTERNAL};
     std::uintptr_t ptr{};
   };
 
@@ -141,7 +141,7 @@ namespace noyxcore::memory::vas {
   };
 
   struct UnmapResponse {
-    Error err{Error::Internal};
+    Error err{Error::INTERNAL};
   };
 
   [[nodiscard]] UnmapResponse unmap(const UnmapRequest& req) noexcept;
@@ -154,9 +154,9 @@ namespace noyxcore::memory::vas {
   };
 
   struct AdviseResponse {
-    Error err{Error::Internal};
+    Error err{Error::INTERNAL};
   };
 
   [[nodiscard]] AdviseResponse advise(const AdviseRequest& req) noexcept;
 
-} // namespace noyx::vas
+} // namespace noyxcore::memory::vas

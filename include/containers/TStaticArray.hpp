@@ -20,7 +20,7 @@ namespace noyxcore::containers {
   // Simple fixed-capacity container that stores up to N elements of T
   // in an aligned char buffer and constructs elements with placement new.
   // - does NOT default-construct the T objects
-  // - provides pushBack / emplaceBack / operator[]
+  // - provides pushBack / emplace_back / operator[]
   // - non-copyable, non-movable (policy can be changed)
   template<typename T, size_t N>
   class TStaticArray
@@ -33,12 +33,12 @@ namespace noyxcore::containers {
     using const_reference = const T&;
     using size_type = size_t;
 
-    constexpr TStaticArray() : last_(data()) {};
+    constexpr TStaticArray() : m_data{}, m_last(data()) {};
     TStaticArray(const TStaticArray&) = delete;
     TStaticArray(TStaticArray&&) = delete;
 
     constexpr TStaticArray(const T& val) {
-      last_ = internal::uninitialized_fill_n(data(), N, val, memory::allocators::no_alloc<T>{});
+      m_last = internal::uninitialized_fill_n(data(), N, val, memory::allocators::NoAlloc<T>{});
     };
 
     constexpr ~TStaticArray() {
@@ -60,7 +60,7 @@ namespace noyxcore::containers {
     };
 
     [[nodiscard]] constexpr size_type size() const noexcept {
-      return last_ - std::launder(reinterpret_cast<const_pointer>(data_));
+      return m_last - std::launder(reinterpret_cast<const_pointer>(m_data));
     };
 
     [[nodiscard]] constexpr bool empty() const noexcept {
@@ -68,36 +68,36 @@ namespace noyxcore::containers {
     };
 
     constexpr pointer data() noexcept {
-      return std::launder(reinterpret_cast<pointer>(data_));
+      return std::launder(reinterpret_cast<pointer>(m_data));
     };
 
     constexpr const_pointer data() const noexcept {
-      return std::launder(reinterpret_cast<const_pointer>(data_));
+      return std::launder(reinterpret_cast<const_pointer>(m_data));
     };
 
-    constexpr void pushBack(const value_type& val) noexcept(std::is_nothrow_copy_constructible_v<value_type>) {
-      emplaceBack(val);
+    constexpr void push_back(const value_type& val) noexcept(std::is_nothrow_copy_constructible_v<value_type>) {
+      emplace_back(val);
     };
 
-    constexpr void pushBack(value_type&& val) noexcept(std::is_nothrow_copy_constructible_v<value_type> || std::is_nothrow_move_assignable_v<value_type>) {
-      emplaceBack(std::forward<value_type>(val));
+    constexpr void push_back(value_type&& val) noexcept(std::is_nothrow_copy_constructible_v<value_type> || std::is_nothrow_move_assignable_v<value_type>) {
+      emplace_back(std::forward<value_type>(val));
     };
 
     template<typename... Args>
-    constexpr reference emplaceBack(Args&&... args) {
+    constexpr reference emplace_back(Args&&... args) {
       size_type current_size = size();
-      NOYX_ASSERT_ABORT(current_size < N, "TStaticArray::emplaceBack: capacity exceeded");
-      new (static_cast<void*>(last_)) T(std::forward<Args>(args)...);
-      ++last_;
-      return *(last_ - 1);
+      NOYX_ASSERT_ABORT(current_size < N, "TStaticArray::emplace_back: capacity exceeded");
+      new (static_cast<void*>(m_last)) T(std::forward<Args>(args)...);
+      ++m_last;
+      return *(m_last - 1);
     };
 
   private:
     constexpr void cleanup() noexcept(std::is_nothrow_destructible_v<value_type>) {
-      if (last_ != data()) destroyRange(data(), last_);
+      if (m_last != data()) destroy_range(data(), m_last);
     };
 
-    constexpr void destroyRange(pointer first, pointer last) noexcept(std::is_nothrow_destructible_v<value_type>) {
+    constexpr void destroy_range(pointer first, pointer last) noexcept(std::is_nothrow_destructible_v<value_type>) {
       if constexpr (!std::is_trivially_destructible_v<value_type>) {
         for (pointer it = first; it < last; it++)
         {
@@ -108,7 +108,7 @@ namespace noyxcore::containers {
     
 
   private:
-    alignas(alignof(value_type)) char data_[sizeof(value_type) * N];
-    pointer last_;
+    alignas(alignof(value_type)) char m_data[sizeof(value_type) * N];
+    pointer m_last;
   };
-}
+} // namespace noyxcore::containers
