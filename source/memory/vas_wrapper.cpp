@@ -27,9 +27,6 @@ using namespace noyxcore::memory::vas;
 
 // TODO: windows version of functions
 // TODO: reserve_memory: Large Pages check
-FORCE_INLINE static std::uint64_t round_up(const std::uint64_t value, const std::uint64_t align) noexcept {
-  return ((value + align - 1) / align) * align;
-};
 
 #if defined(NOYX_WINDOWS)
 FORCE_INLINE static Error from_windows_error(DWORD err) noexcept {

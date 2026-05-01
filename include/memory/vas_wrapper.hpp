@@ -65,6 +65,10 @@ namespace noyxcore::memory::vas {
     return static_cast<std::uint32_t>(lhs) & static_cast<std::uint32_t>(rhs);
   }
 
+  FORCE_INLINE static std::uint64_t round_up(const std::uint64_t value, const std::uint64_t align) noexcept {
+    return ((value + align - 1) / align) * align;
+  };
+
   struct ReserveRequest {
     std::uint64_t size{};
     std::uint64_t alignment{};
