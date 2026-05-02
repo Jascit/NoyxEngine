@@ -14,7 +14,7 @@
 #include <cinttypes>
 #include <unordered_map>
 #include <map>
-#include <vector>
+#include <list>
 
 
 #include "vas_wrapper.hpp"
@@ -81,23 +81,23 @@ namespace noyxcore::memory {
 
       if (resp.base == nullptr) return 0;
       region_handle new_handle;
-      if (!free_handles_.empty()) {
-        new_handle = free_handles_.back();
-        free_handles_.pop_back();
+      if (!m_free_handles.empty()) {
+        new_handle = m_free_handles.back();
+        m_free_handles.pop_back();
       } else {
-        new_handle = current_region_++;
+        new_handle = m_current_region++;
       }
 
       Region new_region(resp.base, resp.size);
-      free_map_.emplace(new_handle, new_region);
+      m_free_map.emplace(new_handle, new_region);
 
-      total_reserved += resp.size;
+      m_total_reserved += resp.size;
       return new_handle;
     }
 
     void release_vas(region_handle handle) {
-      auto it = free_map_.find(handle);
-      if (it == free_map_.end()) return;
+      auto it = m_free_map.find(handle);
+      if (it == m_free_map.end()) return;
 
       Region& region = it->second;
       memory::vas::ReleaseRequest req;
@@ -105,9 +105,9 @@ namespace noyxcore::memory {
       req.size = region.size();
       memory::vas::ReleaseResponse resp = memory::vas::release_memory(req);
 
-      free_map_.erase(it);
-      free_handles_.push_back(handle);
-      total_reserved -= req.size;
+      m_free_map.erase(it);
+      m_free_handles.push_back(handle);
+      m_total_reserved -= req.size;
     }
 
     void* allocate_vas(uint64_t size) {
@@ -116,7 +116,7 @@ namespace noyxcore::memory {
       void* target_ptr = nullptr;
       region_handle target_handle = 0;
 
-      for (auto& [handle, region] : free_map_) {
+      for (auto& [handle, region] : m_free_map) {
         if (region.free_bytes() >= size) {
           target_ptr = region.allocate(size);
           target_handle = handle;
@@ -128,41 +128,34 @@ namespace noyxcore::memory {
         target_handle = reserve_vas(size);
         if (target_handle == 0) return nullptr;
 
-        auto it = free_map_.find(target_handle);
+        auto it = m_free_map.find(target_handle);
         Region& new_region = it->second;
         target_ptr = new_region.allocate(size);
       }
 
-      memory::vas::CommitRequest commit;
-      commit.base = target_ptr;
-      commit.size = size;
-      memory::vas::CommitResponse commit_response = memory::vas::commit_pages(commit, commit.size);
-
-      map_.emplace(target_ptr, AllocationRecord{target_handle, size});
-      total_allocated += size;
+      m_map[target_ptr] = {target_handle, size};
+      m_total_allocated += size;
 
       return target_ptr;
     }
 
     void free_vas(void* addr) {
-      auto it = map_.find(addr);
-      if (it == map_.end()) return;
-      void* ptr = it->first;
+      auto it = m_map.find(addr);
+      if (it == m_map.end()) return;
+
       region_handle handle = it->second.handle;
+      uint64_t size = it->second.size;
 
-      auto itr = free_map_.find(handle);
-      if (itr == free_map_.end()) return;
-      Region& region = itr->second;
+      auto itr = m_free_map.find(handle);
+      if (itr != m_free_map.end()) {
+        Region& region = itr->second;
+        region.free_allocation();
+      }
 
-      memory::vas::DecommitRequest req;
-      req.base = ptr;
-      req.size = it->second.size;
-      memory::vas::DecommitResponse resp = memory::vas::decommit_pages(req);
-      region.free_allocation();
-
-      map_.erase(it);
-      total_allocated -= req.size;
+      m_map.erase(it);
+      m_total_allocated -= size;
     }
+
     void initialize(uint64_t page_size, uint64_t initial_reserve) {
       //TODO: page_size nachodit' gdeto
       auto it = reserve_vas(initial_reserve);
@@ -179,14 +172,14 @@ namespace noyxcore::memory {
 
   private:
     //data
-    std::unordered_map<void*, AllocationRecord> map_; //allocated
-    std::map<region_handle, Region> free_map_; //reserved
+    std::unordered_map<void*, AllocationRecord> m_map; //allocated
+    std::map<region_handle, Region> m_free_map; //reserved
 
-    std::vector<region_handle> free_handles_;
-    uint64_t current_region_ = 1;
+    std::list<region_handle> m_free_handles;
+    uint64_t m_current_region = 1;
 
     //metrics
-    uint64_t total_reserved = 0;
-    uint64_t total_allocated = 0;
+    uint64_t m_total_reserved = 0;
+    uint64_t m_total_allocated = 0;
   };
 }

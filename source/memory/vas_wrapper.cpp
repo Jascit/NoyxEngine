@@ -43,9 +43,9 @@ FORCE_INLINE static Error from_windows_error(DWORD err) noexcept {
 }
 
 FORCE_INLINE static DWORD to_windows_prots(std::uint32_t flags) noexcept {
-  const bool read = (flags & Flag::PROT_READ) != 0;
-  const bool write = (flags & Flag::PROT_WRITE) != 0;
-  const bool execute = (flags & Flag::PROT_EXEC) != 0;
+  const bool read = (flags & Flag::PROTECTION_READ) != 0;
+  const bool write = (flags & Flag::PROTECTION_WRITE) != 0;
+  const bool execute = (flags & Flag::PROTECTION_EXEC) != 0;
 
   if (!read && !write && !execute)
     return PAGE_NOACCESS;
@@ -105,20 +105,20 @@ static CommitResponse commit_pages_windows(std::uint64_t size, void* addr, DWORD
 }
 
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
-FORCE_INLINE Error from_unix_error_(int err/*errno*/) noexcept {
+FORCE_INLINE Error from_unix_error(int err/*errno*/) noexcept {
   switch (err) {
     case EEXIST: return Error::INVALID_ADDRESS;
     case EACCES: return Error::PERMISSION;
     case ENOMEM: return Error::OOM;
     case EINVAL: return Error::INVALID_ARG;
-    default: return Error::Internal;
+    default: return Error::INTERNAL;
   }
 }
 
-FORCE_INLINE int to_unix_prots_(std::uint32_t flags) noexcept {
-  const bool read = (flags & Flag::ProtRead) != 0;
-  const bool write = (flags & Flag::ProtWrite) != 0;
-  const bool execute = (flags & Flag::ProtExec) != 0;
+FORCE_INLINE int to_unix_prots(std::uint32_t flags) noexcept {
+  const bool read = (flags & Flag::PROTECTION_READ) != 0;
+  const bool write = (flags & Flag::PROTECTION_WRITE) != 0;
+  const bool execute = (flags & Flag::PROTECTION_EXEC) != 0;
 
   if (!read && !write && !execute)
     return PROT_NONE;
@@ -139,9 +139,9 @@ FORCE_INLINE int to_unix_prots_(std::uint32_t flags) noexcept {
   return protection;
 }
 
-FORCE_INLINE int to_unix_flags_(std::uint32_t flags) noexcept {
+FORCE_INLINE int to_unix_flags(std::uint32_t flags) noexcept {
   int result = 0;
-  if (flags & Flag::FIXED_ADDRESS && flags & Flag::PreferAddress) {
+  if (flags & Flag::FIXED_ADDRESS && flags & Flag::PREFER_ADDRESS) {
     result = -1;
     return result;
   }
@@ -152,8 +152,8 @@ if (flags &Flag::LARGE_PAGES) result|= MAP_HUGETLB;
 return result;
 }
 
-ReserveResponse reserve_memory_unix_(std::uint64_t size, void* preferred_addr, int flags) noexcept {
-  ReserveResponse resp(nullptr, 0, Error::Internal);
+static ReserveResponse reserve_memory_unix(std::uint64_t size, void* preferred_addr, int flags) noexcept {
+  ReserveResponse resp(nullptr, 0, Error::INTERNAL);
 
   int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE;
 
@@ -167,7 +167,7 @@ mmap_flags= mmap_flags| MAP_FIXED;
 
 void* virtual_address = mmap(preferred_addr, size, PROT_NONE, mmap_flags, -1, 0);
   if (virtual_address == MAP_FAILED) {
-    resp.err = from_unix_error_(errno);
+    resp.err = from_unix_error(errno);
     return resp;
   }
 resp.size= size;
@@ -202,8 +202,8 @@ resp.err= Error::OK;
   const DWORD req_flags = to_windows_flags(req.alloc_flags);
   return reserve_memory_windows(aligned_size, req.preferred_addr, req_flags);
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
-  const int req_flags = to_unix_flags_(req.alloc_flags);
-  return reserve_memory_unix_(req.size, req.preferred_addr, req_flags);
+  const int req_flags = to_unix_flags(req.alloc_flags);
+  return reserve_memory_unix(req.size, req.preferred_addr, req_flags);
 #endif
 }
 
@@ -216,7 +216,7 @@ resp.err= Error::OK;
   return {Error::OK};
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
   if (munmap(req.base, req.size) != 0) {
-    return {from_unix_error_(errno)};
+    return {from_unix_error(errno)};
   }
   return {Error::OK};
 #endif
@@ -267,7 +267,7 @@ resp.err= Error::OK;
   }
 #endif
   if (mprotect(raw_addr, req.size, PROT_READ | PROT_WRITE) != 0) {
-    return { from_unix_error_(errno) };
+    return { from_unix_error(errno) };
   }
 
   char* begin = static_cast<char*>(raw_addr);
@@ -278,9 +278,9 @@ resp.err= Error::OK;
     *p = 0;
   }
 
-  int prots = to_unix_prots_(req.protection);
+  int prots = to_unix_prots(req.protection);
   if (mprotect(raw_addr, req.size, prots) != 0) {
-    return { from_unix_error_(errno) };
+    return { from_unix_error(errno) };
   }
 
   return { Error::OK };
@@ -305,10 +305,10 @@ resp.err= Error::OK;
   return {Error::OK};
 #elif defined(NOYX_LINUX) || defined(NOYX_APPLE)
   if (madvise(addr, req.size, MADV_DONTNEED) != 0) {
-    return {from_unix_error_(errno)};
+    return {from_unix_error(errno)};
   }
   if (mprotect(addr, req.size, PROT_NONE) != 0) {
-    return {from_unix_error_(errno)};
+    return {from_unix_error(errno)};
   }
 
   return {Error::OK};

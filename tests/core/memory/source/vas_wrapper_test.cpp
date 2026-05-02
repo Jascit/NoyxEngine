@@ -71,7 +71,7 @@ NOYX_TEST(vas_commit_decommit_memory_test, partial_commit_test) {
   commit_req.base = reserve_resp.base;
   commit_req.size = allocation_granularity;
   commit_req.offset = allocation_granularity; // Offset by 1 block
-  commit_req.protection = Flag::PROT_WRITE | Flag::PROT_READ;
+  commit_req.protection = Flag::PROTECTION_WRITE | Flag::PROTECTION_READ;
   commit_req.alloc_flags = static_cast<std::uint32_t>(Flag::NONE);
   CommitResponse commit_resp = commit_pages(commit_req, page_size);
   NOYX_ASSERT_TRUE_MESSAGE(commit_resp.err == Error::OK, "partial commit_pages failed");
@@ -108,7 +108,7 @@ NOYX_TEST(vas_commit_decommit_memory_test, invalid_args_test) {
   CommitRequest commit_req;
   commit_req.base = reinterpret_cast<void*>(0x10000000); // Arbitrary address
   commit_req.offset = 0;
-  commit_req.protection = static_cast<std::uint32_t>(Flag::PROT_READ);
+  commit_req.protection = static_cast<std::uint32_t>(Flag::PROTECTION_READ);
   commit_req.alloc_flags = static_cast<std::uint32_t>(Flag::NONE);
 
   // Test 1: Zero size commit

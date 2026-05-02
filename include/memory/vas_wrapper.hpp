@@ -31,10 +31,10 @@ namespace noyxcore::memory::vas {
 
   enum class Flag : std::uint32_t {
     NONE = 0u,
-    PROT_NONE = 1u << 0,
-    PROT_READ = 1u << 1,
-    PROT_WRITE = 1u << 2,
-    PROT_EXEC = 1u << 3,
+    PROTECTION_NONE = 1u << 0,
+    PROTECTION_READ = 1u << 1,
+    PROTECTION_WRITE = 1u << 2,
+    PROTECTION_EXEC = 1u << 3,
     FIXED_ADDRESS = 1u << 8,
     PREFER_ADDRESS = 1u << 9,
     LARGE_PAGES = 1u << 16,
