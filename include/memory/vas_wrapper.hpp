@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <platform/debug.h>
 #include <concepts>
 
 namespace noyxcore::memory::vas {

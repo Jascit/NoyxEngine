@@ -12,6 +12,7 @@
 #pragma once
 #include <filesystem>
 #include <cstring>
+#include <atomic>
 
 namespace noyxcore::diagnostics {
   enum LogLevel {
@@ -39,32 +40,32 @@ namespace noyxcore::diagnostics {
       }
 
       bool append(const char* msg, LogLevel level) {
-        uint32_t msg_length = std::strlen(msg);
-        if (m_write_index + msg_length + LOOKUP_LEVEL_LENGTH[level] > m_size) {
+        uint64_t msg_len = std::strlen(msg);
+        uint64_t prefix_len = LOOKUP_LEVEL_LENGTH[static_cast<uint32_t>(level)];
+        uint64_t total_len = msg_len + prefix_len + 1;
+
+        uint64_t my_offset = m_write_index.fetch_add(total_len, std::memory_order_relaxed);
+        if (total_len + my_offset > m_size) {
           return false;
         }
-        append_loglevel_(level);
-        memcpy(&m_log_buffer[m_write_index], msg, msg_length);
-        m_write_index += msg_length;
-        m_log_buffer[m_write_index] = '\n';
-        m_log_buffer[m_write_index + 1] = '\0';
-        m_write_index++;
+
+        const char* prefix_msg = LOOKUP_LEVEL_MESSAGE[static_cast<uint32_t>(level)];
+        memcpy(&m_log_buffer[my_offset], prefix_msg, prefix_len);
+        memcpy(&m_log_buffer[my_offset+ prefix_len], msg, msg_len);
+        m_log_buffer[my_offset + prefix_len + msg_len] = '\n';
         return true;
       };
 
-      const char* cstr() const { return m_log_buffer; };
+      uint64_t get_written_bytes() const {
+        uint64_t current = m_write_index.load(std::memory_order_acquire);
+        return (current > m_size) ? m_size : current;
+      }
 
-    private:
-      void append_loglevel_(LogLevel level) noexcept {
-        uint32_t level_index = static_cast<uint32_t>(level);
-        uint32_t length = LOOKUP_LEVEL_LENGTH[level_index];
-        memcpy(&m_log_buffer[m_write_index], LOOKUP_LEVEL_MESSAGE[level_index], length);
-        m_write_index += length;
-      };
+      const char* data() const { return m_log_buffer; };
 
     private:
       char* m_log_buffer;
-      uint64_t m_write_index;
+      std::atomic<uint64_t> m_write_index;
       uint64_t m_size;
     };
   } // namespace details

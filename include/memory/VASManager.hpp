@@ -30,36 +30,36 @@ namespace noyxcore::memory {
     ~Region() = default;
 
     void* allocate(uint64_t size) noexcept {
-      if (offset_ + size > size_) return nullptr;
-      void* ptr = static_cast<char*>(base_) + offset_;
-      offset_ += size;
-      active_allocations_++;
+      if (m_offset + size > m_size) return nullptr;
+      void* ptr = static_cast<char*>(m_base) + m_offset;
+      m_offset += size;
+      m_active_allocations++;
       return ptr;
     }
 
     void free_allocation() {
-      active_allocations_--;
-      if (active_allocations_ == 0) {
-        offset_ = 0;
+      m_active_allocations--;
+      if (m_active_allocations == 0) {
+        m_offset = 0;
       }
     }
 
 
     FORCE_INLINE void* base() noexcept {
-      return base_;
+      return m_base;
     }
     FORCE_INLINE uint64_t size() noexcept {
-      return size_;
+      return m_size;
     }
     FORCE_INLINE uint64_t free_bytes() noexcept {
-      return size_ - offset_;
+      return m_size - m_offset;
     } //void* -> uint64_t
 
   private:
-    void* base_;
-    uint64_t size_;
-    uint64_t offset_ = 0;
-    uint64_t active_allocations_ = 0;
+    void* m_base;
+    uint64_t m_size;
+    uint64_t m_offset = 0;
+    uint64_t m_active_allocations = 0;
   };
 
   struct AllocationRecord { //FOR MAP
@@ -74,93 +74,11 @@ namespace noyxcore::memory {
     VASManager& operator=(const VASManager&) = delete;
     VASManager& operator=(VASManager&&) = delete;
 
-    region_handle reserve_vas(uint64_t size) {
-      memory::vas::ReserveRequest req;
-      req.size = size;    //TODO: round_up from vaswr.cpp
-      memory::vas::ReserveResponse resp = memory::vas::reserve_memory(req, req.size); //TODO: alloc_granu vmesto size (?)
-
-      if (resp.base == nullptr) return 0;
-      region_handle new_handle;
-      if (!m_free_handles.empty()) {
-        new_handle = m_free_handles.back();
-        m_free_handles.pop_back();
-      } else {
-        new_handle = m_current_region++;
-      }
-
-      Region new_region(resp.base, resp.size);
-      m_free_map.emplace(new_handle, new_region);
-
-      m_total_reserved += resp.size;
-      return new_handle;
-    }
-
-    void release_vas(region_handle handle) {
-      auto it = m_free_map.find(handle);
-      if (it == m_free_map.end()) return;
-
-      Region& region = it->second;
-      memory::vas::ReleaseRequest req;
-      req.base = region.base();
-      req.size = region.size();
-      memory::vas::ReleaseResponse resp = memory::vas::release_memory(req);
-
-      m_free_map.erase(it);
-      m_free_handles.push_back(handle);
-      m_total_reserved -= req.size;
-    }
-
-    void* allocate_vas(uint64_t size) {
-      if (size == 0) return nullptr;
-
-      void* target_ptr = nullptr;
-      region_handle target_handle = 0;
-
-      for (auto& [handle, region] : m_free_map) {
-        if (region.free_bytes() >= size) {
-          target_ptr = region.allocate(size);
-          target_handle = handle;
-          break;
-        }
-      }
-
-      if (target_ptr == nullptr) {
-        target_handle = reserve_vas(size);
-        if (target_handle == 0) return nullptr;
-
-        auto it = m_free_map.find(target_handle);
-        Region& new_region = it->second;
-        target_ptr = new_region.allocate(size);
-      }
-
-      m_map[target_ptr] = {target_handle, size};
-      m_total_allocated += size;
-
-      return target_ptr;
-    }
-
-    void free_vas(void* addr) {
-      auto it = m_map.find(addr);
-      if (it == m_map.end()) return;
-
-      region_handle handle = it->second.handle;
-      uint64_t size = it->second.size;
-
-      auto itr = m_free_map.find(handle);
-      if (itr != m_free_map.end()) {
-        Region& region = itr->second;
-        region.free_allocation();
-      }
-
-      m_map.erase(it);
-      m_total_allocated -= size;
-    }
-
-    void initialize(uint64_t page_size, uint64_t initial_reserve) {
-      //TODO: page_size nachodit' gdeto
-      auto it = reserve_vas(initial_reserve);
-      if (it == 0) return;
-    }
+    region_handle reserve_vas(uint64_t size);
+    void release_vas(region_handle handle);
+    void* allocate_vas(uint64_t size);
+    void free_vas(void* addr);
+    void initialize(uint64_t page_size, uint64_t initial_reserve);
 
     static VASManager& instance() {
       static VASManager instance;
