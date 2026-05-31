@@ -297,7 +297,7 @@ resp.err= Error::OK;
   void* addr = static_cast<char*>(req.base) + req.offset;
 
 #if defined(NOYX_WINDOWS)
-  LPVOID result = VirtualAlloc(req.base, req.size, MEM_DECOMMIT, PAGE_READWRITE);
+  LPVOID result = VirtualAlloc(addr, req.size, MEM_DECOMMIT, PAGE_READWRITE);
   if (result == nullptr) {
     DWORD error = GetLastError();
     return {from_windows_error(error)};

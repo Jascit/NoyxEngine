@@ -1,4 +1,5 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/*
+/* SPDX-License-Identifier: Apache-2.0 #1#
 
 /**
  * @file     VASManager.hpp
@@ -7,14 +8,14 @@
  * @date     13.02.2026
  *
  * @copyright Copyright (c) 2026 The Project Contributors
- */
+ #1#
 
 #include <memory/VASManager.hpp>
 #include <memory/vas_wrapper.hpp>
 #include <platform/os/SystemInfo.hpp>
 using namespace noyxcore::memory;
 
-Region::Region(void* base, uint64_t size) noexcept : m_base(base), size_(size), m_offset(0) {}
+Region::Region(void* base, uint64_t size) noexcept : m_base(base), m_size(size), m_offset(0) {}
 
 region_handle VASManager::reserve_vas(uint64_t size) {
   vas::ReserveRequest request = {
@@ -37,3 +38,4 @@ void VASManager::release_vas(region_handle) {}
 void* VASManager::allocate_vas(uint64_t size) {}
 void VASManager::free_vas(void*) {}
 void VASManager::initialize(uint64_t page_size, uint64_t initial_reserve) {}
+*/

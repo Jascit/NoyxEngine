@@ -382,3 +382,4 @@ Saved/
 /dependencies/whisper/models/ggml-small.bin
 
 .idea/
+build/

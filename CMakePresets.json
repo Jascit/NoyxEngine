@@ -4,35 +4,39 @@
   "configurePresets": [
     {
       "name": "windows-x64-debug",
-      "displayName": "Windows x64 Debug (Ninja)",
+      "displayName": "windows x64 debug (Ninja)",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/Windows/x64-Debug",
-      "installDir": "${sourceDir}/out/install/Windows/x64-Debug",
+      "binaryDir": "${sourceDir}/build/windows-x64-debug",
+      "installDir": "${sourceDir}/install/windows-x64-debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_BUILD_TYPE": "debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_C_COMPILER": "cl"
       }
     },
     {
       "name": "windows-x64-release",
-      "displayName": "Windows x64 Release (Ninja)",
+      "displayName": "windows x64 release (Ninja)",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/Windows/x64-Release",
-      "installDir": "${sourceDir}/out/install/Windows/x64-Release",
+      "binaryDir": "${sourceDir}/build/windows-x64-release",
+      "installDir": "${sourceDir}/install/windows-x64-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_C_COMPILER": "cl"
       }
     },
 
     {
       "name": "linux-x64-debug",
-      "displayName": "Linux x64 Debug (Ninja)",
+      "displayName": "linux x64 debug (Ninja)",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/Linux/x64-Debug",
-      "installDir": "${sourceDir}/out/install/Linux/x64-Debug",
+      "binaryDir": "${sourceDir}/build/linux-x64-debug",
+      "installDir": "${sourceDir}/install/linux-x64-debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_TYPE": "debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_COMPILER": "clang"
@@ -40,12 +44,12 @@
     },
     {
       "name": "linux-x64-release",
-      "displayName": "Linux x64 Release (Ninja)",
+      "displayName": "linux x64 release (Ninja)",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/Linux/x64-Release",
-      "installDir": "${sourceDir}/out/install/Linux/x64-Release",
+      "binaryDir": "${sourceDir}/build/linux-x64-release",
+      "installDir": "${sourceDir}/install/linux-x64-release",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_TYPE": "release",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_COMPILER": "clang"
@@ -54,12 +58,12 @@
 
     {
       "name": "macos-arm64-release",
-      "displayName": "macOS arm64 Release (Ninja)",
+      "displayName": "macOS arm64 release (Ninja)",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/macOS/arm64-Release",
-      "installDir": "${sourceDir}/out/install/macOS/arm64-Release",
+      "binaryDir": "${sourceDir}/build/macOS-arm64-release",
+      "installDir": "${sourceDir}/install/macOS-arm64-release",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_TYPE": "release",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     }
