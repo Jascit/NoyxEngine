@@ -65,7 +65,7 @@ namespace noyxcore::memory::vas {
     return static_cast<std::uint32_t>(lhs) & static_cast<std::uint32_t>(rhs);
   }
 
-  static std::uint64_t round_up(const std::uint64_t value, const std::uint64_t align) noexcept {
+  FORCE_INLINE static std::uint64_t round_up(const std::uint64_t value, const std::uint64_t align) noexcept {
     return ((value + align - 1) / align) * align;
   };
 
@@ -82,8 +82,7 @@ namespace noyxcore::memory::vas {
     Error err{Error::INTERNAL};
   };
 
-  [[nodiscard]] ReserveResponse
-  reserve_memory(const ReserveRequest& req, std::uint64_t allocation_granularity) noexcept;
+  [[nodiscard]] ReserveResponse reserve_memory(const ReserveRequest& req, std::uint64_t allocation_granularity) noexcept;
 
   struct ReleaseRequest {
     void* base{};
@@ -163,4 +162,5 @@ namespace noyxcore::memory::vas {
   };
 
   [[nodiscard]] AdviseResponse advise(const AdviseRequest& req) noexcept;
+
 } // namespace noyxcore::memory::vas
