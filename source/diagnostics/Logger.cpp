@@ -2,7 +2,7 @@
 
 /**
  * @file     Logger.cpp
- * @brief     
+ * @brief
  *
  * @date     25.03.2026
  *
@@ -15,27 +15,33 @@
 
 using namespace noyxcore::diagnostics;
 
-Logger::Logger(const char* log_file_name) : m_log_buffer(64*1024) {
-  std::filesystem::path process_path = std::filesystem::current_path();
-  std::filesystem::path logs_path = process_path.parent_path().parent_path();
-  logs_path /= "logs";
+Logger::Logger(const char *log_file_name)
+    : m_log_buffer(64 * 1024)
+{
+    std::filesystem::path process_path = std::filesystem::current_path();
+    std::filesystem::path logs_path    = process_path.parent_path().parent_path();
+    logs_path /= "logs";
 
-  if (!std::filesystem::exists(logs_path)) {
-    std::filesystem::create_directories(logs_path);
-  }
+    if (!std::filesystem::exists(logs_path))
+    {
+        std::filesystem::create_directories(logs_path);
+    }
 
-  std::filesystem::path log_file_path = logs_path / log_file_name;
-  m_log_file_path = log_file_path;
+    std::filesystem::path log_file_path = logs_path / log_file_name;
+    m_log_file_path                     = log_file_path;
 }
 
-bool Logger::log(const char* msg, LogLevel level) {
-  return m_log_buffer.append(msg, level);
+bool Logger::log(const char *msg, LogLevel level)
+{
+    return m_log_buffer.append(msg, level);
 }
 
-void Logger::flush() const {
-  std::ofstream log_file(m_log_file_path, std::ios::binary);
+void Logger::flush() const
+{
+    std::ofstream log_file(m_log_file_path, std::ios::binary);
 
-  if (log_file.is_open()) {
-    log_file.write(m_log_buffer.data(), m_log_buffer.get_written_bytes());
-  }
+    if (log_file.is_open())
+    {
+        log_file.write(m_log_buffer.data(), m_log_buffer.get_written_bytes());
+    }
 }
