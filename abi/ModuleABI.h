@@ -12,22 +12,22 @@
 
 #ifndef MODULE_ABI_H
 #define MODULE_ABI_H
-#include "CoreABI.h" 
+#include "CoreABI.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-  #if defined(MODULE_ABI_EXPORTS)
-    #define MODULE_API __declspec(dllexport)
-  #elif defined(MODULE_ABI_IMPORTS)
-    #define MODULE_API __declspec(dllimport)
-  #else
-    #define MODULE_API
-  #endif
+#if defined(MODULE_ABI_EXPORTS)
+#define MODULE_API __declspec(dllexport)
+#elif defined(MODULE_ABI_IMPORTS)
+#define MODULE_API __declspec(dllimport)
 #else
-  #if defined(__GNUC__) && __GNUC__ >= 4
-    #define MODULE_API __attribute__((visibility("default")))
-  #else
-    #define MODULE_API
-  #endif
+#define MODULE_API
+#endif
+#else
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define MODULE_API __attribute__((visibility("default")))
+#else
+#define MODULE_API
+#endif
 #endif
 
 #define MODULE_ABI_VERSION_MAJOR 1
@@ -35,17 +35,19 @@
 #define MODULE_ABI_VERSION_PATCH 0
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-  typedef struct {
-    unsigned int size;
-    unsigned int version;
-    void (*process_command_buffer)(const void* buf, unsigned long long size);
-    void (*on_frame)(float dt);
-    void (*on_shutdown)(unsigned int generation);
-  } ModuleABI;
+    typedef struct
+    {
+        unsigned int size;
+        unsigned int version;
+        void (*process_command_buffer)(const void *buf, unsigned long long size);
+        void (*on_frame)(float dt);
+        void (*on_shutdown)(unsigned int generation);
+    } ModuleABI;
 
-  MODULE_API unsigned int noyx_module_init(const CoreABI* core, ModuleABI* out);
+    MODULE_API unsigned int noyx_module_init(const CoreABI *core, ModuleABI *out);
 #ifdef __cplusplus
 }
 #endif

@@ -12,96 +12,104 @@
 #pragma once
 #include <memory>
 
-namespace noyxcore::memory::allocators {
-  template<typename T>
-  struct NoAlloc {
+namespace noyxcore::memory::allocators
+{
+template <typename T>
+struct NoAlloc
+{
     using value_type = T;
-    using pointer = std::add_pointer_t<T>;
-    using reference = std::add_lvalue_reference_t<T>;
-  };
+    using pointer    = std::add_pointer_t<T>;
+    using reference  = std::add_lvalue_reference_t<T>;
+};
 
-  /* 
-   * @brief Alias to std::allocator_traits for now.
-   * @note Replace with custom traits once allocator API stabilizes.
-  */
-  template<typename Alloc>
-  using allocator_traits = std::allocator_traits<Alloc>;
+/*
+ * @brief Alias to std::allocator_traits for now.
+ * @note Replace with custom traits once allocator API stabilizes.
+ */
+template <typename Alloc>
+using allocator_traits = std::allocator_traits<Alloc>;
 
-  namespace details {
+namespace details
+{
 
-    /**
-     * @brief SFINAE helper: checks whether Alloc has a member
-     *        function `construct(pointer, Args...)`.
-     *
-     * @tparam Allocator  Allocator type to inspect.
-     * @tparam Pointer  Pointer type to construct.
-     * @tparam Args   Argument pack for the candidate construct(...) call.
-     *
-     * By default inherits from std::false_type. A specialization below
-     * inherits from std::true_type when the expression
-     * `std::declval<Alloc&>().construct(pointer, Args...)` is well-formed.
-     */
+/**
+ * @brief SFINAE helper: checks whether Alloc has a member
+ *        function `construct(pointer, Args...)`.
+ *
+ * @tparam Allocator  Allocator type to inspect.
+ * @tparam Pointer  Pointer type to construct.
+ * @tparam Args   Argument pack for the candidate construct(...) call.
+ *
+ * By default inherits from std::false_type. A specialization below
+ * inherits from std::true_type when the expression
+ * `std::declval<Alloc&>().construct(pointer, Args...)` is well-formed.
+ */
 
-    template<typename Allocator, typename Pointer, typename... Args>
-    struct HasConstructHelper {
-    private:
-      template<typename A>
-      static auto test(int) -> decltype(
-        std::declval<A &>().construct(
-          std::declval<Pointer>(),
-          std::declval<Args>()...
-        ),
-        std::true_type{}
-      );
+template <typename Allocator, typename Pointer, typename... Args>
+struct HasConstructHelper
+{
+private:
+    template <typename A>
+    static auto test(int)
+        -> decltype(std::declval<A &>().construct(std::declval<Pointer>(), std::declval<Args>()...),
+                    std::true_type {});
 
-      template<typename>
-      static std::false_type test(...);
+    template <typename>
+    static std::false_type test(...);
 
-    public:
-      using type = decltype(test<Allocator>(0));
-    };
+public:
+    using type = decltype(test<Allocator>(0));
+};
 
-  } // namespace details
+} // namespace details
 
-  /**
-   * @brief Trait: whether Alloc provides construct(pointer, Args...).
-   *
-   * @tparam Allocator  Allocator type to inspect.
-   * @tparam Pointer Pointer type to construct
-   * @tparam Args   Argument pack for the candidate construct(...) call.
-   */
-  template<typename Allocator, typename Pointer, typename... Args>
-  struct HasConstruct : details::HasConstructHelper<Allocator, Pointer, Args...>::type {
-  };
+/**
+ * @brief Trait: whether Alloc provides construct(pointer, Args...).
+ *
+ * @tparam Allocator  Allocator type to inspect.
+ * @tparam Pointer Pointer type to construct
+ * @tparam Args   Argument pack for the candidate construct(...) call.
+ */
+template <typename Allocator, typename Pointer, typename... Args>
+struct HasConstruct : details::HasConstructHelper<Allocator, Pointer, Args...>::type
+{
+};
 
-  /**
-   * @brief Bool alias for has_construct.
-   *
-   * Usage: static_assert(has_construct_v<MyAlloc, T>);
-   */
-  template<typename Allocator, typename pointer, typename... Args>
-  constexpr bool has_construct_v = HasConstruct<Allocator, pointer, Args...>::value;
+/**
+ * @brief Bool alias for has_construct.
+ *
+ * Usage: static_assert(has_construct_v<MyAlloc, T>);
+ */
+template <typename Allocator, typename pointer, typename... Args>
+constexpr bool has_construct_v = HasConstruct<Allocator, pointer, Args...>::value;
 
-  /**
-   * @brief Trait: whether Alloc provides destroy(pointer).
-   *
-   * Defaults to false; a specialization using std::void_t selects true
-   * when `Alloc::destroy(pointer)` is a well-formed expression.
-   *
-   * @tparam Allocator  Allocator type to inspect.
-   * @tparam Pointer Pointer type to destroy.
-   */
-  template<typename Allocator, typename Pointer, typename = void>
-  struct HasDestroy : std::false_type {};
+/**
+ * @brief Trait: whether Alloc provides destroy(pointer).
+ *
+ * Defaults to false; a specialization using std::void_t selects true
+ * when `Alloc::destroy(pointer)` is a well-formed expression.
+ *
+ * @tparam Allocator  Allocator type to inspect.
+ * @tparam Pointer Pointer type to destroy.
+ */
+template <typename Allocator, typename Pointer, typename = void>
+struct HasDestroy : std::false_type
+{
+};
 
-  template<typename Allocator, typename Pointer>
-  struct HasDestroy<Allocator, Pointer, std::void_t<decltype(std::declval<Allocator &>().destroy(std::declval<Pointer>()))>> : std::true_type {};
+template <typename Allocator, typename Pointer>
+struct HasDestroy<
+    Allocator, Pointer,
+    std::void_t<decltype(std::declval<Allocator &>().destroy(std::declval<Pointer>()))>>
+    : std::true_type
+{
+};
 
-  /**
-   * @brief Bool alias for has_destroy.
-   *
-   * Usage: if constexpr (has_destroy_v<MyAlloc>) { ... }
-   */
-  template<typename Alloc, typename Pointer>
-  inline constexpr bool has_destroy_v = HasDestroy<Alloc, Pointer>::value;
+/**
+ * @brief Bool alias for has_destroy.
+ *
+ * Usage: if constexpr (has_destroy_v<MyAlloc>) { ... }
+ */
+template <typename Alloc, typename Pointer>
+inline constexpr bool has_destroy_v = HasDestroy<Alloc, Pointer>::value;
 } // namespace noyxcore::memory::allocators

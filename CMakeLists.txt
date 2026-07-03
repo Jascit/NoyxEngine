@@ -15,7 +15,7 @@ add_executable(main source/main.cpp)
 # Basic cross-compile warning
 if (CMAKE_CROSSCOMPILING)
     message(WARNING "CMake is in cross-compiling mode. Detection may reflect host or target depending on toolchain settings.")
-endif()
+endif ()
 
 # Detect OS
 if (WIN32)
@@ -39,23 +39,23 @@ elseif (APPLE)
             list(APPEND PLATFORM_COMPILE_DEFS ARCH_ARM64)
         elseif (_archs MATCHES "x86_64")
             list(APPEND PLATFORM_COMPILE_DEFS ARCH_X64)
-        endif()
-    endif()
+        endif ()
+    endif ()
 
 elseif (UNIX AND NOT APPLE)
     message(STATUS "Detected platform: Linux/Unix")
     list(APPEND PLATFORM_COMPILE_DEFS LINUX)
-else()
+else ()
     message(FATAL_ERROR "Undefined platform!")
-endif()
+endif ()
 # fallbacks
 if (NOT PLATFORM_COMPILE_DEFS MATCHES "ARCH_")
     if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
         list(APPEND PLATFORM_COMPILE_DEFS ARCH_ARM64)
-    else()
+    else ()
         list(APPEND PLATFORM_COMPILE_DEFS ARCH_X64)
-    endif()
-endif()
+    endif ()
+endif ()
 # Show what we detected
 message(STATUS "Platform/arch compile definitions: ${PLATFORM_COMPILE_DEFS}")
 
@@ -65,7 +65,7 @@ add_library(COMMON_FLAGS INTERFACE)
 # Put the platform/arch defines only into COMMON_FLAGS
 if (PLATFORM_COMPILE_DEFS)
     target_compile_definitions(COMMON_FLAGS INTERFACE ${PLATFORM_COMPILE_DEFS})
-endif()
+endif ()
 
 # Sanitizer for tests
 set(ENABLE_SANITIZERS OFF)
@@ -79,36 +79,36 @@ if (ENABLE_SANITIZERS AND MSVC)
     message(STATUS "Sanitizers enabled: /RTC1 removed from Debug flags")
     # --- Create SANITIZERS interface only when requested
     add_library(SANITIZERS INTERFACE)
-    if(MSVC)
-      target_compile_options(SANITIZERS INTERFACE
-        $<$<CONFIG:Debug>:/fsanitize=address>
-      )
-      target_link_options(SANITIZERS INTERFACE
-        $<$<CONFIG:Debug>:/fsanitize=address>
-      )
-    else()
-      target_compile_options(SANITIZERS INTERFACE
-        $<$<CONFIG:Debug>:-fsanitize=address>
-      )
-      target_link_options(SANITIZERS INTERFACE
-        $<$<CONFIG:Debug>:-fsanitize=address>
-      )
-    endif()
-endif()
+    if (MSVC)
+        target_compile_options(SANITIZERS INTERFACE
+                $<$<CONFIG:Debug>:/fsanitize=address>
+        )
+        target_link_options(SANITIZERS INTERFACE
+                $<$<CONFIG:Debug>:/fsanitize=address>
+        )
+    else ()
+        target_compile_options(SANITIZERS INTERFACE
+                $<$<CONFIG:Debug>:-fsanitize=address>
+        )
+        target_link_options(SANITIZERS INTERFACE
+                $<$<CONFIG:Debug>:-fsanitize=address>
+        )
+    endif ()
+endif ()
 
-if(MSVC)
+if (MSVC)
     # MSVC
     target_compile_options(COMMON_FLAGS INTERFACE
-        # Debug
-        $<$<CONFIG:Debug>:
+            # Debug
+            $<$<CONFIG:Debug>:
             /Zi                 # Debug symbols
             /Od                 # Disable optimizations
             /W4                 # High warnings
             /EHsc               # Exception model
             /Oy-                # Keep frame pointers for backtrace
-        >
-        # Release
-        $<$<CONFIG:Release>:
+            >
+            # Release
+            $<$<CONFIG:Release>:
             /O2                 # Optimize speed
             /Ot                 # Favor fast code
             /Oi                 # Enable intrinsics
@@ -116,29 +116,29 @@ if(MSVC)
             /DNDEBUG            # Disable asserts
             /W3                 # Moderate warning level
             /fp:fast            # Fast floating point
-        >
+            >
     )
-    if(NOT ENABLE_SANITIZERS)
-      target_compile_options(COMMON_FLAGS INTERFACE 
-      $<$<CONFIG:Debug>:
-            /RTC1               # Runtime checks
-        >
-      )
-    endif()
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    if (NOT ENABLE_SANITIZERS)
+        target_compile_options(COMMON_FLAGS INTERFACE
+                $<$<CONFIG:Debug>:
+                /RTC1               # Runtime checks
+                >
+        )
+    endif ()
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # GCC / Clang
     target_compile_options(COMMON_FLAGS INTERFACE
-        # Debug
-        $<$<CONFIG:Debug>:
+            # Debug
+            $<$<CONFIG:Debug>:
             -g                  # Debug symbols
             -O0                 # No optimization
             -fno-omit-frame-pointer  # Keep frame pointers
             -Wall -Wextra -Wpedantic # Warnings
             -fno-inline         # Better stack traces
             -fexceptions        # Enable exceptions
-        >
-        # Release
-        $<$<CONFIG:Release>:
+            >
+            # Release
+            $<$<CONFIG:Release>:
             -O3                 # Max speed optimization
             -march=native       # Optimize for current CPU
             -mtune=native
@@ -147,11 +147,11 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             -funroll-loops      # Optional: unroll loops
             -fstrict-aliasing   # Strict aliasing
             -flto               # Link Time Optimization
-        >
+            >
     )
-else()
+else ()
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
-endif()
+endif ()
 # C++ standard
 target_compile_features(COMMON_FLAGS INTERFACE cxx_std_23)
 
@@ -161,8 +161,8 @@ target_link_libraries(main PRIVATE ${DynamicLibraries})
 target_include_directories(main PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/abi")
 target_link_libraries(main PRIVATE COMMON_FLAGS)
 set_target_properties(main PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/bin/"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/"
 )
 
 add_subdirectory(tests)

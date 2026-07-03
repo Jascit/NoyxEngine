@@ -2,7 +2,7 @@
 
 /**
  * @file     CoreABI.h
- * @brief      
+ * @brief
  *
  * @author   Jascit (https://github.com/Jascit)
  * @date     04.01.2026
@@ -18,18 +18,20 @@
 #define CORE_ABI_VERSION_PATCH 0
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif // _cplusplus
 
-  typedef struct {
-    unsigned int size;
-    unsigned int version;
-    void* (*alloc)(unsigned long long);
-    void     (*free)(void*);
-    void     (*push_outgoing)(const void* buf, unsigned long long size);
-    unsigned int (*get_generation)();
-    void     (*log)(int level, const char* msg);
-  } CoreABI;
+    typedef struct
+    {
+        unsigned int size;
+        unsigned int version;
+        void *(*alloc)(unsigned long long);
+        void (*free)(void *);
+        void (*push_outgoing)(const void *buf, unsigned long long size);
+        unsigned int (*get_generation)();
+        void (*log)(int level, const char *msg);
+    } CoreABI;
 
 #ifdef __cplusplus
 }
